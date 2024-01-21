@@ -30,11 +30,6 @@ public:
         this->p = ::mkdtemp(arg.data());
     }
 
-    /// Concatenates this directory path with a given @p source
-    std::filesystem::path operator/(const std::string_view& source) const {
-        return this->p / source;
-    }
-
     /// Creates a directory from a moved @p other
     directory(directory&& other) noexcept : p(std::move(other.p)) {
         other.p.clear();
@@ -50,6 +45,11 @@ public:
 
     /// Returns this directory path
     operator const std::filesystem::path&() const noexcept { return this->p; }
+
+    /// Concatenates this directory path with a given @p source
+    std::filesystem::path operator/(const std::string_view& source) const {
+        return this->p / source;
+    }
 
     /// Deletes this directory recursively when the enclosing scope is exited
     ~directory() noexcept { this->remove(); }
