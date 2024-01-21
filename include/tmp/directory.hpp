@@ -22,7 +22,7 @@ class directory {
 
 public:
     /// Creates a unique temp directory with the given @p prefix
-    explicit directory(const std::string_view& prefix) {
+    explicit directory(std::string_view prefix) {
         const auto parent = std::filesystem::temp_directory_path() / prefix;
         std::string arg = parent / "XXXXXX";
 
@@ -50,7 +50,7 @@ public:
     const std::filesystem::path& path() const noexcept { return *this; }
 
     /// Concatenates this directory path with a given @p source
-    std::filesystem::path operator/(const std::string_view& source) const {
+    std::filesystem::path operator/(std::string_view source) const {
         return this->p / source;
     }
 
