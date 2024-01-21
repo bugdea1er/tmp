@@ -8,8 +8,6 @@ namespace fs = std::filesystem;
 TEST(DirectoryTest, CreateDirectory) {
     const auto tmpdir = directory("test");
     ASSERT_TRUE(fs::exists(tmpdir));
-
-    std::cout << fs::path(tmpdir) << std::endl;
 }
 
 TEST(DirectoryTest, RemoveDirectory) {
@@ -32,7 +30,7 @@ TEST(DirectoryTest, CreateMultiple) {
     const auto snd = directory(path);
     ASSERT_TRUE(fs::exists(snd));
 
-    EXPECT_NE(fs::path(fst), fs::path(snd));
+    EXPECT_NE(fst.path(), snd.path());
 }
 
 TEST(DirectoryTest, SubpathTest) {
@@ -46,7 +44,7 @@ TEST(DirectoryTest, MoveConstruction) {
     auto fst = directory("test");
     const auto snd = std::move(fst);
 
-    ASSERT_TRUE(fs::path(fst).empty());
+    ASSERT_TRUE(fst.path().empty());
     ASSERT_TRUE(fs::exists(snd));
 }
 
@@ -54,8 +52,8 @@ TEST(DirectoryTest, MoveAssignment) {
     auto fst = directory("test");
     auto snd = directory("");
 
-    const auto path1 = fs::path(fst);
-    const auto path2 = fs::path(snd);
+    const auto path1 = fst.path();
+    const auto path2 = snd.path();
 
     fst = std::move(snd);
 

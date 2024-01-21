@@ -46,6 +46,9 @@ public:
     /// Returns this directory path
     operator const std::filesystem::path&() const noexcept { return this->p; }
 
+    /// Returns this directory path
+    const std::filesystem::path& path() const noexcept { return *this; }
+
     /// Concatenates this directory path with a given @p source
     std::filesystem::path operator/(const std::string_view& source) const {
         return this->p / source;
