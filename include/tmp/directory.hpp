@@ -22,7 +22,7 @@ class directory {
 
 public:
     /// Creates a unique temp directory with the given @p prefix
-    explicit directory(std::string_view prefix) {
+    explicit directory(std::string_view prefix = "") {
         const auto parent = std::filesystem::temp_directory_path() / prefix;
         std::string arg = parent / "XXXXXX";
 

@@ -6,8 +6,14 @@ using tmp::directory;
 namespace fs = std::filesystem;
 
 TEST(DirectoryTest, CreateDirectory) {
-    const auto tmpdir = directory("test");
-    ASSERT_TRUE(fs::exists(tmpdir));
+    {
+        const auto tmpdir = directory("test");
+        ASSERT_TRUE(fs::exists(tmpdir));
+    }
+    {
+        const auto tmpdir = directory();
+        ASSERT_TRUE(fs::exists(tmpdir));
+    }
 }
 
 TEST(DirectoryTest, RemoveDirectory) {

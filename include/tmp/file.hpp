@@ -22,7 +22,7 @@ class file {
 
 public:
     /// Creates a unique temp file with the given @p prefix
-    explicit file(std::string_view prefix) {
+    explicit file(std::string_view prefix = "") {
         const auto parent = std::filesystem::temp_directory_path() / prefix;
         std::string arg = parent / "XXXXXX";
 
