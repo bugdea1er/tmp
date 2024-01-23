@@ -1,14 +1,50 @@
 #pragma once
 
 #include <filesystem>
+#include <fstream>
 #include <string_view>
 #include <system_error>
 #include <unistd.h>
 
 namespace tmp {
 
-/// File is a smart handle that owns and manages a temporary file and
-/// disposes of it when this handle goes out of scope.
+/// The tmp::file class is a smart handle that owns and manages a temporary file
+/// and disposes of it when this handle goes out of scope. It simplifies the
+/// process of creating and managing temporary files by ensuring that they are
+/// properly cleaned up when they are no longer needed.
+///
+/// When a tmp::file object is created, it creates a temporary file using the
+/// system's default location for temporary files. If a prefix is provided to
+/// the constructor, the file is created in the path
+/// <system's default location for temporary files>/prefix/. The prefix can be
+/// a path consisting of multiple segments.
+///
+/// The tmp::file class also provides an additional operator<< which allows
+/// writing data to the temporary file using the same syntax as std::cout.
+///
+/// When the object is destroyed, it deletes the temporary file.
+///
+/// @note The tmp::file class cannot be copied or moved, as it is designed to
+/// manage a single temporary file. If you need to create multiple temporary
+/// files, you should create multiple instances of the class.
+///
+/// @code{.cpp}
+///   #include <tmp/file.hpp>
+///
+///   auto prepareFile(const std::string& content) {
+///     tmp::file tmpfile { "org.example.product" };
+///     tmpfile << content;
+///
+///     // use the temporary file without worrying about cleanup
+///
+///     // the temporary file is deleted when the tmp::file object goes out
+///     // of scope and is destroyed
+///  }
+/// @endcode
+///
+/// The above example uses a tmp::file object to create a temporary file with
+/// the product identifier prefix. When the function returns, the tmp::file
+/// object goes out of scope and the temporary file is deleted.
 class file {
     std::filesystem::path p;    ///< This file path
 
@@ -21,7 +57,10 @@ class file {
     }
 
 public:
-    /// Creates a unique temp file with the given @p prefix
+    /// Creates a unique temporary file using the system's default location
+    /// for temporary files. If a prefix is provided to the constructor, the
+    /// directory is created in the path <temp dir>/prefix/. The prefix can be
+    /// a path consisting of multiple segments.
     explicit file(std::string_view prefix = "") {
         const auto parent = std::filesystem::temp_directory_path() / prefix;
         std::string arg = parent / "XXXXXX";
@@ -50,14 +89,14 @@ public:
     /// Returns this file path
     const std::filesystem::path& path() const noexcept { return this->p; }
 
-    /// Concatenates this file path with a given @p source
-    std::filesystem::path operator/(std::string_view source) const {
-        return this->p / source;
+    /// Provides access to this file path members
+    const std::filesystem::path* operator->() const noexcept {
+        return std::addressof(this->p);
     }
 
-    /// Provides access to this file path members
-    const std::filesystem::path* operator->() const {
-        return std::addressof(this->p);
+    /// Inserts @p content into this file
+    void operator<<(std::string_view content) const {
+        std::ofstream { this->path(), std::ios::binary } << content;
     }
 
     /// Deletes this file when the enclosing scope is exited
