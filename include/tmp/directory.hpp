@@ -54,6 +54,11 @@ public:
         return this->p / source;
     }
 
+    /// Provides access to this directory path members
+    const std::filesystem::path* operator->() const {
+        return std::addressof(this->p);
+    }
+
     /// Deletes this directory recursively when the enclosing scope is exited
     ~directory() noexcept { this->remove(); }
 

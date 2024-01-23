@@ -50,6 +50,16 @@ public:
     /// Returns this file path
     const std::filesystem::path& path() const noexcept { return this->p; }
 
+    /// Concatenates this file path with a given @p source
+    std::filesystem::path operator/(std::string_view source) const {
+        return this->p / source;
+    }
+
+    /// Provides access to this file path members
+    const std::filesystem::path* operator->() const {
+        return std::addressof(this->p);
+    }
+
     /// Deletes this file when the enclosing scope is exited
     ~file() noexcept { this->remove(); }
 
