@@ -7,8 +7,36 @@
 
 namespace tmp {
 
-/// Directory is a smart handle that owns and manages a temporary directory and
-/// disposes of it when this handle goes out of scope.
+/// The tmp::directory is a smart handle that owns and manages a temporary
+/// directory and disposes of it when this handle goes out of scope. It
+/// simplifies the process of creating and managing temporary directories by
+/// ensuring that they are properly cleaned up when they are no longer needed.
+///
+/// When a tmp::directory object is created, it creates a unique temporary
+/// directory using the system's default location for temporary files. If a
+/// prefix is provided to the constructor, the directory is created in the path
+/// <system's default location for temporary files>/prefix/. The prefix can be
+/// a path consisting of multiple segments.
+///
+/// When the object is destroyed, it deletes the temporary recursively directory
+///
+/// @code{.cpp}
+///   #include <tmp/directory.hpp>
+///
+///   auto func() {
+///     tmp::directory tmpdir { "org.example.product" };
+///
+///     // use the temporary directory without worrying about cleanup
+///
+///     // the temporary directory is deleted recursively when the
+///     // tmp::directory object goes out of scope and is destroyed
+///   }
+/// @endcode
+///
+/// The above example uses a tmp::directory object to create a temporary
+/// directory with the product identifier prefix. When the function returns,
+/// the tmp::directory object goes out of scope and the temporary directory is
+/// deleted along with all of its contents.
 class directory {
     std::filesystem::path p;    ///< This directory path
 
@@ -21,7 +49,10 @@ class directory {
     }
 
 public:
-    /// Creates a unique temp directory with the given @p prefix
+    /// Creates a unique temporary directory using the system's default location
+    /// for temporary files. If a prefix is provided to the constructor, the
+    /// directory is created in the path <temp dir>/prefix/. The prefix can be
+    /// a path consisting of multiple segments.
     explicit directory(std::string_view prefix = "") {
         const auto parent = std::filesystem::temp_directory_path() / prefix;
         std::string arg = parent / "XXXXXX";
@@ -55,7 +86,7 @@ public:
     }
 
     /// Provides access to this directory path members
-    const std::filesystem::path* operator->() const {
+    const std::filesystem::path* operator->() const noexcept {
         return std::addressof(this->p);
     }
 
