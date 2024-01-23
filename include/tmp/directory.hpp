@@ -10,7 +10,7 @@ namespace tmp {
 /// Directory is a smart handle that owns and manages a temporary directory and
 /// disposes of it when this handle goes out of scope.
 class directory {
-    std::filesystem::path p;    ///< This directory's path
+    std::filesystem::path p;    ///< This directory path
 
     /// Deletes this directory recursively
     void remove() const noexcept {
@@ -47,7 +47,7 @@ public:
     operator const std::filesystem::path&() const noexcept { return this->p; }
 
     /// Returns this directory path
-    const std::filesystem::path& path() const noexcept { return *this; }
+    const std::filesystem::path& path() const noexcept { return this->p; }
 
     /// Concatenates this directory path with a given @p source
     std::filesystem::path operator/(std::string_view source) const {
