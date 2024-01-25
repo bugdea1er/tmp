@@ -46,22 +46,18 @@ namespace tmp {
 /// the product identifier prefix. When the function returns, the tmp::file
 /// object goes out of scope and the temporary file is deleted.
 class file {
-    std::filesystem::path p;    ///< This file path
-
-    /// Deletes this file
-    void remove() const noexcept {
-        if (!this->p.empty()) {
-            std::error_code ec;
-            std::filesystem::remove_all(this->p, ec);
-        }
-    }
-
 public:
+    /// Write mode for the temporary file
+    enum class write_mode : std::uint8_t {
+        text,      ///< Text mode
+        binary,    ///< Binary mode
+    };
+
     /// Creates a unique temporary file using the system's default location
     /// for temporary files. If a prefix is provided to the constructor, the
     /// directory is created in the path <temp dir>/prefix/. The prefix can be
     /// a path consisting of multiple segments.
-    explicit file(std::string_view prefix = "") {
+    explicit file(std::string_view prefix = "", write_mode mode = write_mode::text) : mode(mode) {
         const auto parent = std::filesystem::temp_directory_path() / prefix;
         std::string arg = parent / "XXXXXX";
 
@@ -95,13 +91,13 @@ public:
     }
 
     /// Writes the given @p content to this file discarding any previous content
-    void write(std::string_view content, std::ios_base::openmode mode = 0) {
-        std::ofstream { this->path(), std::ios_base::trunc | mode } << content;
+    void write(std::string_view content) const {
+        this->stream(/*append=*/false) << content;
     }
 
     /// Appends the given @p content to the end of this file
-    void append(std::string_view content, std::ios_base::openmode mode = 0) {
-        std::ofstream { this->path(), std::ios_base::app | mode } << content;
+    void append(std::string_view content) const {
+        this->stream(/*append=*/true) << content;
     }
 
     /// Deletes this file when the enclosing scope is exited
@@ -109,6 +105,26 @@ public:
 
     file(const file&) = delete;              ///< not copy-constructible
     auto operator=(const file&) = delete;    ///< not copy-assignable
+
+private:
+    std::filesystem::path p;    ///< This file path
+    write_mode mode;            ///< This file write mode
+
+    /// Returns a stream for this file
+    std::ofstream stream(bool append) const noexcept {
+        std::ios::openmode mode = append ? std::ios::app : std::ios::trunc;
+        return this->mode == write_mode::binary
+            ? std::ofstream { this->path(), mode | std::ios::binary }
+            : std::ofstream { this->path(), mode };
+    }
+
+    /// Deletes this file
+    void remove() const noexcept {
+        if (!this->p.empty()) {
+            std::error_code ec;
+            std::filesystem::remove_all(this->p, ec);
+        }
+    }
 };
 
 }    // namespace tmp

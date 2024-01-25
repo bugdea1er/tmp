@@ -63,7 +63,7 @@ TEST(FileTest, MoveAssignment) {
 }
 
 TEST(FileTest, Write) {
-    auto tmpfile = file();
+    const auto tmpfile = file();
     tmpfile.write("Hello");
 
     std::ifstream stream(tmpfile.path());
@@ -72,7 +72,7 @@ TEST(FileTest, Write) {
 }
 
 TEST(FileTest, Append) {
-    auto tmpfile = file();
+    const auto tmpfile = file();
     tmpfile.write("Hello");
 
     tmpfile.append(", world!");
