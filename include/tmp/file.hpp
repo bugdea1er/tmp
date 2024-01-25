@@ -19,8 +19,8 @@ namespace tmp {
 /// <system's default location for temporary files>/prefix/. The prefix can be
 /// a path consisting of multiple segments.
 ///
-/// The tmp::file class also provides an additional operator<< which allows
-/// writing data to the temporary file using the same syntax as std::cout.
+/// The tmp::file class also provides an additional write and append methods
+/// which allow writing data to the temporary file.
 ///
 /// When the object is destroyed, it deletes the temporary file.
 ///
@@ -92,6 +92,16 @@ public:
     /// Provides access to this file path members
     const std::filesystem::path* operator->() const noexcept {
         return std::addressof(this->p);
+    }
+
+    /// Writes the given @p content to this file discarding any previous content
+    void write(std::string_view content, std::ios_base::openmode mode = 0) {
+        std::ofstream { this->path(), std::ios_base::trunc | mode } << content;
+    }
+
+    /// Appends the given @p content to the end of this file
+    void append(std::string_view content, std::ios_base::openmode mode = 0) {
+        std::ofstream { this->path(), std::ios_base::app | mode } << content;
     }
 
     /// Deletes this file when the enclosing scope is exited

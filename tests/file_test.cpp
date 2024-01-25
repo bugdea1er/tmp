@@ -62,11 +62,24 @@ TEST(FileTest, MoveAssignment) {
     ASSERT_TRUE(fs::exists(fst));
 }
 
-TEST(FileTest, Streaming) {
-    const auto tmpfile = file();
-    tmpfile << "Hi";
+TEST(FileTest, Write) {
+    auto tmpfile = file();
+    tmpfile.write("Hello");
 
-    std::string s;
-    std::fstream(tmpfile.path(), std::ios::in) >> s;
-    ASSERT_EQ(s, "Hi");
+    std::ifstream stream(tmpfile.path());
+    std::string content(std::istreambuf_iterator<char>(stream), {});
+    ASSERT_EQ(content, "Hello");
+}
+
+TEST(FileTest, Append) {
+    auto tmpfile = file();
+    tmpfile.write("Hello");
+
+    tmpfile.append(", world!");
+
+    std::cout << tmpfile.path() << std::endl;
+
+    std::ifstream stream(tmpfile.path());
+    std::string content(std::istreambuf_iterator<char>(stream), {});
+    ASSERT_EQ(content, "Hello, world!");
 }
