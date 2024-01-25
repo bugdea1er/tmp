@@ -48,7 +48,7 @@ namespace tmp {
 class file {
 public:
     /// Write mode for the temporary file
-    enum class write_mode : std::uint8_t {
+    enum class mode : std::uint8_t {
         text,      ///< Text mode
         binary,    ///< Binary mode
     };
@@ -57,7 +57,7 @@ public:
     /// for temporary files. If a prefix is provided to the constructor, the
     /// directory is created in the path <temp dir>/prefix/. The prefix can be
     /// a path consisting of multiple segments.
-    explicit file(std::string_view prefix = "", write_mode mode = write_mode::text) : mode(mode) {
+    explicit file(std::string_view prefix = "", mode mode = mode::text) : mode(mode) {
         const auto parent = std::filesystem::temp_directory_path() / prefix;
         std::string arg = parent / "XXXXXX";
 
@@ -65,6 +65,9 @@ public:
         ::mkstemp(arg.data());
         this->p = arg;
     }
+
+    /// Creates a unique temporary file without prefixes
+    explicit file(mode mode) : file("", mode) {}
 
     /// Creates a file from a moved @p other
     file(file&& other) noexcept : p(std::move(other.p)) {
@@ -108,12 +111,12 @@ public:
 
 private:
     std::filesystem::path p;    ///< This file path
-    write_mode mode;            ///< This file write mode
+    mode mode;                  ///< This file write mode
 
     /// Returns a stream for this file
     std::ofstream stream(bool append) const noexcept {
         std::ios::openmode mode = append ? std::ios::app : std::ios::trunc;
-        return this->mode == write_mode::binary
+        return this->mode == mode::binary
             ? std::ofstream { this->path(), mode | std::ios::binary }
             : std::ofstream { this->path(), mode };
     }
