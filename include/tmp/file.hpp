@@ -94,11 +94,6 @@ public:
         return std::addressof(this->p);
     }
 
-    /// Inserts @p content into this file
-    void operator<<(std::string_view content) const {
-        std::ofstream { this->path(), std::ios::binary } << content;
-    }
-
     /// Deletes this file when the enclosing scope is exited
     ~file() noexcept { this->remove(); }
 
