@@ -8,28 +8,6 @@
 namespace tmp {
 
 class path {
-protected:
-    std::filesystem::path underlying;    ///< This file path
-
-    /// Deletes this path recursively, ignoring any errors
-    void remove() const noexcept {
-        if (!this->underlying.empty()) {
-            std::error_code ec;
-            std::filesystem::remove_all(*this, ec);
-        }
-    }
-
-    /// Creates a unique temporary path using the given constructor function
-    template<typename C>
-    explicit path(std::string_view prefix, C constructor) {
-        const auto parent = std::filesystem::temp_directory_path() / prefix;
-        std::string arg = parent / "XXXXXX";
-
-        std::filesystem::create_directories(parent);
-        constructor(arg.data());
-        this->underlying = arg;
-    }
-
 public:
     /// Creates a path from a moved @p other
     path(path&& other) noexcept : underlying(std::move(other.underlying)) {
@@ -58,6 +36,29 @@ public:
     /// Provides access to the underlying path members
     const std::filesystem::path* operator->() const noexcept {
         return std::addressof(this->underlying);
+    }
+
+protected:
+    std::filesystem::path underlying;    ///< This file path
+
+    /// Creates a unique temporary path using the given constructor function
+    template<typename C>
+    explicit path(std::string_view prefix, C constructor) {
+        const auto parent = std::filesystem::temp_directory_path() / prefix;
+        std::string arg = parent / "XXXXXX";
+
+        std::filesystem::create_directories(parent);
+        constructor(arg.data());
+        this->underlying = arg;
+    }
+
+private:
+    /// Deletes this path recursively, ignoring any errors
+    void remove() const noexcept {
+        if (!this->underlying.empty()) {
+            std::error_code ec;
+            std::filesystem::remove_all(*this, ec);
+        }
     }
 };
 
