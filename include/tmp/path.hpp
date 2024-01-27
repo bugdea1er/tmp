@@ -1,7 +1,8 @@
 #pragma once
 
 #include <filesystem>
-#include <unistd.h>
+#include <string_view>
+#include <system_error>
 #include <utility>
 
 namespace tmp {

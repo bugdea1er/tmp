@@ -2,10 +2,8 @@
 
 #include <tmp/path.hpp>
 
-#include <filesystem>
 #include <fstream>
 #include <string_view>
-#include <system_error>
 #include <unistd.h>
 
 namespace tmp {

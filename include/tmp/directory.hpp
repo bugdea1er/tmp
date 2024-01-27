@@ -4,7 +4,6 @@
 
 #include <filesystem>
 #include <string_view>
-#include <system_error>
 #include <unistd.h>
 
 namespace tmp {
