@@ -2,24 +2,23 @@
 
 #include <gtest/gtest.h>
 
-using tmp::directory;
 namespace fs = std::filesystem;
 
 TEST(DirectoryTest, CreateDirectory) {
     {
-        const auto tmpdir = directory("test");
+        const auto tmpdir = tmp::directory("test");
         ASSERT_TRUE(fs::exists(tmpdir));
     }
     {
-        const auto tmpdir = directory();
+        const auto tmpdir = tmp::directory();
         ASSERT_TRUE(fs::exists(tmpdir));
     }
 }
 
 TEST(DirectoryTest, RemoveDirectory) {
-    fs::path path;
+    auto path = fs::path();
     {
-        const auto tmpdir = directory("test");
+        const auto tmpdir = tmp::directory("test");
         path = tmpdir;
         ASSERT_TRUE(fs::exists(path));
     }
@@ -30,36 +29,36 @@ TEST(DirectoryTest, RemoveDirectory) {
 TEST(DirectoryTest, CreateMultiple) {
     const auto path = "test";
 
-    const auto fst = directory(path);
+    const auto fst = tmp::directory(path);
     ASSERT_TRUE(fs::exists(fst));
 
-    const auto snd = directory(path);
+    const auto snd = tmp::directory(path);
     ASSERT_TRUE(fs::exists(snd));
 
-    EXPECT_NE(fst.path(), snd.path());
+    EXPECT_NE(fst, snd);
 }
 
 TEST(DirectoryTest, SubpathTest) {
-    const auto tmpdir = directory("test");
+    const auto tmpdir = tmp::directory("test");
     const auto child = tmpdir / "child";
 
     ASSERT_EQ(tmpdir, child.parent_path());
 }
 
 TEST(DirectoryTest, MoveConstruction) {
-    auto fst = directory("test");
+    auto fst = tmp::directory("test");
     const auto snd = std::move(fst);
 
-    ASSERT_TRUE(fst.path().empty());
+    ASSERT_TRUE(fst->empty());
     ASSERT_TRUE(fs::exists(snd));
 }
 
 TEST(DirectoryTest, MoveAssignment) {
-    auto fst = directory("test");
-    auto snd = directory("");
+    auto fst = tmp::directory("test");
+    auto snd = tmp::directory("");
 
-    const auto path1 = fst.path();
-    const auto path2 = snd.path();
+    const auto path1 = fs::path(fst);
+    const auto path2 = fs::path(snd);
 
     fst = std::move(snd);
 
