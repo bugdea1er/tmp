@@ -11,6 +11,7 @@ class path {
 protected:
     std::filesystem::path p;    ///< This file path
 
+    /// Deletes this path recursively, ignoring any errors
     void remove() const noexcept {
         if (!this->p.empty()) {
             std::error_code ec;
@@ -18,7 +19,7 @@ protected:
         }
     }
 
-public:
+    /// Creates a unique temporary path using the given constructor function
     template<typename C>
     explicit path(std::string_view prefix, C constructor) {
         const auto parent = std::filesystem::temp_directory_path() / prefix;
@@ -29,6 +30,7 @@ public:
         this->p = arg;
     }
 
+public:
     /// Creates a path from a moved @p other
     path(path&& other) noexcept: p(std::move(other.p)) {
         other.p.clear();
@@ -45,17 +47,15 @@ public:
     path(const path&) = delete;              ///< not copy-constructible
     auto operator=(const path&) = delete;    ///< not copy-assignable
 
-    /// Deletes this path when the enclosing scope is exited
-    ~path() noexcept {
-        this->remove();
-    }
+    /// Deletes this path recursively when the enclosing scope is exited
+    ~path() noexcept { this->remove(); }
 
-    operator const std::filesystem::path&() const noexcept {
-        return this->p;
-    }
+    /// Returns the underlying path
+    operator const std::filesystem::path&() const noexcept { return this->p; }
 
+    /// Provides access to the underlying path members
     const std::filesystem::path* operator->() const noexcept {
-        return std::addressof(this->p);
+        return &(this->p);
     }
 };
 
