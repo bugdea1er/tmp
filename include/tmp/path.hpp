@@ -7,6 +7,11 @@
 
 namespace tmp {
 
+/// The tmp::path class is a smart handle that owns and manages a temporary path
+/// and disposes of it when this handle goes out of scope.
+///
+/// Subclass this and provide mktemp-like function to the constructor to create
+/// temporary files and directories.
 class path {
 public:
     /// Creates a path from a moved @p other
