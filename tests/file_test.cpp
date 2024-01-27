@@ -35,7 +35,7 @@ TEST(FileTest, CreateMultiple) {
     const auto snd = tmp::file(path);
     ASSERT_TRUE(fs::exists(snd));
 
-    EXPECT_NE(fst, snd);
+    EXPECT_NE(fs::path(fst), snd);
 }
 
 TEST(FileTest, MoveConstruction) {

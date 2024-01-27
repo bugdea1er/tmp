@@ -56,14 +56,6 @@ public:
     const std::filesystem::path* operator->() const noexcept {
         return std::addressof(this->p);
     }
-
-    friend bool operator==(const path& lhs, const path& rhs) noexcept {
-        return lhs.p == rhs.p;
-    }
-
-    friend bool operator!=(const path& lhs, const path& rhs) noexcept {
-        return lhs.p != rhs.p;
-    }
 };
 
 }    // namespace tmp

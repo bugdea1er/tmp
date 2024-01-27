@@ -35,7 +35,7 @@ TEST(DirectoryTest, CreateMultiple) {
     const auto snd = tmp::directory(path);
     ASSERT_TRUE(fs::exists(snd));
 
-    EXPECT_NE(fst, snd);
+    EXPECT_NE(fs::path(fst), snd);
 }
 
 TEST(DirectoryTest, SubpathTest) {
