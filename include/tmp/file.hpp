@@ -2,9 +2,9 @@
 
 #include <tmp/path.hpp>
 
+#include <cstdlib>
 #include <fstream>
 #include <string_view>
-#include <unistd.h>
 
 namespace tmp {
 
