@@ -2,24 +2,24 @@
 
 #include <gtest/gtest.h>
 
-using tmp::file;
 namespace fs = std::filesystem;
+static auto prefix = "org.github.bugdea1er.tmp";
 
 TEST(FileTest, CreateFile) {
     {
-        const auto tmpfile = file("test");
+        const auto tmpfile = tmp::file(prefix);
         ASSERT_TRUE(fs::exists(tmpfile));
     }
     {
-        const auto tmpfile = file();
+        const auto tmpfile = tmp::file();
         ASSERT_TRUE(fs::exists(tmpfile));
     }
 }
 
 TEST(FileTest, RemoveDirectory) {
-    fs::path path;
+    auto path = fs::path();
     {
-        const auto tmpfile = file("test");
+        const auto tmpfile = tmp::file(prefix);
         path = tmpfile;
         ASSERT_TRUE(fs::exists(path));
     }
@@ -28,31 +28,29 @@ TEST(FileTest, RemoveDirectory) {
 }
 
 TEST(FileTest, CreateMultiple) {
-    const auto path = "test";
-
-    const auto fst = file(path);
+    const auto fst = tmp::file(prefix);
     ASSERT_TRUE(fs::exists(fst));
 
-    const auto snd = file(path);
+    const auto snd = tmp::file(prefix);
     ASSERT_TRUE(fs::exists(snd));
 
-    EXPECT_NE(fst.path(), snd.path());
+    EXPECT_NE(fs::path(fst), snd);
 }
 
 TEST(FileTest, MoveConstruction) {
-    auto fst = file("test");
+    auto fst = tmp::file(prefix);
     const auto snd = std::move(fst);
 
-    ASSERT_TRUE(fst.path().empty());
+    ASSERT_TRUE(fst->empty());
     ASSERT_TRUE(fs::exists(snd));
 }
 
 TEST(FileTest, MoveAssignment) {
-    auto fst = file("test");
-    auto snd = file("");
+    auto fst = tmp::file(prefix);
+    auto snd = tmp::file(prefix);
 
-    const auto path1 = fst.path();
-    const auto path2 = snd.path();
+    const auto path1 = fs::path(fst);
+    const auto path2 = fs::path(snd);
 
     fst = std::move(snd);
 
@@ -60,26 +58,25 @@ TEST(FileTest, MoveAssignment) {
     ASSERT_TRUE(fs::exists(path2));
 
     ASSERT_TRUE(fs::exists(fst));
+    ASSERT_EQ(fs::path(fst), path2);
 }
 
 TEST(FileTest, Write) {
-    const auto tmpfile = file();
+    const auto tmpfile = tmp::file(prefix);
     tmpfile.write("Hello");
 
-    std::ifstream stream(tmpfile.path());
-    std::string content(std::istreambuf_iterator<char>(stream), {});
+    auto stream = std::ifstream(fs::path(tmpfile));
+    auto content = std::string(std::istreambuf_iterator<char>(stream), {});
     ASSERT_EQ(content, "Hello");
 }
 
 TEST(FileTest, Append) {
-    const auto tmpfile = file();
-    tmpfile.write("Hello");
+    const auto tmpfile = tmp::file(prefix);
 
+    tmpfile.write("Hello");
     tmpfile.append(", world!");
 
-    std::cout << tmpfile.path() << std::endl;
-
-    std::ifstream stream(tmpfile.path());
-    std::string content(std::istreambuf_iterator<char>(stream), {});
+    auto stream = std::ifstream(fs::path(tmpfile));
+    auto content = std::string(std::istreambuf_iterator<char>(stream), {});
     ASSERT_EQ(content, "Hello, world!");
 }
