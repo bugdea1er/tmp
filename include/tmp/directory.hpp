@@ -48,11 +48,11 @@ public:
 
     /// Concatenates this directory path with a given @p source
     std::filesystem::path operator/(std::string_view source) const {
-        return this->p / source;
+        return this->underlying / source;
     }
 
     /// Deletes this directory recursively when the enclosing scope is exited
-    ~directory() noexcept = default;
+    ~directory() noexcept override = default;
 
     directory(directory&&) noexcept = default;               ///< move-constructible
     directory& operator=(directory&&) noexcept = default;    ///< move-assignable

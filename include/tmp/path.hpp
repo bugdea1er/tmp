@@ -9,13 +9,13 @@ namespace tmp {
 
 class path {
 protected:
-    std::filesystem::path p;    ///< This file path
+    std::filesystem::path underlying;    ///< This file path
 
     /// Deletes this path recursively, ignoring any errors
     void remove() const noexcept {
-        if (!this->p.empty()) {
+        if (!this->underlying.empty()) {
             std::error_code ec;
-            std::filesystem::remove_all(this->p, ec);
+            std::filesystem::remove_all(*this, ec);
         }
     }
 
@@ -27,20 +27,20 @@ protected:
 
         std::filesystem::create_directories(parent);
         constructor(arg.data());
-        this->p = arg;
+        this->underlying = arg;
     }
 
 public:
     /// Creates a path from a moved @p other
-    path(path&& other) noexcept: p(std::move(other.p)) {
-        other.p.clear();
+    path(path&& other) noexcept : underlying(std::move(other.underlying)) {
+        other.underlying.clear();
     }
 
     /// Deletes this path and assigns to it a moved @p other
     path& operator=(path&& other) noexcept {
         this->remove();
-        this->p = std::move(other.p);
-        other.p.clear();
+        this->underlying = std::move(other.underlying);
+        other.underlying.clear();
         return *this;
     }
 
@@ -51,11 +51,13 @@ public:
     virtual ~path() noexcept { this->remove(); }
 
     /// Returns the underlying path
-    operator const std::filesystem::path&() const noexcept { return this->p; }
+    operator const std::filesystem::path&() const noexcept {
+        return this->underlying;
+    }
 
     /// Provides access to the underlying path members
     const std::filesystem::path* operator->() const noexcept {
-        return &(this->p);
+        return std::addressof(this->underlying);
     }
 };
 

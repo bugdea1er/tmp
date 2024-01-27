@@ -72,7 +72,7 @@ public:
     }
 
     /// Deletes this file when the enclosing scope is exited
-    ~file() noexcept = default;
+    ~file() noexcept override = default;
 
     file(file&&) noexcept = default;               ///< move-constructible
     file& operator=(file&&) noexcept = default;    ///< move-assignable
@@ -80,7 +80,7 @@ public:
     auto operator=(const file&) = delete;          ///< not copy-assignable
 
 private:
-    bool binary;                ///< This file write mode
+    bool binary;    ///< This file write mode
 
     /// Creates a unique temporary file using the system's default location
     /// for temporary files. If a prefix is provided to the constructor, the
@@ -94,8 +94,8 @@ private:
     std::ofstream stream(bool append) const noexcept {
         std::ios::openmode mode = append ? std::ios::app : std::ios::trunc;
         return this->binary
-            ? std::ofstream { this->p, mode | std::ios::binary }
-            : std::ofstream { this->p, mode };
+            ? std::ofstream { this->underlying, mode | std::ios::binary }
+            : std::ofstream { this->underlying, mode };
     }
 };
 
