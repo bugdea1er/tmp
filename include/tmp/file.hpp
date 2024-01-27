@@ -1,5 +1,7 @@
 #pragma once
 
+#include <tmp/path.hpp>
+
 #include <filesystem>
 #include <fstream>
 #include <string_view>
@@ -45,7 +47,7 @@ namespace tmp {
 /// The above example uses a tmp::file object to create a temporary file with
 /// the product identifier prefix. When the function returns, the tmp::file
 /// object goes out of scope and the temporary file is deleted.
-class file {
+class file final : public path {
 public:
     /// Creates a unique temporary binary file using the system's default
     /// location for temporary files. If a prefix is provided to the

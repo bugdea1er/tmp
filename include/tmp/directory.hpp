@@ -1,5 +1,7 @@
 #pragma once
 
+#include <tmp/path.hpp>
+
 #include <filesystem>
 #include <string_view>
 #include <system_error>
@@ -37,7 +39,7 @@ namespace tmp {
 /// directory with the product identifier prefix. When the function returns,
 /// the tmp::directory object goes out of scope and the temporary directory is
 /// deleted along with all of its contents.
-class directory {
+class directory final : public path {
     std::filesystem::path p;    ///< This directory path
 
     /// Deletes this directory recursively
