@@ -47,27 +47,19 @@ namespace tmp {
 /// object goes out of scope and the temporary file is deleted.
 class file {
 public:
-    /// Write mode for the temporary file
-    enum class mode : std::uint8_t {
-        text,      ///< Text mode
-        binary,    ///< Binary mode
-    };
+    /// Creates a unique temporary binary file using the system's default
+    /// location for temporary files. If a prefix is provided to the
+    /// constructor, the directory is created in the path <temp dir>/prefix/.
+    /// The prefix can be a path consisting of multiple segments.
+    file(std::string_view prefix = "") : file(prefix, /*binary=*/true) {}
 
-    /// Creates a unique temporary file using the system's default location
+    /// Creates a unique temporary text file using the system's default location
     /// for temporary files. If a prefix is provided to the constructor, the
     /// directory is created in the path <temp dir>/prefix/. The prefix can be
     /// a path consisting of multiple segments.
-    explicit file(std::string_view prefix = "", mode mode = mode::text) : mode(mode) {
-        const auto parent = std::filesystem::temp_directory_path() / prefix;
-        std::string arg = parent / "XXXXXX";
-
-        std::filesystem::create_directories(parent);
-        ::mkstemp(arg.data());
-        this->p = arg;
+    static file text(std::string_view prefix = "") {
+        return file(prefix, /*binary=*/false);
     }
-
-    /// Creates a unique temporary file without prefixes
-    explicit file(mode mode) : file("", mode) {}
 
     /// Creates a file from a moved @p other
     file(file&& other) noexcept : p(std::move(other.p)) {
@@ -111,12 +103,25 @@ public:
 
 private:
     std::filesystem::path p;    ///< This file path
-    mode mode;                  ///< This file write mode
+    bool binary;                ///< This file write mode
+
+    /// Creates a unique temporary file using the system's default location
+    /// for temporary files. If a prefix is provided to the constructor, the
+    /// directory is created in the path <temp dir>/prefix/. The prefix can be
+    /// a path consisting of multiple segments.
+    explicit file(std::string_view prefix, bool binary) : binary(binary) {
+        const auto parent = std::filesystem::temp_directory_path() / prefix;
+        std::string arg = parent / "XXXXXX";
+
+        std::filesystem::create_directories(parent);
+        ::mkstemp(arg.data());
+        this->p = arg;
+    }
 
     /// Returns a stream for this file
     std::ofstream stream(bool append) const noexcept {
         std::ios::openmode mode = append ? std::ios::app : std::ios::trunc;
-        return this->mode == mode::binary
+        return this->binary
             ? std::ofstream { this->path(), mode | std::ios::binary }
             : std::ofstream { this->path(), mode };
     }
