@@ -19,8 +19,8 @@ namespace tmp {
 /// <system's default location for temporary files>/prefix/. The prefix can be
 /// a path consisting of multiple segments.
 ///
-/// The tmp::file class also provides an additional operator<< which allows
-/// writing data to the temporary file using the same syntax as std::cout.
+/// The tmp::file class also provides an additional write and append methods
+/// which allow writing data to the temporary file.
 ///
 /// When the object is destroyed, it deletes the temporary file.
 ///
@@ -46,28 +46,19 @@ namespace tmp {
 /// the product identifier prefix. When the function returns, the tmp::file
 /// object goes out of scope and the temporary file is deleted.
 class file {
-    std::filesystem::path p;    ///< This file path
-
-    /// Deletes this file
-    void remove() const noexcept {
-        if (!this->p.empty()) {
-            std::error_code ec;
-            std::filesystem::remove_all(this->p, ec);
-        }
-    }
-
 public:
-    /// Creates a unique temporary file using the system's default location
+    /// Creates a unique temporary binary file using the system's default
+    /// location for temporary files. If a prefix is provided to the
+    /// constructor, the directory is created in the path <temp dir>/prefix/.
+    /// The prefix can be a path consisting of multiple segments.
+    file(std::string_view prefix = "") : file(prefix, /*binary=*/true) {}
+
+    /// Creates a unique temporary text file using the system's default location
     /// for temporary files. If a prefix is provided to the constructor, the
     /// directory is created in the path <temp dir>/prefix/. The prefix can be
     /// a path consisting of multiple segments.
-    explicit file(std::string_view prefix = "") {
-        const auto parent = std::filesystem::temp_directory_path() / prefix;
-        std::string arg = parent / "XXXXXX";
-
-        std::filesystem::create_directories(parent);
-        ::mkstemp(arg.data());
-        this->p = arg;
+    static file text(std::string_view prefix = "") {
+        return file(prefix, /*binary=*/false);
     }
 
     /// Creates a file from a moved @p other
@@ -94,9 +85,14 @@ public:
         return std::addressof(this->p);
     }
 
-    /// Inserts @p content into this file
-    void operator<<(std::string_view content) const {
-        std::ofstream { this->path(), std::ios::binary } << content;
+    /// Writes the given @p content to this file discarding any previous content
+    void write(std::string_view content) const {
+        this->stream(/*append=*/false) << content;
+    }
+
+    /// Appends the given @p content to the end of this file
+    void append(std::string_view content) const {
+        this->stream(/*append=*/true) << content;
     }
 
     /// Deletes this file when the enclosing scope is exited
@@ -104,6 +100,39 @@ public:
 
     file(const file&) = delete;              ///< not copy-constructible
     auto operator=(const file&) = delete;    ///< not copy-assignable
+
+private:
+    std::filesystem::path p;    ///< This file path
+    bool binary;                ///< This file write mode
+
+    /// Creates a unique temporary file using the system's default location
+    /// for temporary files. If a prefix is provided to the constructor, the
+    /// directory is created in the path <temp dir>/prefix/. The prefix can be
+    /// a path consisting of multiple segments.
+    explicit file(std::string_view prefix, bool binary) : binary(binary) {
+        const auto parent = std::filesystem::temp_directory_path() / prefix;
+        std::string arg = parent / "XXXXXX";
+
+        std::filesystem::create_directories(parent);
+        ::mkstemp(arg.data());
+        this->p = arg;
+    }
+
+    /// Returns a stream for this file
+    std::ofstream stream(bool append) const noexcept {
+        std::ios::openmode mode = append ? std::ios::app : std::ios::trunc;
+        return this->binary
+            ? std::ofstream { this->path(), mode | std::ios::binary }
+            : std::ofstream { this->path(), mode };
+    }
+
+    /// Deletes this file
+    void remove() const noexcept {
+        if (!this->p.empty()) {
+            std::error_code ec;
+            std::filesystem::remove_all(this->p, ec);
+        }
+    }
 };
 
 }    // namespace tmp
