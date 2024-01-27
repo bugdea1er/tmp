@@ -3,10 +3,11 @@
 #include <gtest/gtest.h>
 
 namespace fs = std::filesystem;
+static auto prefix = "org.github.bugdea1er.tmp";
 
 TEST(FileTest, CreateFile) {
     {
-        const auto tmpfile = tmp::file("test");
+        const auto tmpfile = tmp::file(prefix);
         ASSERT_TRUE(fs::exists(tmpfile));
     }
     {
@@ -18,7 +19,7 @@ TEST(FileTest, CreateFile) {
 TEST(FileTest, RemoveDirectory) {
     auto path = fs::path();
     {
-        const auto tmpfile = tmp::file("test");
+        const auto tmpfile = tmp::file(prefix);
         path = tmpfile;
         ASSERT_TRUE(fs::exists(path));
     }
@@ -27,19 +28,17 @@ TEST(FileTest, RemoveDirectory) {
 }
 
 TEST(FileTest, CreateMultiple) {
-    const auto path = "test";
-
-    const auto fst = tmp::file(path);
+    const auto fst = tmp::file(prefix);
     ASSERT_TRUE(fs::exists(fst));
 
-    const auto snd = tmp::file(path);
+    const auto snd = tmp::file(prefix);
     ASSERT_TRUE(fs::exists(snd));
 
     EXPECT_NE(fs::path(fst), snd);
 }
 
 TEST(FileTest, MoveConstruction) {
-    auto fst = tmp::file("test");
+    auto fst = tmp::file(prefix);
     const auto snd = std::move(fst);
 
     ASSERT_TRUE(fst->empty());
@@ -47,8 +46,8 @@ TEST(FileTest, MoveConstruction) {
 }
 
 TEST(FileTest, MoveAssignment) {
-    auto fst = tmp::file("test");
-    auto snd = tmp::file("");
+    auto fst = tmp::file(prefix);
+    auto snd = tmp::file(prefix);
 
     const auto path1 = fs::path(fst);
     const auto path2 = fs::path(snd);
@@ -59,10 +58,11 @@ TEST(FileTest, MoveAssignment) {
     ASSERT_TRUE(fs::exists(path2));
 
     ASSERT_TRUE(fs::exists(fst));
+    ASSERT_EQ(fs::path(fst), path2);
 }
 
 TEST(FileTest, Write) {
-    const auto tmpfile = tmp::file();
+    const auto tmpfile = tmp::file(prefix);
     tmpfile.write("Hello");
 
     auto stream = std::ifstream(fs::path(tmpfile));
@@ -71,7 +71,7 @@ TEST(FileTest, Write) {
 }
 
 TEST(FileTest, Append) {
-    const auto tmpfile = tmp::file();
+    const auto tmpfile = tmp::file(prefix);
 
     tmpfile.write("Hello");
     tmpfile.append(", world!");
