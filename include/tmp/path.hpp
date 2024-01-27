@@ -48,7 +48,7 @@ public:
     auto operator=(const path&) = delete;    ///< not copy-assignable
 
     /// Deletes this path recursively when the enclosing scope is exited
-    ~path() noexcept { this->remove(); }
+    virtual ~path() noexcept { this->remove(); }
 
     /// Returns the underlying path
     operator const std::filesystem::path&() const noexcept { return this->p; }
