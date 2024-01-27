@@ -65,8 +65,8 @@ TEST(FileTest, Write) {
     const auto tmpfile = tmp::file();
     tmpfile.write("Hello");
 
-    std::ifstream stream(tmpfile);
-    std::string content(std::istreambuf_iterator<char>(stream), {});
+    auto stream = std::ifstream(fs::path(tmpfile));
+    auto content = std::string(std::istreambuf_iterator<char>(stream), {});
     ASSERT_EQ(content, "Hello");
 }
 
@@ -76,7 +76,7 @@ TEST(FileTest, Append) {
     tmpfile.write("Hello");
     tmpfile.append(", world!");
 
-    std::ifstream stream(tmpfile);
-    std::string content(std::istreambuf_iterator<char>(stream), {});
+    auto stream = std::ifstream(fs::path(tmpfile));
+    auto content = std::string(std::istreambuf_iterator<char>(stream), {});
     ASSERT_EQ(content, "Hello, world!");
 }
