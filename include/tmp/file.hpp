@@ -1,9 +1,9 @@
 #pragma once
 
-#include <filesystem>
+#include <tmp/path.hpp>
+
 #include <fstream>
 #include <string_view>
-#include <system_error>
 #include <unistd.h>
 
 namespace tmp {
@@ -45,7 +45,7 @@ namespace tmp {
 /// The above example uses a tmp::file object to create a temporary file with
 /// the product identifier prefix. When the function returns, the tmp::file
 /// object goes out of scope and the temporary file is deleted.
-class file {
+class file final : public path {
 public:
     /// Creates a unique temporary binary file using the system's default
     /// location for temporary files. If a prefix is provided to the
@@ -61,30 +61,6 @@ public:
         return file(prefix, /*binary=*/false);
     }
 
-    /// Creates a file from a moved @p other
-    file(file&& other) noexcept : p(std::move(other.p)) {
-        other.p.clear();
-    }
-
-    /// Deletes this file and assigns to it a moved @p other
-    file& operator=(file&& other) noexcept {
-        this->remove();
-        this->p = std::move(other.p);
-        other.p.clear();
-        return *this;
-    }
-
-    /// Returns this file path
-    operator const std::filesystem::path&() const noexcept { return this->p; }
-
-    /// Returns this file path
-    const std::filesystem::path& path() const noexcept { return this->p; }
-
-    /// Provides access to this file path members
-    const std::filesystem::path* operator->() const noexcept {
-        return std::addressof(this->p);
-    }
-
     /// Writes the given @p content to this file discarding any previous content
     void write(std::string_view content) const {
         this->stream(/*append=*/false) << content;
@@ -96,42 +72,29 @@ public:
     }
 
     /// Deletes this file when the enclosing scope is exited
-    ~file() noexcept { this->remove(); }
+    ~file() noexcept override = default;
 
-    file(const file&) = delete;              ///< not copy-constructible
-    auto operator=(const file&) = delete;    ///< not copy-assignable
+    file(file&&) noexcept = default;               ///< move-constructible
+    file& operator=(file&&) noexcept = default;    ///< move-assignable
+    file(const file&) = delete;                    ///< not copy-constructible
+    auto operator=(const file&) = delete;          ///< not copy-assignable
 
 private:
-    std::filesystem::path p;    ///< This file path
-    bool binary;                ///< This file write mode
+    bool binary;    ///< This file write mode
 
     /// Creates a unique temporary file using the system's default location
     /// for temporary files. If a prefix is provided to the constructor, the
     /// directory is created in the path <temp dir>/prefix/. The prefix can be
     /// a path consisting of multiple segments.
-    explicit file(std::string_view prefix, bool binary) : binary(binary) {
-        const auto parent = std::filesystem::temp_directory_path() / prefix;
-        std::string arg = parent / "XXXXXX";
-
-        std::filesystem::create_directories(parent);
-        ::mkstemp(arg.data());
-        this->p = arg;
-    }
+    explicit file(std::string_view prefix, bool binary) : path(prefix, mkstemp),
+                                                          binary(binary) {}
 
     /// Returns a stream for this file
     std::ofstream stream(bool append) const noexcept {
         std::ios::openmode mode = append ? std::ios::app : std::ios::trunc;
         return this->binary
-            ? std::ofstream { this->path(), mode | std::ios::binary }
-            : std::ofstream { this->path(), mode };
-    }
-
-    /// Deletes this file
-    void remove() const noexcept {
-        if (!this->p.empty()) {
-            std::error_code ec;
-            std::filesystem::remove_all(this->p, ec);
-        }
+            ? std::ofstream { this->underlying, mode | std::ios::binary }
+            : std::ofstream { this->underlying, mode };
     }
 };
 
