@@ -14,7 +14,6 @@ void remove(const tmp::path& path) noexcept {
         std::filesystem::remove_all(path, ec);
     }
 }
-
 }    // namespace
 
 namespace tmp {
