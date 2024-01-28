@@ -3,7 +3,6 @@
 #include <tmp/path.hpp>
 
 #include <filesystem>
-#include <fstream>
 #include <string_view>
 
 namespace tmp {
@@ -84,9 +83,6 @@ private:
 
     /// Creates a unique temporary file based on the given @p prefix
     static std::filesystem::path create(std::string_view prefix);
-
-    /// Returns a stream for this file
-    std::ofstream stream(bool append) const noexcept;
 };
 
 }    // namespace tmp
