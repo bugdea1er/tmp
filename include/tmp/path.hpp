@@ -52,12 +52,7 @@ protected:
     /// Creates a unique temporary path using the given constructor function.
     /// @param prefix the path between system temp
     /// @param creator wrapped mktemp-like function that returns resulting path
-    explicit path(std::string_view prefix, std::string(*creator)(std::string)) {
-        const auto parent = std::filesystem::temp_directory_path() / prefix;
-        std::filesystem::create_directories(parent);
-
-        this->underlying = creator(parent / "XXXXXX");
-    }
+    explicit path(std::filesystem::path path) : underlying(path){}
 
 private:
     /// Deletes this path recursively, ignoring any errors

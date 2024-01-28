@@ -86,18 +86,21 @@ private:
     /// for temporary files. If a prefix is provided to the constructor, the
     /// directory is created in the path <temp dir>/prefix/. The prefix can be
     /// a path consisting of multiple segments.
-    explicit file(std::string_view prefix, bool binary) : path(prefix, creator),
+    explicit file(std::string_view prefix, bool binary) : path(create(prefix)),
                                                           binary(binary) {}
 
-    /// Creates a unique temporary file based on the given @p pattern path.
-    /// The parent path of the given argument must exist.
-    static std::string creator(std::string path) {
-        if (mkstemp(path.data()) == -1) {
+    /// Creates a unique temporary file based on the given @p prefix
+    static std::filesystem::path create(std::string_view prefix) {
+        const auto parent = std::filesystem::temp_directory_path() / prefix;
+        std::filesystem::create_directories(parent);
+
+        auto pattern = std::string(parent / "XXXXXX");
+        if (mkstemp(pattern.data()) == -1) {
             auto ec = std::error_code(errno, std::system_category());
             throw error("Cannot create temporary file", ec);
         }
 
-        return path;
+        return pattern;
     }
 
     /// Returns a stream for this file

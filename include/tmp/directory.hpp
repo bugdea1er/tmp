@@ -44,7 +44,7 @@ public:
     /// for temporary files. If a prefix is provided to the constructor, the
     /// directory is created in the path <temp dir>/prefix/. The prefix can be
     /// a path consisting of multiple segments.
-    explicit directory(std::string_view prefix = "") : path(prefix, creator) {}
+    explicit directory(std::string_view prefix = "") : path(create(prefix)) {}
 
     /// Concatenates this directory path with a given @p source
     std::filesystem::path operator/(std::string_view source) const {
@@ -60,9 +60,12 @@ public:
     auto operator=(const directory&) = delete;               ///< not copy-assignable
 
 private:
-    /// Creates a unique temporary directory based on the given @p pattern path.
-    /// The parent path of the given argument must exist.
-    static std::string creator(std::string pattern) {
+    /// Creates a unique temporary directory based on the given @p prefix
+    static std::filesystem::path create(std::string_view prefix) {
+        const auto parent = std::filesystem::temp_directory_path() / prefix;
+        std::filesystem::create_directories(parent);
+
+        auto pattern = std::string(parent / "XXXXXX");
         if (mkdtemp(pattern.data()) == nullptr) {
             auto ec = std::error_code(errno, std::system_category());
             throw error("Cannot create temporary directory", ec);
