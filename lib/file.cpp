@@ -7,7 +7,11 @@ namespace tmp {
 
 namespace {
 
-/// Returns a stream for this file
+/// Opens a temporary file for writing and returns an output file stream
+/// @param file The file to open
+/// @param binary Whether to open the file in binary mode (true) or text mode (false)
+/// @param append Whether to append to the end of the file (true) or truncate it (false)
+/// @return An output file stream
 std::ofstream stream(const file& file, bool binary, bool append) noexcept {
     std::ios::openmode mode = append ? std::ios::app : std::ios::trunc;
     auto path = static_cast<const std::filesystem::path&>(file);
