@@ -36,8 +36,7 @@ std::ofstream stream(const tmp::file& file, bool binary, bool append) noexcept {
         mode |= std::ios::binary;
     }
 
-    const fs::path& path = file;
-    return std::ofstream(path, mode);
+    return std::ofstream(static_cast<const fs::path&>(file), mode);
 }
 }    // namespace
 
