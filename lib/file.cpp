@@ -31,8 +31,10 @@ file::file(std::string_view prefix, bool binary) : path(create(prefix)),
 std::filesystem::path file::create(std::string_view prefix) {
     auto pattern = make_pattern(prefix);
     if (mkstemp(pattern.data()) == -1) {
-        auto ec = std::error_code(errno, std::system_category());
-        throw error("Cannot create temporary file", ec);
+        throw std::filesystem::filesystem_error(
+            "Cannot create temporary file",
+            std::error_code(errno, std::system_category())
+        );
     }
 
     return pattern;

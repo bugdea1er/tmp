@@ -28,9 +28,6 @@ public:
     auto operator=(const path&) = delete;    ///< not copy-assignable
 
 protected:
-    /// Exception type that should be used by subclasses to signal errors
-    using error = std::filesystem::filesystem_error;
-
     std::filesystem::path underlying;    ///< This file path
 
     /// Creates a unique temporary path using the given constructor function.
