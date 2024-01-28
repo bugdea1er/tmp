@@ -1,5 +1,7 @@
 #include <tmp/file.hpp>
 
+#include <cstdlib>
+
 namespace tmp {
 
 file::file(std::string_view prefix) : file(prefix, /*binary=*/true) {

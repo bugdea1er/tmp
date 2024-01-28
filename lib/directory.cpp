@@ -1,5 +1,7 @@
 #include <tmp/directory.hpp>
 
+#include <unistd.h>
+
 namespace tmp {
 
 directory::directory(std::string_view prefix) : path(create(prefix)) {}
