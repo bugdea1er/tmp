@@ -51,33 +51,27 @@ public:
     /// location for temporary files. If a prefix is provided to the
     /// constructor, the directory is created in the path <temp dir>/prefix/.
     /// The prefix can be a path consisting of multiple segments.
-    file(std::string_view prefix = "") : file(prefix, /*binary=*/true) {}
+    explicit file(std::string_view prefix = "");
 
     /// Creates a unique temporary text file using the system's default location
     /// for temporary files. If a prefix is provided to the constructor, the
     /// directory is created in the path <temp dir>/prefix/. The prefix can be
     /// a path consisting of multiple segments.
-    static file text(std::string_view prefix = "") {
-        return file(prefix, /*binary=*/false);
-    }
+    static file text(std::string_view prefix = "");
 
     /// Writes the given @p content to this file discarding any previous content
-    void write(std::string_view content) const {
-        this->stream(/*append=*/false) << content;
-    }
+    void write(std::string_view content) const;
 
     /// Appends the given @p content to the end of this file
-    void append(std::string_view content) const {
-        this->stream(/*append=*/true) << content;
-    }
+    void append(std::string_view content) const;
 
     /// Deletes this file when the enclosing scope is exited
-    ~file() noexcept override = default;
+    ~file() noexcept override;
 
-    file(file&&) noexcept = default;               ///< move-constructible
-    file& operator=(file&&) noexcept = default;    ///< move-assignable
-    file(const file&) = delete;                    ///< not copy-constructible
-    auto operator=(const file&) = delete;          ///< not copy-assignable
+    file(file&&) noexcept;                   ///< move-constructible
+    file& operator=(file&&) noexcept;        ///< move-assignable
+    file(const file&) = delete;              ///< not copy-constructible
+    auto operator=(const file&) = delete;    ///< not copy-assignable
 
 private:
     bool binary;    ///< This file write mode
@@ -86,27 +80,13 @@ private:
     /// for temporary files. If a prefix is provided to the constructor, the
     /// directory is created in the path <temp dir>/prefix/. The prefix can be
     /// a path consisting of multiple segments.
-    explicit file(std::string_view prefix, bool binary) : path(create(prefix)),
-                                                          binary(binary) {}
+    explicit file(std::string_view prefix, bool binary);
 
     /// Creates a unique temporary file based on the given @p prefix
-    static std::filesystem::path create(std::string_view prefix) {
-        auto pattern = make_pattern(prefix);
-        if (mkstemp(pattern.data()) == -1) {
-            auto ec = std::error_code(errno, std::system_category());
-            throw error("Cannot create temporary file", ec);
-        }
-
-        return pattern;
-    }
+    static std::filesystem::path create(std::string_view prefix);
 
     /// Returns a stream for this file
-    std::ofstream stream(bool append) const noexcept {
-        std::ios::openmode mode = append ? std::ios::app : std::ios::trunc;
-        return this->binary
-            ? std::ofstream { this->underlying, mode | std::ios::binary }
-            : std::ofstream { this->underlying, mode };
-    }
+    std::ofstream stream(bool append) const noexcept;
 };
 
 }    // namespace tmp

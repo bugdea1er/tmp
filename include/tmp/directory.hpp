@@ -44,32 +44,22 @@ public:
     /// for temporary files. If a prefix is provided to the constructor, the
     /// directory is created in the path <temp dir>/prefix/. The prefix can be
     /// a path consisting of multiple segments.
-    explicit directory(std::string_view prefix = "") : path(create(prefix)) {}
+    explicit directory(std::string_view prefix = "");
 
     /// Concatenates this directory path with a given @p source
-    std::filesystem::path operator/(std::string_view source) const {
-        return this->underlying / source;
-    }
+    std::filesystem::path operator/(std::string_view source) const;
 
     /// Deletes this directory recursively when the enclosing scope is exited
-    ~directory() noexcept override = default;
+    ~directory() noexcept override;
 
-    directory(directory&&) noexcept = default;               ///< move-constructible
-    directory& operator=(directory&&) noexcept = default;    ///< move-assignable
-    directory(const directory&) = delete;                    ///< not copy-constructible
-    auto operator=(const directory&) = delete;               ///< not copy-assignable
+    directory(directory&&) noexcept;               ///< move-constructible
+    directory& operator=(directory&&) noexcept;    ///< move-assignable
+    directory(const directory&) = delete;          ///< not copy-constructible
+    auto operator=(const directory&) = delete;     ///< not copy-assignable
 
 private:
     /// Creates a unique temporary directory based on the given @p prefix
-    static std::filesystem::path create(std::string_view prefix) {
-        auto pattern = make_pattern(prefix);
-        if (mkdtemp(pattern.data()) == nullptr) {
-            auto ec = std::error_code(errno, std::system_category());
-            throw error("Cannot create temporary directory", ec);
-        }
-
-        return pattern;
-    }
+    static std::filesystem::path create(std::string_view prefix);
 };
 
 }    // namespace tmp
