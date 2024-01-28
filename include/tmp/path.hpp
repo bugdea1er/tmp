@@ -44,18 +44,19 @@ public:
     }
 
 protected:
+    /// Exception type that should be used by subclasses to signal errors
+    using error = std::filesystem::filesystem_error;
+
     std::filesystem::path underlying;    ///< This file path
 
-    /// Creates a unique temporary path using the given constructor function
-    template<typename C>
-    explicit path(std::string_view prefix, C constructor) {
+    /// Creates a unique temporary path using the given constructor function.
+    /// @param prefix the path between system temp
+    /// @param creator wrapped mktemp-like function that returns resulting path
+    explicit path(std::string_view prefix, std::string(*creator)(std::string)) {
         const auto parent = std::filesystem::temp_directory_path() / prefix;
         std::filesystem::create_directories(parent);
 
-        std::string arg = parent / "XXXXXX";
-        constructor(arg.data());
-
-        this->underlying = std::move(arg);
+        this->underlying = creator(parent / "XXXXXX");
     }
 
 private:
