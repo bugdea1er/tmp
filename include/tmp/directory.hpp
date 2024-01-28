@@ -62,7 +62,7 @@ public:
 private:
     /// Creates a unique temporary directory based on the given @p prefix
     static std::filesystem::path create(std::string_view prefix) {
-        auto pattern = std::string(make_parent(prefix) / "XXXXXX");
+        auto pattern = make_pattern(prefix);
         if (mkdtemp(pattern.data()) == nullptr) {
             auto ec = std::error_code(errno, std::system_category());
             throw error("Cannot create temporary directory", ec);

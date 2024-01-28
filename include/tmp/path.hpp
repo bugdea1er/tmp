@@ -54,11 +54,11 @@ protected:
     /// @param creator wrapped mktemp-like function that returns resulting path
     explicit path(std::filesystem::path path) : underlying(std::move(path)) {}
 
-    static std::filesystem::path make_parent(std::string_view prefix) {
+    static std::string make_pattern(std::string_view prefix) {
         const auto parent = std::filesystem::temp_directory_path() / prefix;
         std::filesystem::create_directories(parent);
 
-        return parent;
+        return parent / "XXXXXX";
     }
 
 private:

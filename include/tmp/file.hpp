@@ -91,7 +91,7 @@ private:
 
     /// Creates a unique temporary file based on the given @p prefix
     static std::filesystem::path create(std::string_view prefix) {
-        auto pattern = std::string(make_parent(prefix) / "XXXXXX");
+        auto pattern = make_pattern(prefix);
         if (mkstemp(pattern.data()) == -1) {
             auto ec = std::error_code(errno, std::system_category());
             throw error("Cannot create temporary file", ec);
