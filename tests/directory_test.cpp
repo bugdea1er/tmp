@@ -3,11 +3,10 @@
 #include <gtest/gtest.h>
 
 namespace fs = std::filesystem;
-static auto prefix = "org.github.bugdea1er.tmp";
 
 TEST(DirectoryTest, CreateDirectory) {
     {
-        const auto tmpdir = tmp::directory(prefix);
+        const auto tmpdir = tmp::directory(PREFIX);
         ASSERT_TRUE(fs::exists(tmpdir));
     }
     {
@@ -19,7 +18,7 @@ TEST(DirectoryTest, CreateDirectory) {
 TEST(DirectoryTest, RemoveDirectory) {
     auto path = fs::path();
     {
-        const auto tmpdir = tmp::directory(prefix);
+        const auto tmpdir = tmp::directory(PREFIX);
         path = tmpdir;
         ASSERT_TRUE(fs::exists(path));
     }
@@ -28,24 +27,24 @@ TEST(DirectoryTest, RemoveDirectory) {
 }
 
 TEST(DirectoryTest, CreateMultiple) {
-    const auto fst = tmp::directory(prefix);
+    const auto fst = tmp::directory(PREFIX);
     ASSERT_TRUE(fs::exists(fst));
 
-    const auto snd = tmp::directory(prefix);
+    const auto snd = tmp::directory(PREFIX);
     ASSERT_TRUE(fs::exists(snd));
 
     EXPECT_NE(fs::path(fst), snd);
 }
 
 TEST(DirectoryTest, SubpathTest) {
-    const auto tmpdir = tmp::directory(prefix);
+    const auto tmpdir = tmp::directory(PREFIX);
     const auto child = tmpdir / "child";
 
     ASSERT_EQ(tmpdir, child.parent_path());
 }
 
 TEST(DirectoryTest, MoveConstruction) {
-    auto fst = tmp::directory(prefix);
+    auto fst = tmp::directory(PREFIX);
     const auto snd = std::move(fst);
 
     ASSERT_TRUE(fst->empty());
@@ -53,8 +52,8 @@ TEST(DirectoryTest, MoveConstruction) {
 }
 
 TEST(DirectoryTest, MoveAssignment) {
-    auto fst = tmp::directory(prefix);
-    auto snd = tmp::directory(prefix);
+    auto fst = tmp::directory(PREFIX);
+    auto snd = tmp::directory(PREFIX);
 
     const auto path1 = fs::path(fst);
     const auto path2 = fs::path(snd);
