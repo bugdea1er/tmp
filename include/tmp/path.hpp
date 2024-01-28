@@ -54,6 +54,8 @@ protected:
     /// @param creator wrapped mktemp-like function that returns resulting path
     explicit path(std::filesystem::path path) : underlying(std::move(path)) {}
 
+    /// Creates a pattern for the mktemp-like functions.
+    /// If @p prefix is not empty, it is appended to the tempdir
     static std::string make_pattern(std::string_view prefix) {
         const auto parent = std::filesystem::temp_directory_path() / prefix;
         std::filesystem::create_directories(parent);
