@@ -33,14 +33,14 @@ TEST(DirectoryTest, CreateMultiple) {
     const auto snd = tmp::directory(PREFIX);
     ASSERT_TRUE(fs::exists(snd));
 
-    EXPECT_NE(fs::path(fst), snd);
+    EXPECT_NE(fs::path(fst), fs::path(snd));
 }
 
 TEST(DirectoryTest, SubpathTest) {
     const auto tmpdir = tmp::directory(PREFIX);
     const auto child = tmpdir / "child";
 
-    ASSERT_EQ(tmpdir, child.parent_path());
+    ASSERT_EQ(fs::path(tmpdir), child.parent_path());
 }
 
 TEST(DirectoryTest, MoveConstruction) {
