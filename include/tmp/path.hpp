@@ -50,11 +50,12 @@ protected:
     template<typename C>
     explicit path(std::string_view prefix, C constructor) {
         const auto parent = std::filesystem::temp_directory_path() / prefix;
-        std::string arg = parent / "XXXXXX";
-
         std::filesystem::create_directories(parent);
+
+        std::string arg = parent / "XXXXXX";
         constructor(arg.data());
-        this->underlying = arg;
+
+        this->underlying = std::move(arg);
     }
 
 private:
