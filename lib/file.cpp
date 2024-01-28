@@ -41,8 +41,12 @@ std::ofstream stream(const tmp::file& file, bool binary, bool append) noexcept {
 
 namespace tmp {
 
-file::file(std::string_view prefix) : file(prefix, /*binary=*/true) {
-}
+file::file(std::string_view prefix)
+    : file(prefix, /*binary=*/true) {}
+
+file::file(std::string_view prefix, bool binary)
+    : path(create(prefix)),
+      binary(binary) {}
 
 file file::text(std::string_view prefix) {
     return file(prefix, /*binary=*/false);
@@ -60,9 +64,4 @@ file::~file() noexcept = default;
 
 file::file(file&&) noexcept = default;
 file& file::operator=(file&&) noexcept = default;
-
-file::file(std::string_view prefix, bool binary) : path(create(prefix)),
-                                                   binary(binary) {
-}
-
 }    // namespace tmp
