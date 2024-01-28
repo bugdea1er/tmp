@@ -1,7 +1,10 @@
 #include <tmp/path.hpp>
 
+#include <filesystem>
 #include <system_error>
 #include <utility>
+
+namespace fs = std::filesystem;
 
 namespace {
 
@@ -10,20 +13,24 @@ namespace {
 void remove(const tmp::path& path) noexcept {
     if (!path->empty()) {
         std::error_code ec;
-        std::filesystem::remove_all(path, ec);
+        fs::remove_all(path, ec);
     }
 }
 }    // namespace
 
 namespace tmp {
 
-path::path(path&& other) noexcept : underlying(std::move(other.underlying)) {
+path::path(fs::path path)
+    : underlying(std::move(path)) {}
+
+path::path(path&& other) noexcept
+    : underlying(std::move(other.underlying)) {
     other.underlying.clear();
 }
 
 path& path::operator=(path&& other) noexcept {
     remove(*this);
-    this->underlying = std::move(other.underlying);
+    underlying = std::move(other.underlying);
     other.underlying.clear();
     return *this;
 }
@@ -32,22 +39,18 @@ path::~path() noexcept {
     remove(*this);
 }
 
-path::operator const std::filesystem::path&() const noexcept {
-    return this->underlying;
+path::operator const fs::path&() const noexcept {
+    return underlying;
 }
 
-const std::filesystem::path* path::operator->() const noexcept {
-    return std::addressof(this->underlying);
-}
-
-path::path(std::filesystem::path path) : underlying(std::move(path)) {
+const fs::path* path::operator->() const noexcept {
+    return std::addressof(underlying);
 }
 
 std::string path::make_pattern(std::string_view prefix) {
-    const auto parent = std::filesystem::temp_directory_path() / prefix;
-    std::filesystem::create_directories(parent);
+    fs::path parent = fs::temp_directory_path() / prefix;
+    fs::create_directories(parent);
 
     return parent / "XXXXXX";
 }
-
 }    // namespace tmp

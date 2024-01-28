@@ -1,7 +1,12 @@
 #include <tmp/file.hpp>
 
 #include <cstdlib>
+#include <filesystem>
 #include <fstream>
+#include <string_view>
+#include <system_error>
+
+namespace fs = std::filesystem;
 
 namespace {
 
@@ -9,15 +14,12 @@ namespace {
 /// temporary directory, and returns its path
 /// @param prefix   The prefix to use for the temporary file name
 /// @returns A path to the created temporary file
-/// @throws std::filesystem::filesystem_error if the temporary file
-///                                           cannot be created
-std::filesystem::path create(std::string_view prefix) {
-    auto pattern = tmp::path::make_pattern(prefix);
+/// @throws fs::filesystem_error if the temporary file cannot be created
+fs::path create(std::string_view prefix) {
+    std::string pattern = tmp::path::make_pattern(prefix);
     if (mkstemp(pattern.data()) == -1) {
-        throw std::filesystem::filesystem_error(
-            "Cannot create temporary file",
-            std::error_code(errno, std::system_category())
-        );
+        std::error_code ec = std::error_code(errno, std::system_category());
+        throw fs::filesystem_error("Cannot create temporary file", ec);
     }
 
     return pattern;
@@ -34,8 +36,8 @@ std::ofstream stream(const tmp::file& file, bool binary, bool append) noexcept {
         mode |= std::ios::binary;
     }
 
-    const std::filesystem::path& path = file;
-    return std::ofstream { path, mode };
+    const fs::path& path = file;
+    return std::ofstream(path, mode);
 }
 }    // namespace
 
