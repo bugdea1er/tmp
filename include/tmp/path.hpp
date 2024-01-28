@@ -12,6 +12,8 @@ namespace tmp {
 /// Subclass this and provide mktemp-like function to the constructor to create
 /// temporary files and directories.
 class path {
+    std::filesystem::path underlying;    ///< This path
+
 public:
     /// Returns the underlying path
     operator const std::filesystem::path&() const noexcept;
@@ -28,8 +30,6 @@ public:
     auto operator=(const path&) = delete;    ///< not copy-assignable
 
 protected:
-    std::filesystem::path underlying;    ///< This file path
-
     /// Creates a unique temporary path using the given constructor function.
     /// @param prefix the path between system temp
     /// @param creator wrapped mktemp-like function that returns resulting path

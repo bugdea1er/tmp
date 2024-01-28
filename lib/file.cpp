@@ -43,8 +43,8 @@ std::filesystem::path file::create(std::string_view prefix) {
 std::ofstream file::stream(bool append) const noexcept {
     std::ios::openmode mode = append ? std::ios::app : std::ios::trunc;
     return this->binary
-           ? std::ofstream { this->underlying, mode | std::ios::binary }
-           : std::ofstream { this->underlying, mode };
+           ? std::ofstream { static_cast<const std::filesystem::path&>(*this), mode | std::ios::binary }
+           : std::ofstream { static_cast<const std::filesystem::path&>(*this), mode };
 };
 
 }    // namespace tmp
