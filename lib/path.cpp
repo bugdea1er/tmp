@@ -5,8 +5,7 @@
 
 namespace {
 
-/// Deletes the given path recursively, ignoring any errors.
-/// If the path is empty, does nothing.
+/// Deletes the given path recursively, ignoring any errors
 /// @param path The path of the directory to remove
 void remove(const tmp::path& path) noexcept {
     if (!path->empty()) {

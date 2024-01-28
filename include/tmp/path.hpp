@@ -28,15 +28,15 @@ public:
     path(const path&) = delete;              ///< not copy-constructible
     auto operator=(const path&) = delete;    ///< not copy-assignable
 
+    /// Creates a pattern for the mktemp-like functions.
+    /// If @p prefix is not empty, it is appended to the tempdir
+    static std::string make_pattern(std::string_view prefix);
+
 protected:
     /// Creates a unique temporary path using the given constructor function.
     /// @param prefix the path between system temp
     /// @param creator wrapped mktemp-like function that returns resulting path
     explicit path(std::filesystem::path path);
-
-    /// Creates a pattern for the mktemp-like functions.
-    /// If @p prefix is not empty, it is appended to the tempdir
-    static std::string make_pattern(std::string_view prefix);
 };
 
 }    // namespace tmp

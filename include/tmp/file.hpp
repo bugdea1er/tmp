@@ -80,9 +80,6 @@ private:
     /// directory is created in the path <temp dir>/prefix/. The prefix can be
     /// a path consisting of multiple segments.
     explicit file(std::string_view prefix, bool binary);
-
-    /// Creates a unique temporary file based on the given @p prefix
-    static std::filesystem::path create(std::string_view prefix);
 };
 
 }    // namespace tmp

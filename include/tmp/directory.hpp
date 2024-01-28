@@ -55,10 +55,6 @@ public:
     directory& operator=(directory&&) noexcept;    ///< move-assignable
     directory(const directory&) = delete;          ///< not copy-constructible
     auto operator=(const directory&) = delete;     ///< not copy-assignable
-
-private:
-    /// Creates a unique temporary directory based on the given @p prefix
-    static std::filesystem::path create(std::string_view prefix);
 };
 
 }    // namespace tmp
