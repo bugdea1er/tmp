@@ -8,7 +8,7 @@
 namespace tmp {
 
 /// tmp::directory is a smart handle that owns and manages a temporary directory
-/// and disposes of it when this handle goes out of scope
+/// and deletes it recursively when this handle goes out of scope
 ///
 /// When a tmp::directory object is created, it creates a unique temporary
 /// directory using the system's default location for temporary files; the path
@@ -28,7 +28,7 @@ namespace tmp {
 ///   #include <tmp/directory.hpp>
 ///
 ///   auto func() {
-///     auto tmpdir = tmp::directory("org.example.product);
+///     auto tmpdir = tmp::directory("org.example.product");
 ///
 ///     // the temporary directory is deleted recursively when the
 ///     // tmp::directory object goes out of scope and is destroyed

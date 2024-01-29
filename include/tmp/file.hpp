@@ -8,7 +8,7 @@
 namespace tmp {
 
 /// tmp::file is a smart handle that owns and manages a temporary file and
-/// disposes of it when this handle goes out of scope
+/// deletes it when this handle goes out of scope
 ///
 /// When a tmp::file object is created, it creates a unique temporary file using
 /// the system's default location for temporary files; the path consists of the

@@ -6,9 +6,9 @@
 namespace tmp {
 
 /// tmp::path is a smart handle that owns and manages a temporary path and
-/// disposes of it when this handle goes out of scope
+/// deletes it recursively when this handle goes out of scope
 ///
-/// The managed path is disposed of when either of the following happens:
+/// The managed path is deleted of when either of the following happens:
 /// - the managing tmp::path object is destroyed
 /// - the managing tmp::path object is assigned another path via operator=
 ///
