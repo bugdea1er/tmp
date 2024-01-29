@@ -13,8 +13,8 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 add_executable(tmp.test file_test.cpp directory_test.cpp)
+target_link_libraries(tmp.test tmp::tmp GTest::gtest_main)
 target_compile_definitions(tmp.test PRIVATE PREFIX="org.github.bugdea1er.tmp")
-target_link_libraries(tmp.test tmp::directory GTest::gtest_main)
 
 include(GoogleTest)
 gtest_discover_tests(tmp.test)
