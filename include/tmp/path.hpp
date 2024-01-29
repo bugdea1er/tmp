@@ -5,22 +5,28 @@
 
 namespace tmp {
 
-/// The tmp::path class is a smart handle that owns and manages a temporary path
-/// and disposes of it when this handle goes out of scope.
+/// tmp::path is a smart handle that owns and manages a temporary path and
+/// disposes of it when this handle goes out of scope
 ///
-/// Subclass this and provide mktemp-like function to the constructor to create
-/// temporary files and directories.
+/// The managed path is disposed of when either of the following happens:
+/// - the managing tmp::path object is destroyed
+/// - the managing tmp::path object is assigned another path via operator=
+///
+/// Subclass are encouraged to use tmp::path::make_pattern function to obtain
+/// a temporary path pattern suitable for use in mktemp-like functions
 class path {
-    std::filesystem::path underlying;    ///< This path
+    /// The managed path
+    std::filesystem::path underlying;
 
 public:
-    /// Returns the underlying path
+    /// Returns the managed path
     operator const std::filesystem::path&() const noexcept;
 
-    /// Provides access to the underlying path members
+    /// Dereferences the managed path
+    /// @returns A pointer to the path owned by *this
     const std::filesystem::path* operator->() const noexcept;
 
-    /// Deletes this path recursively when the enclosing scope is exited
+    /// Deletes the managed path recursively if it is not empty
     virtual ~path() noexcept;
 
     path(path&&) noexcept;                   ///< move-constructible
@@ -28,14 +34,21 @@ public:
     path(const path&) = delete;              ///< not copy-constructible
     auto operator=(const path&) = delete;    ///< not copy-assignable
 
-    /// Creates a pattern for the mktemp-like functions.
-    /// If @p prefix is not empty, it is appended to the tempdir
-    static std::string make_pattern(std::string_view prefix);
+    /// Creates a path pattern with the given prefix
+    ///
+    /// The pattern consists of the system's temporary directory path, the given
+    /// prefix, and six 'X' characters that must be replaced by random
+    /// characters to ensure uniqueness
+    ///
+    /// The parent of the resulting path is created when this function is called
+    /// @param prefix   A prefix to be used in the path pattern
+    /// @returns A path pattern for the unique temporary path
+    /// @throws std::filesystem::filesystem_error if failed to create the parent
+    static std::filesystem::path make_pattern(std::string_view prefix);
 
 protected:
-    /// Creates a unique temporary path using the given constructor function.
-    /// @param prefix the path between system temp
-    /// @param creator wrapped mktemp-like function that returns resulting path
+    /// Constructs a tmp::path which owns @p path
+    /// @param path A path to manage
     explicit path(std::filesystem::path path);
 };
 

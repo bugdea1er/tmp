@@ -47,7 +47,7 @@ const fs::path* path::operator->() const noexcept {
     return std::addressof(underlying);
 }
 
-std::string path::make_pattern(std::string_view prefix) {
+fs::path path::make_pattern(std::string_view prefix) {
     fs::path parent = fs::temp_directory_path() / prefix;
     fs::create_directories(parent);
 
