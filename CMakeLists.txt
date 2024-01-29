@@ -7,7 +7,6 @@ add_library(${PROJECT_NAME} STATIC
         lib/path.cpp)
 
 add_library(tmp::tmp ALIAS ${PROJECT_NAME})
-add_library(tmp::directory ALIAS ${PROJECT_NAME})  # previous name, will be removed
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 
