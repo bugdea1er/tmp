@@ -1,0 +1,56 @@
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# CMake generated files
+.cmake
+_deps
+CMakeFiles
+CMakeScripts
+CMakeLists.txt.user
+cmake_install.cmake
+CMakeCache.txt
+CTestTestfile.cmake
+Testing
+
+# Unix makefiles
+Makefile
+install_manifest.txt
+compile_commands.json
+
+# Ninja build system
+.ninja_deps
+.ninja_log
+build.ninja
+
+# This test target
+tmp.test*
