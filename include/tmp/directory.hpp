@@ -39,16 +39,21 @@ namespace tmp {
 /// deleted along with all of its contents.
 class directory final : public path {
 public:
-    /// Creates a unique temporary directory using the system's default location
-    /// for temporary files. If a prefix is provided to the constructor, the
-    /// directory is created in the path <temp dir>/prefix/. The prefix can be
-    /// a path consisting of multiple segments.
+    /// Creates a unique temporary directory
+    ///
+    /// The directory path consists of the system's temporary directory path,
+    /// the given prefix, and six random characters to ensure path uniqueness
+    ///
+    /// @param prefix   A prefix to be used in the temporary directory path
+    /// @throws std::filesystem::filesystem_error if cannot create a directory
     explicit directory(std::string_view prefix = "");
 
     /// Concatenates this directory path with a given @p source
+    /// @param source   A string which represents a path name
+    /// @returns The result of path concatenation
     std::filesystem::path operator/(std::string_view source) const;
 
-    /// Deletes this directory recursively when the enclosing scope is exited
+    /// Deletes the managed directory recursively if its path is not empty
     ~directory() noexcept override;
 
     directory(directory&&) noexcept;               ///< move-constructible
