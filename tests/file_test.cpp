@@ -16,7 +16,7 @@ TEST(FileTest, CreateFile) {
     }
 }
 
-TEST(FileTest, RemoveDirectory) {
+TEST(FileTest, RemoveFile) {
     auto path = fs::path();
     {
         const auto tmpfile = tmp::file(PREFIX);
@@ -35,6 +35,20 @@ TEST(FileTest, CreateMultiple) {
     ASSERT_TRUE(fs::exists(snd));
 
     EXPECT_NE(fs::path(fst), fs::path(snd));
+}
+
+TEST(FileTest, Release) {
+    auto path = fs::path();
+    {
+        auto tmpfile = tmp::file(PREFIX);
+        auto expected = fs::path(tmpfile);
+        path = tmpfile.release();
+        ASSERT_EQ(path, expected);
+        ASSERT_TRUE(fs::exists(path));
+    }
+
+    ASSERT_TRUE(fs::exists(path));
+    fs::remove(path);
 }
 
 TEST(FileTest, MoveConstruction) {

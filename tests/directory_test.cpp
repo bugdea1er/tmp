@@ -43,6 +43,20 @@ TEST(DirectoryTest, SubpathTest) {
     ASSERT_EQ(fs::path(tmpdir), child.parent_path());
 }
 
+TEST(DirectoryTest, Release) {
+    auto path = fs::path();
+    {
+        auto tmpdir = tmp::directory(PREFIX);
+        auto expected = fs::path(tmpdir);
+        path = tmpdir.release();
+        ASSERT_EQ(path, expected);
+        ASSERT_TRUE(fs::exists(path));
+    }
+
+    ASSERT_TRUE(fs::exists(path));
+    fs::remove(path);
+}
+
 TEST(DirectoryTest, MoveConstruction) {
     auto fst = tmp::directory(PREFIX);
     const auto snd = std::move(fst);
