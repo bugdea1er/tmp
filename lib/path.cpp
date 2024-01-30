@@ -24,14 +24,11 @@ path::path(fs::path path)
     : underlying(std::move(path)) {}
 
 path::path(path&& other) noexcept
-    : underlying(std::move(other.underlying)) {
-    other.underlying.clear();
-}
+    : underlying(other.release()) {}
 
 path& path::operator=(path&& other) noexcept {
     remove(*this);
-    underlying = std::move(other.underlying);
-    other.underlying.clear();
+    underlying = other.release();
     return *this;
 }
 
@@ -45,6 +42,12 @@ path::operator const fs::path&() const noexcept {
 
 const fs::path* path::operator->() const noexcept {
     return std::addressof(underlying);
+}
+
+fs::path path::release() noexcept {
+    fs::path path = std::move(underlying);
+    underlying.clear();
+    return path;
 }
 
 fs::path path::make_pattern(std::string_view prefix) {

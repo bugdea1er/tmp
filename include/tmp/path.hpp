@@ -26,6 +26,11 @@ public:
     /// @returns A pointer to the path owned by *this
     const std::filesystem::path* operator->() const noexcept;
 
+    /// Releases the ownership of the managed path;
+    /// the destructor will not delete the managed path after the call
+    /// @returns The managed path
+    std::filesystem::path release() noexcept;
+
     /// Deletes the managed path recursively if it is not empty
     virtual ~path() noexcept;
 
