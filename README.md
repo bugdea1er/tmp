@@ -10,6 +10,8 @@ Currently only works on UNIX-like systems because it uses functions similar to m
 tmp::directory is a smart handle that owns and manages a temporary directory and deletes it recursively when this handle goes out of scope. This can be useful for setting up a directory to later use as a PWD for some process. For example,
 
 ```cpp
+#include <tmp/directory>
+...
 auto tmpdir = tmp::directory("org.example.product");
 fs::copy(file, tmpdir);
 
@@ -26,6 +28,8 @@ auto output = tmpdir / "output_file.txt";
 tmp::file, on the other hand, is a smart handle for a temporary file. It is also deleted if the handle goes out of scope. This can be useful, for example, for accepting a file from a socket and testing it before saving in a long-term storage:
 
 ```cpp
+#include <tmp/file>
+...
 auto tmpfile = tmp::file("org.example.product");
 tmpfile.write(data);
 

@@ -1,4 +1,4 @@
-#include <tmp/directory.hpp>
+#include <tmp/directory>
 
 #include <gtest/gtest.h>
 

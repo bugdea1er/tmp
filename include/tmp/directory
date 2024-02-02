@@ -1,6 +1,6 @@
 #pragma once
 
-#include <tmp/path.hpp>
+#include <tmp/path>
 
 #include <filesystem>
 #include <string_view>
@@ -25,7 +25,7 @@ namespace tmp {
 /// deleted along with all of its contents:
 ///
 /// @code{.cpp}
-///   #include <tmp/directory.hpp>
+///   #include <tmp/directory>
 ///
 ///   auto func() {
 ///     auto tmpdir = tmp::directory("org.example.product");
