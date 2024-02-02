@@ -1,4 +1,4 @@
-#include <tmp/file.hpp>
+#include <tmp/file>
 
 #include <gtest/gtest.h>
 #include <fstream>

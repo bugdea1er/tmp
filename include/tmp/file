@@ -1,6 +1,6 @@
 #pragma once
 
-#include <tmp/path.hpp>
+#include <tmp/path>
 
 #include <filesystem>
 #include <string_view>
@@ -27,7 +27,7 @@ namespace tmp {
 /// goes out of scope and the temporary file:
 ///
 /// @code{.cpp}
-///   #include <tmp/file.hpp>
+///   #include <tmp/file>
 ///
 ///   auto func(std::string_view content) {
 ///     auto tmpfile = tmp::file("org.example.product");

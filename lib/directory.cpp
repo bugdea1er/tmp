@@ -1,4 +1,4 @@
-#include <tmp/directory.hpp>
+#include <tmp/directory>
 
 #include <filesystem>
 #include <string_view>

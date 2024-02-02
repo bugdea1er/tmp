@@ -1,4 +1,4 @@
-#include <tmp/file.hpp>
+#include <tmp/file>
 
 #include <cstdlib>
 #include <filesystem>

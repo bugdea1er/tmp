@@ -1,4 +1,4 @@
-#include <tmp/path.hpp>
+#include <tmp/path>
 
 #include <filesystem>
 #include <system_error>
