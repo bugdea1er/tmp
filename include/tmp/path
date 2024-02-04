@@ -33,6 +33,8 @@ public:
 
     /// Moves the managed path recursively to a given target, releasing
     /// ownership of the managed path
+    ///
+    /// The parent of the target path is created when this function is called
     /// @param to   A path to the target file or directory
     /// @throws std::filesystem::filesystem_error if cannot move the owned path
     void move(const std::filesystem::path& to);
