@@ -34,7 +34,7 @@ auto tmpfile = tmp::file("org.example.product");
 tmpfile.write(data);
 
 if (validate_metadata(tmpfile)) {
-  fs::copy(tmpfile, storage);
+  tmpfile.move(storage / "new_file");
 } else {
   throw InvalidRequestError();
 }

@@ -53,7 +53,7 @@ TEST(FileTest, Release) {
 
 TEST(FileTest, MoveFile) {
     auto path = fs::path();
-    auto to = fs::temp_directory_path() / PREFIX / "moved";
+    auto to = fs::temp_directory_path() / PREFIX / "non-existing" / "parent";
     {
         auto tmpfile = tmp::file(PREFIX);
         path = tmpfile;
@@ -63,7 +63,7 @@ TEST(FileTest, MoveFile) {
 
     ASSERT_FALSE(fs::exists(path));
     ASSERT_TRUE(fs::exists(to));
-    fs::remove_all(to);
+    fs::remove_all(fs::temp_directory_path() / PREFIX / "non-existing");
 }
 
 TEST(FileTest, MoveConstruction) {
