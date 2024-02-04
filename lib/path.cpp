@@ -55,8 +55,9 @@ fs::path path::release() noexcept {
 }
 
 void path::move(const fs::path& to) {
-    std::error_code ec;
     fs::create_directories(to.parent_path());
+
+    std::error_code ec;
     fs::rename(*this, to, ec);
     if (ec == std::errc::cross_device_link) {
         fs::copy(*this, to, copy_options, ec);
