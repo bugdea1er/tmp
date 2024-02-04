@@ -57,6 +57,21 @@ TEST(DirectoryTest, Release) {
     fs::remove(path);
 }
 
+TEST(DirectoryTest, MoveDirectory) {
+    auto path = fs::path();
+    auto to = fs::temp_directory_path() / PREFIX / "moved";
+    {
+        auto tmpdir = tmp::directory(PREFIX);
+        path = tmpdir;
+
+        tmpdir.move(to);
+    }
+
+    ASSERT_FALSE(fs::exists(path));
+    ASSERT_TRUE(fs::exists(to));
+    fs::remove_all(to);
+}
+
 TEST(DirectoryTest, MoveConstruction) {
     auto fst = tmp::directory(PREFIX);
     const auto snd = std::move(fst);
