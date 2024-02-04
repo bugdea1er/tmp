@@ -51,6 +51,21 @@ TEST(FileTest, Release) {
     fs::remove(path);
 }
 
+TEST(FileTest, MoveFile) {
+    auto path = fs::path();
+    auto to = fs::temp_directory_path() / PREFIX / "moved";
+    {
+        auto tmpfile = tmp::file(PREFIX);
+        path = tmpfile;
+
+        tmpfile.move(to);
+    }
+
+    ASSERT_FALSE(fs::exists(path));
+    ASSERT_TRUE(fs::exists(to));
+    fs::remove_all(to);
+}
+
 TEST(FileTest, MoveConstruction) {
     auto fst = tmp::file(PREFIX);
     const auto snd = std::move(fst);

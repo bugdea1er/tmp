@@ -31,6 +31,12 @@ public:
     /// @returns The managed path
     std::filesystem::path release() noexcept;
 
+    /// Moves the managed path recursively to a given target, releasing
+    /// ownership of the managed path
+    /// @param to   A path to the target file or directory
+    /// @throws std::filesystem::filesystem_error if cannot move the owned path
+    void move(const std::filesystem::path& to);
+
     /// Deletes the managed path recursively if it is not empty
     virtual ~path() noexcept;
 
@@ -48,7 +54,7 @@ public:
     /// The parent of the resulting path is created when this function is called
     /// @param prefix   A prefix to be used in the path pattern
     /// @returns A path pattern for the unique temporary path
-    /// @throws std::filesystem::filesystem_error if failed to create the parent
+    /// @throws std::filesystem::filesystem_error if cannot create the parent
     static std::filesystem::path make_pattern(std::string_view prefix);
 
 protected:
