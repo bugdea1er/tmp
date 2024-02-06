@@ -12,6 +12,12 @@ namespace {
 const fs::copy_options copy_options = fs::copy_options::recursive
                                     | fs::copy_options::overwrite_existing;
 
+/// Creates the parent directory of the given path if it does not exist
+/// @param path The path for which the parent directory needs to be created
+void create_parent(const fs::path& path) {
+    fs::create_directories(path.parent_path());
+}
+
 /// Deletes the given path recursively, ignoring any errors
 /// @param path The path of the directory to remove
 void remove(const tmp::path& path) noexcept {
@@ -55,7 +61,7 @@ fs::path path::release() noexcept {
 }
 
 void path::move(const fs::path& to) {
-    fs::create_directories(to.parent_path());
+    create_parent(to);
 
     std::error_code ec;
     fs::rename(*this, to, ec);
@@ -72,9 +78,9 @@ void path::move(const fs::path& to) {
 }
 
 fs::path path::make_pattern(std::string_view prefix) {
-    fs::path parent = fs::temp_directory_path() / prefix;
-    fs::create_directories(parent);
+    fs::path pattern = fs::temp_directory_path() / prefix / "XXXXXX";
+    create_parent(pattern);
 
-    return parent / "XXXXXX";
+    return pattern;
 }
 }    // namespace tmp
