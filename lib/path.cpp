@@ -14,6 +14,7 @@ const fs::copy_options copy_options = fs::copy_options::recursive
 
 /// Creates the parent directory of the given path if it does not exist
 /// @param path The path for which the parent directory needs to be created
+/// @throws fs::filesystem_error if cannot create the parent
 void create_parent(const fs::path& path) {
     fs::create_directories(path.parent_path());
 }
@@ -66,6 +67,12 @@ void path::move(const fs::path& to) {
     std::error_code ec;
     fs::rename(*this, to, ec);
     if (ec == std::errc::cross_device_link) {
+        if (fs::is_regular_file(*this) && fs::is_directory(to)) {
+            ec = std::make_error_code(std::errc::is_a_directory);
+            throw fs::filesystem_error("Cannot move temporary file", to, ec);
+        }
+
+        fs::remove_all(to);
         fs::copy(*this, to, copy_options, ec);
     }
 
