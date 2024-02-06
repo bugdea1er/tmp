@@ -27,6 +27,14 @@ void remove(const tmp::path& path) noexcept {
         fs::remove_all(path, ec);
     }
 }
+
+/// Throws a filesystem error indicating that a temporary resource cannot be
+/// moved to the specified path
+/// @param to   The target path where the resource was intended to be moved
+/// @param ec   The error code associated with the failure to move the resource
+[[noreturn]] void throw_move_error(const fs::path& to, std::error_code ec) {
+    throw fs::filesystem_error("Cannot move temporary resource", to, ec);
+}
 }    // namespace
 
 namespace tmp {
@@ -69,7 +77,7 @@ void path::move(const fs::path& to) {
     if (ec == std::errc::cross_device_link) {
         if (fs::is_regular_file(*this) && fs::is_directory(to)) {
             ec = std::make_error_code(std::errc::is_a_directory);
-            throw fs::filesystem_error("Cannot move temporary file", to, ec);
+            throw_move_error(to, ec);
         }
 
         fs::remove_all(to);
@@ -77,7 +85,7 @@ void path::move(const fs::path& to) {
     }
 
     if (ec) {
-        throw fs::filesystem_error("Cannot move temporary resource", to, ec);
+        throw_move_error(to, ec);
     }
 
     remove(*this);
