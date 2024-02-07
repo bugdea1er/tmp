@@ -14,6 +14,7 @@ const fs::copy_options copy_options = fs::copy_options::recursive
 
 /// Creates the parent directory of the given path if it does not exist
 /// @param path The path for which the parent directory needs to be created
+/// @throws fs::filesystem_error if cannot create the parent
 void create_parent(const fs::path& path) {
     fs::create_directories(path.parent_path());
 }
@@ -25,6 +26,15 @@ void remove(const tmp::path& path) noexcept {
         std::error_code ec;
         fs::remove_all(path, ec);
     }
+}
+
+/// Throws a filesystem error indicating that a temporary resource cannot be
+/// moved to the specified path
+/// @param to   The target path where the resource was intended to be moved
+/// @param ec   The error code associated with the failure to move the resource
+/// @throws fs::filesystem_error when called
+[[noreturn]] void throw_move_error(const fs::path& to, std::error_code ec) {
+    throw fs::filesystem_error("Cannot move temporary resource", to, ec);
 }
 }    // namespace
 
@@ -66,11 +76,17 @@ void path::move(const fs::path& to) {
     std::error_code ec;
     fs::rename(*this, to, ec);
     if (ec == std::errc::cross_device_link) {
+        if (fs::is_regular_file(*this) && fs::is_directory(to)) {
+            ec = std::make_error_code(std::errc::is_a_directory);
+            throw_move_error(to, ec);
+        }
+
+        fs::remove_all(to);
         fs::copy(*this, to, copy_options, ec);
     }
 
     if (ec) {
-        throw fs::filesystem_error("Cannot move temporary resource", to, ec);
+        throw_move_error(to, ec);
     }
 
     remove(*this);
