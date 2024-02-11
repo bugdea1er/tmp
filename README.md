@@ -2,7 +2,7 @@
 
 RAII-wrappers for unique temporary files and directories that are deleted automatically for C++17 and later.
 
-Currently only works on UNIX-like systems because it uses functions similar to mktemp. Tested on linux and macOS systems.
+Currently only works on UNIX-like systems because it uses functions similar to mktemp. Tested on linux, macOS and FreeBSD.
 
 ## Examples
 
