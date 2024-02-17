@@ -7,18 +7,18 @@ Find the C++17 standard library's filesystem utilities
 IMPORTED Targets
 ^^^^^^^^^^^^^^^^
 
-This module defines the following :prop_tgt:`IMPORTED` targets:
+This module defines the following :prop_tgt:`IMPORTED` targets::
 
-``std::filesystem``
-  The filesystem library, if found.
+ std::filesystem   - The filesystem library, if found.
 
 Result Variables
 ^^^^^^^^^^^^^^^^
 
-This module will set the following variables in your project:
+This module will set the following variables in your project::
 
-``Filesystem_FOUND``
-  True if filesystem utilities are found.
+ Filesystem_FOUND       - True if filesystem utilities are found.
+ Filesystem_LIBRARIES   - The filesystem utilities libraries.
+
 #]=======================================================================]
 
 if(Filesystem_FOUND AND TARGET std::filesystem)
@@ -28,12 +28,13 @@ endif()
 include(CMakePushCheckState)
 include(CheckIncludeFileCXX)
 include(CheckCXXSourceCompiles)
+include(FindPackageHandleStandardArgs)
 
 cmake_push_check_state()
 
 set(CMAKE_REQUIRED_QUIET TRUE)
 set(CMAKE_REQUIRED_FLAGS -std=c++17)
-set(STD_FILESYSTEM_CODE "
+set(Filesystem_TEST_SOURCE "
     #include <filesystem>
     #include <iostream>
     int main() {
@@ -42,35 +43,38 @@ set(STD_FILESYSTEM_CODE "
     }
 ")
 
-check_cxx_source_compiles("${STD_FILESYSTEM_CODE}" STD_FILESYSTEM_NO_LINK)
+check_cxx_source_compiles("${Filesystem_TEST_SOURCE}" STD_FILESYSTEM_NO_LINK)
 if(STD_FILESYSTEM_NO_LINK)
     set(STD_FILESYSTEM_FOUND TRUE)
 else()
     set(CMAKE_REQUIRED_LIBRARIES -lstdc++fs)
-    check_cxx_source_compiles("${STD_FILESYSTEM_CODE}" STD_FILESYSTEM_STDCXXFS)
+    check_cxx_source_compiles("${Filesystem_TEST_SOURCE}" STD_FILESYSTEM_STDCXXFS)
     if(STD_FILESYSTEM_STDCXXFS)
-        set(STD_FILESYSTEM_LIBRARY -lstdc++fs)
         set(STD_FILESYSTEM_FOUND TRUE)
+        set(STD_FILESYSTEM_LIBRARY stdc++fs)
     else()
         set(CMAKE_REQUIRED_LIBRARIES -lc++fs)
-        check_cxx_source_compiles("${STD_FILESYSTEM_CODE}" STD_FILESYSTEM_CXXFS)
+        check_cxx_source_compiles("${Filesystem_TEST_SOURCE}" STD_FILESYSTEM_CXXFS)
         if(STD_FILESYSTEM_STDCXXFS)
-            set(STD_FILESYSTEM_LIBRARY -lc++fs)
             set(STD_FILESYSTEM_FOUND TRUE)
+            set(STD_FILESYSTEM_LIBRARY c++fs)
         endif()
     endif()
 endif()
 
-if(STD_FILESYSTEM_FOUND)
-    set(Filesystem_FOUND TRUE CACHE BOOL "True if filesystem utilities are found")
-    add_library(std::filesystem INTERFACE IMPORTED)
-    if(STD_FILESYSTEM_LIBRARY)
-        target_link_libraries(std::filesystem INTERFACE ${STD_FILESYSTEM_LIBRARY})
-    endif()
+cmake_pop_check_state()
+
+set(Filesystem_FOUND ${STD_FILESYSTEM_FOUND} CACHE BOOL "True if filesystem utilities are found")
+set(Filesystem_LIBRARIES ${STD_FILESYSTEM_LIBRARY} CACHE STRING "The filesystem utilities libraries")
+mark_as_advanced(STD_FILESYSTEM_FOUND STD_FILESYSTEM_LIBRARY)
+
+if(Filesystem_LIBRARIES)
+    find_package_handle_standard_args(Filesystem DEFAULT_MSG Filesystem_LIBRARIES)
 else()
-    if(Filesystem_FIND_REQUIRED)
-        message(FATAL_ERROR "Cannot find filesystem utilities")
-    endif()
+    find_package_handle_standard_args(Filesystem DEFAULT_MSG Filesystem_FOUND)
 endif()
 
-cmake_pop_check_state()
+if(Filesystem_FOUND AND NOT TARGET std::filesystem)
+    add_library(std::filesystem INTERFACE IMPORTED)
+    target_link_libraries(std::filesystem INTERFACE ${Filesystem_LIBRARIES})
+endif()
