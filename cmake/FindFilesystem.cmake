@@ -32,7 +32,7 @@ include(CheckCXXSourceCompiles)
 cmake_push_check_state()
 
 set(CMAKE_REQUIRED_QUIET TRUE)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_REQUIRED_FLAGS -std=c++17)
 set(STD_FILESYSTEM_CODE "
     #include <filesystem>
     #include <iostream>
