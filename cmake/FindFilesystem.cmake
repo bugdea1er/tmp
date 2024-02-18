@@ -26,7 +26,6 @@ if(Filesystem_FOUND AND TARGET std::filesystem)
 endif()
 
 include(CMakePushCheckState)
-include(CheckIncludeFileCXX)
 include(CheckCXXSourceCompiles)
 include(FindPackageHandleStandardArgs)
 
