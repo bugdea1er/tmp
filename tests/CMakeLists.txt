@@ -1,4 +1,4 @@
-project(tmp.test)
+project(${PROJECT_NAME}.test)
 
 # Avoid warning about DOWNLOAD_EXTRACT_TIMESTAMP in CMake >=3.24:
 if(POLICY CMP0135)
