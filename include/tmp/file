@@ -3,6 +3,7 @@
 #include <tmp/path>
 
 #include <filesystem>
+#include <fstream>
 #include <string_view>
 
 namespace tmp {
@@ -56,6 +57,10 @@ public:
     /// @param prefix   A prefix to be used in the temporary file path
     /// @throws std::filesystem::filesystem_error if cannot create a file
     static file text(std::string_view prefix = "");
+
+    /// Reads the contents of this file
+    /// @returns A file stream with this file contents
+    std::ifstream read() const;
 
     /// Writes the given content to this file discarding any previous content
     /// @param content  A string to write to this file

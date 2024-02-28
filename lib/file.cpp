@@ -53,6 +53,13 @@ file file::text(std::string_view prefix) {
     return file(prefix, /*binary=*/false);
 }
 
+std::ifstream file::read() const {
+    const fs::path& file = *this;
+    return binary
+        ? std::ifstream(file, std::ios::binary)
+        : std::ifstream(file);
+}
+
 void file::write(std::string_view content) const {
     stream(*this, binary, /*append=*/false) << content;
 }
