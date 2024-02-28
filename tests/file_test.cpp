@@ -90,6 +90,17 @@ TEST(FileTest, MoveAssignment) {
     ASSERT_EQ(fs::path(fst), path2);
 }
 
+TEST(FileTest, Read) {
+    const auto tmpfile = tmp::file(PREFIX);
+    tmpfile.write("Hello");
+    tmpfile.append(", world!");
+
+    auto stream = tmpfile.read();
+
+    auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+    ASSERT_EQ(content, "Hello, world!");
+}
+
 TEST(FileTest, Write) {
     const auto tmpfile = tmp::file(PREFIX);
     tmpfile.write("Hello");
