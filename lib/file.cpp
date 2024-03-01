@@ -61,7 +61,7 @@ std::ifstream file::read() const {
 }
 
 std::string file::slurp() const {
-    auto stream = read();
+    std::ifstream stream = read();
     return std::string(std::istreambuf_iterator<char>(stream), {});
 }
 
