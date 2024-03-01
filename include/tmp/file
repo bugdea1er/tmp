@@ -62,7 +62,7 @@ public:
     /// @returns A file stream with this file contents
     std::ifstream read() const;
 
-    /// Reads this file contents into a string
+    /// Reads the entire contents of this file
     /// @returns A string with this file contents
     std::string slurp() const;
 
