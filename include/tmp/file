@@ -58,9 +58,13 @@ public:
     /// @throws std::filesystem::filesystem_error if cannot create a file
     static file text(std::string_view prefix = "");
 
-    /// Reads the contents of this file
+    /// Streams the contents of this file
     /// @returns A file stream with this file contents
     std::ifstream read() const;
+
+    /// Reads this file contents into a string
+    /// @returns A string with this file contents
+    std::string slurp() const;
 
     /// Writes the given content to this file discarding any previous content
     /// @param content  A string to write to this file

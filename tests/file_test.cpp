@@ -101,6 +101,15 @@ TEST(FileTest, Read) {
     ASSERT_EQ(content, "Hello, world!");
 }
 
+TEST(FileTest, Slurp) {
+    const auto tmpfile = tmp::file(PREFIX);
+    tmpfile.write("Hello");
+    tmpfile.append(", world!");
+
+    auto content = tmpfile.slurp();
+    ASSERT_EQ(content, "Hello, world!");
+}
+
 TEST(FileTest, Write) {
     const auto tmpfile = tmp::file(PREFIX);
     tmpfile.write("Hello");

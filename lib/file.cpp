@@ -60,6 +60,11 @@ std::ifstream file::read() const {
         : std::ifstream(file);
 }
 
+std::string file::slurp() const {
+    auto stream = read();
+    return std::string(std::istreambuf_iterator<char>(stream), {});
+}
+
 void file::write(std::string_view content) const {
     stream(*this, binary, /*append=*/false) << content;
 }
