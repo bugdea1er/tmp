@@ -53,6 +53,13 @@ file file::text(std::string_view prefix) {
     return file(prefix, /*binary=*/false);
 }
 
+file file::copy(const fs::path& path, std::string_view prefix) {
+    file tmpfile = file(prefix);
+    fs::copy(path, tmpfile, fs::copy_options::recursive
+                            | fs::copy_options::overwrite_existing);
+    return tmpfile;
+}
+
 std::ifstream file::read() const {
     const fs::path& file = *this;
     return binary

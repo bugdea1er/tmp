@@ -45,6 +45,8 @@ public:
     /// @throws std::filesystem::filesystem_error if cannot create a directory
     explicit directory(std::string_view prefix = "");
 
+    static directory copy(const std::filesystem::path& path, std::string_view prefix = "");
+
     /// Concatenates this directory path with a given @p source
     /// @param source   A string which represents a path name
     /// @returns The result of path concatenation

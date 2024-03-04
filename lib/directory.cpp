@@ -30,6 +30,18 @@ namespace tmp {
 directory::directory(std::string_view prefix)
     : path(create(prefix)) {}
 
+directory directory::copy(const fs::path& path, std::string_view prefix) {
+    if (fs::is_regular_file(path)) {
+        std::error_code ec = std::make_error_code(std::errc::is_a_directory);
+        throw fs::filesystem_error("Cannot copy temporary directory", ec);
+    }
+
+    directory tmpdir = directory(prefix);
+    fs::copy(path, tmpdir, fs::copy_options::recursive
+                           | fs::copy_options::overwrite_existing);
+    return tmpdir;
+}
+
 fs::path directory::operator/(std::string_view source) const {
     return static_cast<const fs::path&>(*this) / source;
 }

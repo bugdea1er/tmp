@@ -58,6 +58,8 @@ public:
     /// @throws std::filesystem::filesystem_error if cannot create a file
     static file text(std::string_view prefix = "");
 
+    static file copy(const std::filesystem::path& path, std::string_view prefix = "");
+
     /// Streams the contents of this file
     /// @returns A file stream with this file contents
     std::ifstream read() const;

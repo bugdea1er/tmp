@@ -1,6 +1,7 @@
 #include <tmp/directory>
 
 #include <gtest/gtest.h>
+#include <tmp/file>
 
 namespace fs = std::filesystem;
 
@@ -94,4 +95,26 @@ TEST(DirectoryTest, MoveAssignment) {
 
     ASSERT_TRUE(fs::exists(fst));
     ASSERT_EQ(fs::path(fst), path2);
+}
+
+TEST(DirectoryTest, Copy) {
+    {
+        const auto tmpdir = tmp::directory(PREFIX);
+
+        auto file = std::ofstream(tmpdir / "file");
+        file << "Hello, world!";
+        file.close();
+
+        const auto tmpcopy = tmp::directory::copy(tmpdir, PREFIX);
+
+        auto stream = std::ifstream(tmpcopy / "file");
+        auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+        ASSERT_EQ(content, "Hello, world!");
+
+        EXPECT_NE(fs::path(tmpdir), fs::path(tmpcopy));
+    }
+    {
+        const auto tmpfile = tmp::file(PREFIX);
+        ASSERT_THROW(tmp::directory::copy(tmpfile, PREFIX), fs::filesystem_error);
+    }
 }
