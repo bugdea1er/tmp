@@ -106,11 +106,11 @@ std::ofstream stream(const tmp::file& file, bool binary, bool append) noexcept {
 }    // namespace
 
 
+namespace tmp {
+
 //===----------------------------------------------------------------------===//
 // tmp::path implementation
 //===----------------------------------------------------------------------===//
-
-namespace tmp {
 
 path::path(fs::path path)
     : underlying(std::move(path)) {}
