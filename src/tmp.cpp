@@ -14,19 +14,19 @@ namespace fs = std::filesystem;
 
 namespace {
 
-/// Options for recursive overwriting coping
+/// Options for recursive overwriting copying
 const fs::copy_options copy_options = fs::copy_options::recursive
                                       | fs::copy_options::overwrite_existing;
 
 /// Creates the parent directory of the given path if it does not exist
 /// @param path The path for which the parent directory needs to be created
-/// @throws fs::filesystem_error if cannot create the parent
+/// @throws fs::filesystem_error if cannot create the parent of the given path
 void create_parent(const fs::path& path) {
     fs::create_directories(path.parent_path());
 }
 
 /// Deletes the given path recursively, ignoring any errors
-/// @param path The path of the directory to remove
+/// @param path The path to remove recursively
 void remove(const tmp::path& path) noexcept {
     if (!path->empty()) {
         std::error_code ec;
@@ -43,7 +43,7 @@ void remove(const tmp::path& path) noexcept {
     throw fs::filesystem_error("Cannot move temporary resource", to, ec);
 }
 
-/// Creates a path pattern with the given prefix
+/// Creates a temporary path pattern with the given prefix
 ///
 /// The pattern consists of the system's temporary directory path, the given
 /// prefix, and six 'X' characters that must be replaced by random
@@ -52,7 +52,7 @@ void remove(const tmp::path& path) noexcept {
 /// The parent of the resulting path is created when this function is called
 /// @param prefix   A prefix to be used in the path pattern
 /// @returns A path pattern for the unique temporary path
-/// @throws fs::filesystem_error if cannot create the parent
+/// @throws fs::filesystem_error if cannot create the parent of the path pattern
 fs::path make_pattern(std::string_view prefix) {
     fs::path pattern = fs::temp_directory_path() / prefix / "XXXXXX";
     create_parent(pattern);
@@ -64,7 +64,7 @@ fs::path make_pattern(std::string_view prefix) {
 /// temporary directory, and returns its path
 /// @param prefix   The prefix to use for the temporary file name
 /// @returns A path to the created temporary file
-/// @throws fs::filesystem_error if the temporary file cannot be created
+/// @throws fs::filesystem_error if cannot create the temporary file
 fs::path create_file(std::string_view prefix) {
     std::string pattern = make_pattern(prefix);
     if (mkstemp(pattern.data()) == -1) {
@@ -77,9 +77,9 @@ fs::path create_file(std::string_view prefix) {
 
 /// Creates a temporary directory with the given prefix in the system's
 /// temporary directory, and returns its path
-/// @param prefix   The prefix to use for the temporary file name
-/// @returns A path to the created temporary file
-/// @throws fs::filesystem_error if the temporary directory cannot be created
+/// @param prefix   The prefix to use for the temporary directory name
+/// @returns A path to the created temporary directory
+/// @throws fs::filesystem_error if cannot create the temporary directory
 fs::path create_directory(std::string_view prefix) {
     std::string pattern = make_pattern(prefix);
     if (mkdtemp(pattern.data()) == nullptr) {
@@ -161,7 +161,6 @@ void path::move(const fs::path& to) {
 }
 }    // namespace tmp
 
-
 namespace tmp {
 
 file::file(std::string_view prefix)
@@ -200,7 +199,6 @@ file::~file() noexcept = default;
 file::file(file&&) noexcept = default;
 file& file::operator=(file&&) noexcept = default;
 }    // namespace tmp
-
 
 namespace tmp {
 
