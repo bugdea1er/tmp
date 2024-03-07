@@ -52,5 +52,4 @@ protected:
     /// @param path A path to manage
     explicit path(std::filesystem::path path);
 };
-
 }    // namespace tmp

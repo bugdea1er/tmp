@@ -4,6 +4,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <string>
 #include <string_view>
 
 namespace tmp {
@@ -96,5 +97,4 @@ private:
     /// @throws std::filesystem::filesystem_error if cannot create a file
     explicit file(std::string_view prefix, bool binary);
 };
-
 }    // namespace tmp
