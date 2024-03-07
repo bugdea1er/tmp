@@ -47,18 +47,6 @@ public:
     path(const path&) = delete;              ///< not copy-constructible
     auto operator=(const path&) = delete;    ///< not copy-assignable
 
-    /// Creates a path pattern with the given prefix
-    ///
-    /// The pattern consists of the system's temporary directory path, the given
-    /// prefix, and six 'X' characters that must be replaced by random
-    /// characters to ensure uniqueness
-    ///
-    /// The parent of the resulting path is created when this function is called
-    /// @param prefix   A prefix to be used in the path pattern
-    /// @returns A path pattern for the unique temporary path
-    /// @throws std::filesystem::filesystem_error if cannot create the parent
-    static std::filesystem::path make_pattern(std::string_view prefix);
-
 protected:
     /// Constructs a tmp::path which owns @p path
     /// @param path A path to manage

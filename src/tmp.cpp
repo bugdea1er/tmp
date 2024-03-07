@@ -43,13 +43,30 @@ void remove(const tmp::path& path) noexcept {
     throw fs::filesystem_error("Cannot move temporary resource", to, ec);
 }
 
+/// Creates a path pattern with the given prefix
+///
+/// The pattern consists of the system's temporary directory path, the given
+/// prefix, and six 'X' characters that must be replaced by random
+/// characters to ensure uniqueness
+///
+/// The parent of the resulting path is created when this function is called
+/// @param prefix   A prefix to be used in the path pattern
+/// @returns A path pattern for the unique temporary path
+/// @throws fs::filesystem_error if cannot create the parent
+fs::path make_pattern(std::string_view prefix) {
+    fs::path pattern = fs::temp_directory_path() / prefix / "XXXXXX";
+    create_parent(pattern);
+
+    return pattern;
+}
+
 /// Creates a temporary file with the given prefix in the system's
 /// temporary directory, and returns its path
 /// @param prefix   The prefix to use for the temporary file name
 /// @returns A path to the created temporary file
 /// @throws fs::filesystem_error if the temporary file cannot be created
 fs::path create_file(std::string_view prefix) {
-    std::string pattern = tmp::path::make_pattern(prefix);
+    std::string pattern = make_pattern(prefix);
     if (mkstemp(pattern.data()) == -1) {
         std::error_code ec = std::error_code(errno, std::system_category());
         throw fs::filesystem_error("Cannot create temporary file", ec);
@@ -64,7 +81,7 @@ fs::path create_file(std::string_view prefix) {
 /// @returns A path to the created temporary file
 /// @throws fs::filesystem_error if the temporary directory cannot be created
 fs::path create_directory(std::string_view prefix) {
-    std::string pattern = tmp::path::make_pattern(prefix);
+    std::string pattern = make_pattern(prefix);
     if (mkdtemp(pattern.data()) == nullptr) {
         std::error_code ec = std::error_code(errno, std::system_category());
         throw fs::filesystem_error("Cannot create temporary directory", ec);
@@ -141,13 +158,6 @@ void path::move(const fs::path& to) {
 
     remove(*this);
     release();
-}
-
-fs::path path::make_pattern(std::string_view prefix) {
-    fs::path pattern = fs::temp_directory_path() / prefix / "XXXXXX";
-    create_parent(pattern);
-
-    return pattern;
 }
 }    // namespace tmp
 
