@@ -4,10 +4,7 @@ project(tmp LANGUAGES CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 find_package(Filesystem REQUIRED)
 
-add_library(${PROJECT_NAME} STATIC
-        lib/directory.cpp
-        lib/file.cpp
-        lib/path.cpp)
+add_library(${PROJECT_NAME} STATIC src/tmp.cpp)
 
 add_library(tmp::tmp ALIAS ${PROJECT_NAME})
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
