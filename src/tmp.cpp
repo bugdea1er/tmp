@@ -105,6 +105,11 @@ std::ofstream stream(const tmp::file& file, bool binary, bool append) noexcept {
 }
 }    // namespace
 
+
+//===----------------------------------------------------------------------===//
+// tmp::path implementation
+//===----------------------------------------------------------------------===//
+
 namespace tmp {
 
 path::path(fs::path path)
@@ -159,9 +164,11 @@ void path::move(const fs::path& to) {
     remove(*this);
     release();
 }
-}    // namespace tmp
 
-namespace tmp {
+
+//===----------------------------------------------------------------------===//
+// tmp::file implementation
+//===----------------------------------------------------------------------===//
 
 file::file(std::string_view prefix)
     : file(prefix, /*binary=*/true) {}
@@ -198,9 +205,11 @@ file::~file() noexcept = default;
 
 file::file(file&&) noexcept = default;
 file& file::operator=(file&&) noexcept = default;
-}    // namespace tmp
 
-namespace tmp {
+
+//===----------------------------------------------------------------------===//
+// tmp::directory implementation
+//===----------------------------------------------------------------------===//
 
 directory::directory(std::string_view prefix)
     : path(create_directory(prefix)) {}
