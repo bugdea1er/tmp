@@ -58,5 +58,4 @@ public:
     directory(const directory&) = delete;          ///< not copy-constructible
     auto operator=(const directory&) = delete;     ///< not copy-assignable
 };
-
 }    // namespace tmp
