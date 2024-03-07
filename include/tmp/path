@@ -11,9 +11,6 @@ namespace tmp {
 /// The managed path is deleted of when either of the following happens:
 /// - the managing tmp::path object is destroyed
 /// - the managing tmp::path object is assigned another path via operator=
-///
-/// Subclass are encouraged to use tmp::path::make_pattern function to obtain
-/// a temporary path pattern suitable for use in mktemp-like functions
 class path {
     /// The managed path
     std::filesystem::path underlying;
