@@ -5,6 +5,9 @@
 
 namespace tmp {
 
+/// The filesystem library to use
+namespace fs = std::filesystem;
+
 /// tmp::path is a smart handle that owns and manages a temporary path and
 /// deletes it recursively when this handle goes out of scope
 ///
@@ -13,28 +16,28 @@ namespace tmp {
 /// - the managing tmp::path object is assigned another path via operator=
 class path {
     /// The managed path
-    std::filesystem::path underlying;
+    fs::path underlying;
 
 public:
     /// Returns the managed path
-    operator const std::filesystem::path&() const noexcept;
+    operator const fs::path&() const noexcept;
 
     /// Dereferences the managed path
     /// @returns A pointer to the path owned by *this
-    const std::filesystem::path* operator->() const noexcept;
+    const fs::path* operator->() const noexcept;
 
     /// Releases the ownership of the managed path;
     /// the destructor will not delete the managed path after the call
     /// @returns The managed path
-    std::filesystem::path release() noexcept;
+    fs::path release() noexcept;
 
     /// Moves the managed path recursively to a given target, releasing
     /// ownership of the managed path
     ///
     /// The parent of the target path is created when this function is called
     /// @param to   A path to the target file or directory
-    /// @throws std::filesystem::filesystem_error if cannot move the owned path
-    void move(const std::filesystem::path& to);
+    /// @throws fs::filesystem_error if cannot move the owned path
+    void move(const fs::path& to);
 
     /// Deletes the managed path recursively if it is not empty
     virtual ~path() noexcept;
@@ -47,6 +50,6 @@ public:
 protected:
     /// Constructs a tmp::path which owns @p path
     /// @param path A path to manage
-    explicit path(std::filesystem::path path);
+    explicit path(fs::path path);
 };
 }    // namespace tmp

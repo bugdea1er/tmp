@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 #include <tmp/file>
 
-namespace fs = std::filesystem;
+namespace fs = tmp::fs;
 
 TEST(DirectoryTest, CreateDirectory) {
     {
