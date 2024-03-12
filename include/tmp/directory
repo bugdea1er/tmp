@@ -45,6 +45,14 @@ public:
     /// @throws std::filesystem::filesystem_error if cannot create a directory
     explicit directory(std::string_view prefix = "");
 
+    /// Creates a unique temporary copy recursively from the given path
+    ///
+    /// @param path   A path to make a temporary copy from
+    /// @param prefix A prefix to be used in the temporary directory path
+    /// @return The new temporary directory
+    /// @throws std::filesystem::filesystem_error if the given path is not a directory
+    static directory copy(const std::filesystem::path& path, std::string_view prefix = "");
+
     /// Concatenates this directory path with a given @p source
     /// @param source   A string which represents a path name
     /// @returns The result of path concatenation

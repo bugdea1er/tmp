@@ -1,6 +1,7 @@
 #include <tmp/file>
 
 #include <gtest/gtest.h>
+#include <tmp/directory>
 #include <fstream>
 
 namespace fs = std::filesystem;
@@ -128,4 +129,19 @@ TEST(FileTest, Append) {
     auto stream = std::ifstream(fs::path(tmpfile));
     auto content = std::string(std::istreambuf_iterator<char>(stream), {});
     ASSERT_EQ(content, "Hello, world!");
+}
+
+TEST(FileTest, Copy) {
+    {
+        const auto tmpfile = tmp::file(PREFIX);
+        tmpfile.write("Hello, world!");
+
+        const auto tmpcopy = tmp::file::copy(tmpfile, PREFIX);
+        ASSERT_EQ(tmpcopy.slurp(), "Hello, world!");
+        EXPECT_NE(fs::path(tmpfile), fs::path(tmpcopy));
+    }
+    {
+        const auto tmpdir = tmp::directory(PREFIX);
+        ASSERT_THROW(tmp::file::copy(tmpdir, PREFIX), fs::filesystem_error);
+    }
 }

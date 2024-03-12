@@ -181,6 +181,12 @@ file file::text(std::string_view prefix) {
     return file(prefix, /*binary=*/false);
 }
 
+file file::copy(const fs::path& path, std::string_view prefix) {
+    file tmpfile = file(prefix);
+    fs::copy(path, tmpfile, copy_options);
+    return tmpfile;
+}
+
 std::ifstream file::read() const {
     const fs::path& file = *this;
     return binary
@@ -213,6 +219,17 @@ file& file::operator=(file&&) noexcept = default;
 
 directory::directory(std::string_view prefix)
     : path(create_directory(prefix)) {}
+
+directory directory::copy(const fs::path& path, std::string_view prefix) {
+    if (fs::is_regular_file(path)) {
+        std::error_code ec = std::make_error_code(std::errc::is_a_directory);
+        throw fs::filesystem_error("Cannot copy temporary directory", ec);
+    }
+
+    directory tmpdir = directory(prefix);
+    fs::copy(path, tmpdir, copy_options);
+    return tmpdir;
+}
 
 fs::path directory::operator/(std::string_view source) const {
     return static_cast<const fs::path&>(*this) / source;
