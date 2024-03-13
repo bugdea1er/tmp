@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include <utility>
 
-namespace fs = std::filesystem;
+namespace tmp {
 
 namespace {
 
@@ -27,7 +27,7 @@ void create_parent(const fs::path& path) {
 
 /// Deletes the given path recursively, ignoring any errors
 /// @param path The path to remove recursively
-void remove(const tmp::path& path) noexcept {
+void remove(const path& path) noexcept {
     if (!path->empty()) {
         std::error_code ec;
         fs::remove_all(path, ec);
@@ -95,7 +95,7 @@ fs::path create_directory(std::string_view prefix) {
 /// @param binary   Whether to open the file in binary mode
 /// @param append   Whether to append to the end of the file
 /// @returns An output file stream
-std::ofstream stream(const tmp::file& file, bool binary, bool append) noexcept {
+std::ofstream stream(const file& file, bool binary, bool append) noexcept {
     std::ios::openmode mode = append ? std::ios::app : std::ios::trunc;
     if (binary) {
         mode |= std::ios::binary;
@@ -105,8 +105,6 @@ std::ofstream stream(const tmp::file& file, bool binary, bool append) noexcept {
 }
 }    // namespace
 
-
-namespace tmp {
 
 //===----------------------------------------------------------------------===//
 // tmp::path implementation

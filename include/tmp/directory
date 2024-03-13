@@ -42,7 +42,7 @@ public:
     /// the given prefix, and random characters to ensure path uniqueness
     ///
     /// @param prefix   A prefix to be used in the temporary directory path
-    /// @throws std::filesystem::filesystem_error if cannot create a directory
+    /// @throws fs::filesystem_error if cannot create a directory
     explicit directory(std::string_view prefix = "");
 
     /// Creates a unique temporary copy recursively from the given path
@@ -50,13 +50,13 @@ public:
     /// @param path   A path to make a temporary copy from
     /// @param prefix A prefix to be used in the temporary directory path
     /// @return The new temporary directory
-    /// @throws std::filesystem::filesystem_error if the given path is not a directory
-    static directory copy(const std::filesystem::path& path, std::string_view prefix = "");
+    /// @throws fs::filesystem_error if the given path is not a directory
+    static directory copy(const fs::path& path, std::string_view prefix = "");
 
     /// Concatenates this directory path with a given @p source
     /// @param source   A string which represents a path name
     /// @returns The result of path concatenation
-    std::filesystem::path operator/(std::string_view source) const;
+    fs::path operator/(std::string_view source) const;
 
     /// Deletes the managed directory recursively if its path is not empty
     ~directory() noexcept override;

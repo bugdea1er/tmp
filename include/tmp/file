@@ -47,7 +47,7 @@ public:
     /// given prefix, and random characters to ensure path uniqueness
     ///
     /// @param prefix   A prefix to be used in the temporary file path
-    /// @throws std::filesystem::filesystem_error if cannot create a file
+    /// @throws fs::filesystem_error if cannot create a file
     explicit file(std::string_view prefix = "");
 
     /// Creates a unique temporary text file
@@ -56,7 +56,7 @@ public:
     /// given prefix, and random characters to ensure path uniqueness
     ///
     /// @param prefix   A prefix to be used in the temporary file path
-    /// @throws std::filesystem::filesystem_error if cannot create a file
+    /// @throws fs::filesystem_error if cannot create a file
     static file text(std::string_view prefix = "");
 
     /// Creates a unique temporary copy from the given path
@@ -64,8 +64,8 @@ public:
     /// @param path   A path to make a temporary copy from
     /// @param prefix A prefix to be used in the temporary directory path
     /// @return The new temporary file
-    /// @throws std::filesystem::filesystem_error if the given path is not a regular file
-    static file copy(const std::filesystem::path& path, std::string_view prefix = "");
+    /// @throws fs::filesystem_error if the given path is not a regular file
+    static file copy(const fs::path& path, std::string_view prefix = "");
 
     /// Streams the contents of this file
     /// @returns A file stream with this file contents
@@ -102,7 +102,7 @@ private:
     ///
     /// @param prefix   A prefix to be used in the temporary file path
     /// @param binary   Whether the managed file is opened in binary write mode
-    /// @throws std::filesystem::filesystem_error if cannot create a file
+    /// @throws fs::filesystem_error if cannot create a file
     explicit file(std::string_view prefix, bool binary);
 };
 }    // namespace tmp

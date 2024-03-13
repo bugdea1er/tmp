@@ -4,7 +4,7 @@
 #include <tmp/directory>
 #include <fstream>
 
-namespace fs = std::filesystem;
+namespace fs = tmp::fs;
 
 TEST(FileTest, CreateFile) {
     {
