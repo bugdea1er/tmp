@@ -1,12 +1,11 @@
 #pragma once
 
+#include <tmp/fs>
+
 #include <filesystem>
 #include <string_view>
 
 namespace tmp {
-
-/// The filesystem library to use
-namespace fs = std::filesystem;
 
 /// tmp::path is a smart handle that owns and manages a temporary path and
 /// deletes it recursively when this handle goes out of scope

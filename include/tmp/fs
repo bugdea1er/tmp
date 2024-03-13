@@ -1,0 +1,9 @@
+#pragma once
+
+#include <filesystem>
+
+namespace tmp {
+
+/// The filesystem library to use
+namespace fs = std::filesystem;
+}    // namespace tmp
