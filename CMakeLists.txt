@@ -14,6 +14,12 @@ set_target_properties(
     ${PROJECT_NAME}
     PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 
+set(HEADERS include/tmp/file include/tmp/directory include/tmp/fs include/tmp/path)
+set_source_files_properties(${HEADERS} PROPERTIES HEADER_FILE_ONLY ON)
+source_group("Header Files" FILES ${HEADERS})
+
+target_sources(tmp PRIVATE ${HEADERS})
+
 
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     enable_testing()

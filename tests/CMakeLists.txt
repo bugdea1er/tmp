@@ -14,7 +14,10 @@ set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
 set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-add_executable(${PROJECT_NAME} file_test.cpp directory_test.cpp)
+set(TESTS file_test.cpp directory_test.cpp)
+source_group("Tests" FILES ${TESTS})
+
+add_executable(${PROJECT_NAME} ${TESTS})
 target_link_libraries(${PROJECT_NAME} tmp::tmp GTest::gtest_main)
 target_compile_definitions(${PROJECT_NAME} PRIVATE PREFIX="com.github.bugdea1er.tmp")
 
