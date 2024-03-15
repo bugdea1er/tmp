@@ -4,22 +4,17 @@ project(tmp LANGUAGES CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 find_package(Filesystem REQUIRED)
 
-add_library(${PROJECT_NAME} STATIC src/tmp.cpp)
+file(GLOB HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/include/tmp/*")
+file(GLOB SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 
-add_library(tmp::tmp ALIAS ${PROJECT_NAME})
+add_library(${PROJECT_NAME} STATIC ${HEADERS} ${SOURCES})
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 target_link_libraries(${PROJECT_NAME} PUBLIC std::filesystem)
-set_target_properties(
-    ${PROJECT_NAME}
-    PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 
-set(HEADERS include/tmp/file include/tmp/directory include/tmp/fs include/tmp/path)
-set_source_files_properties(${HEADERS} PROPERTIES HEADER_FILE_ONLY ON)
+add_library(tmp::tmp ALIAS ${PROJECT_NAME})
+
 source_group("Header Files" FILES ${HEADERS})
-
-target_sources(tmp PRIVATE ${HEADERS})
-
 
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     enable_testing()
