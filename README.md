@@ -4,6 +4,9 @@ RAII-wrappers for unique temporary files and directories that are deleted automa
 
 This library provides functionality for efficient management of temporary files and directories in long-running applications, automatically deleting them as soon as your app is done with them to optimize resource management.
 
+![Static Badge](https://img.shields.io/badge/C%2B%2B-17%2B-blue)
+![GitHub Tag](https://img.shields.io/github/v/release/bugdea1er/tmp)
+
 ## Overview
 
 When developing applications with long uptimes, such as server software, the management of temporary files and directories can become crucial. While the system may eventually clean up temporary files, this process may not occur frequently enough to meet the needs of applications with extended operational periods. Relying solely on the system for this task may lead to an accumulation of unnecessary temporary data on the device.
