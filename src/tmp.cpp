@@ -9,11 +9,9 @@
 #include <utility>
 
 #ifdef WIN32
-#include <windows.h>
-#include <iostream>
-
+#  include <windows.h>
 #else
-#include <unistd.h>
+#  include <unistd.h>
 #endif
 
 namespace tmp {
@@ -91,12 +89,12 @@ fs::path create_file(std::string_view prefix) {
 
     return fs::path(pattern / tempfile);
 #else
-    if (mkstemp(pattern.data()) == -1) {
+    if (mkstemp(native.data()) == -1) {
         std::error_code ec = std::error_code(errno, std::system_category());
         throw fs::filesystem_error("Cannot create temporary file", ec);
     }
 
-    return pattern;
+    return native;
 #endif
 }
 
@@ -111,13 +109,12 @@ fs::path create_directory(std::string_view prefix) {
 #ifdef WIN32
     return fs::path();
 #else
-    std::string pattern = make_pattern(prefix);
-    if (mkdtemp(pattern.data()) == nullptr) {
+    if (mkdtemp(native.data()) == nullptr) {
         std::error_code ec = std::error_code(errno, std::system_category());
         throw fs::filesystem_error("Cannot create temporary directory", ec);
     }
 
-    return pattern;
+    return native;
 #endif
 }
 
