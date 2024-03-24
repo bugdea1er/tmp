@@ -9,11 +9,17 @@ namespace fs = tmp::fs;
 TEST(FileTest, CreateFile) {
     {
         const auto tmpfile = tmp::file(PREFIX);
+        const auto parent = tmpfile->parent_path();
+
         ASSERT_TRUE(fs::exists(tmpfile));
+        ASSERT_TRUE(fs::equivalent(parent, fs::temp_directory_path() / PREFIX));
     }
     {
         const auto tmpfile = tmp::file();
+        const auto parent = tmpfile->parent_path();
+
         ASSERT_TRUE(fs::exists(tmpfile));
+        ASSERT_TRUE(fs::equivalent(parent, fs::temp_directory_path()));
     }
 }
 

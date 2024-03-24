@@ -8,11 +8,17 @@ namespace fs = tmp::fs;
 TEST(DirectoryTest, CreateDirectory) {
     {
         const auto tmpdir = tmp::directory(PREFIX);
+        const auto parent = tmpdir->parent_path();
+
         ASSERT_TRUE(fs::exists(tmpdir));
+        ASSERT_TRUE(fs::equivalent(parent, fs::temp_directory_path() / PREFIX));
     }
     {
         const auto tmpdir = tmp::directory();
+        const auto parent = tmpdir->parent_path();
+
         ASSERT_TRUE(fs::exists(tmpdir));
+        ASSERT_TRUE(fs::equivalent(parent, fs::temp_directory_path()));
     }
 }
 
