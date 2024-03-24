@@ -30,9 +30,14 @@ include(CheckCXXSourceCompiles)
 include(FindPackageHandleStandardArgs)
 
 cmake_push_check_state()
-
 set(CMAKE_REQUIRED_QUIET TRUE)
-set(CMAKE_REQUIRED_FLAGS -std=c++17)
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    set(CMAKE_REQUIRED_FLAGS "-std=c++17")
+elseif(MSVC)
+    set(CMAKE_REQUIRED_FLAGS "-std:c++17")
+endif()
+
 set(Filesystem_TEST_SOURCE "
     #include <filesystem>
     #include <iostream>
