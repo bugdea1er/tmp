@@ -104,17 +104,20 @@ fs::path create_file(std::string_view prefix) {
 /// @returns A path to the created temporary directory
 /// @throws fs::filesystem_error if cannot create the temporary directory
 fs::path create_directory(std::string_view prefix) {
-    fs::path pattern = make_pattern(prefix);
-    fs::path::string_type native = pattern.native();
 #ifdef WIN32
-    return fs::path();
+    // TODO: someone else can create a temp file with the same name during this
+    fs::path path = create_file(prefix);
+    fs::remove(path);
+    fs::create_directory(path);
+    return path;
 #else
-    if (mkdtemp(native.data()) == nullptr) {
+    std::string pattern = make_pattern(prefix);
+    if (mkdtemp(pattern.data()) == nullptr) {
         std::error_code ec = std::error_code(errno, std::system_category());
         throw fs::filesystem_error("Cannot create temporary directory", ec);
     }
 
-    return native;
+    return pattern;
 #endif
 }
 
