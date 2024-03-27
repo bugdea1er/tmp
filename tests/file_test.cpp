@@ -1,8 +1,13 @@
-#include <tmp/file>
-
-#include <gtest/gtest.h>
+#ifdef TMP_USE_MODULES
+import tmp;
+#else
 #include <tmp/directory>
+#include <tmp/file>
+#endif
+
+#include <filesystem>
 #include <fstream>
+#include <gtest/gtest.h>
 
 namespace fs = tmp::fs;
 
