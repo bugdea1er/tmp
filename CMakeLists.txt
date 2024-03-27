@@ -1,4 +1,10 @@
-cmake_minimum_required(VERSION 3.12)
+option(TMP_MODULES "Build C++20 modules" OFF)
+if(TMP_MODULES)
+  cmake_minimum_required(VERSION 3.28)
+else()
+  cmake_minimum_required(VERSION 3.12)
+endif()
+
 project(tmp LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/)
@@ -7,7 +13,18 @@ include(GNUInstallDirs)
 find_package(Filesystem REQUIRED)
 
 add_library(${PROJECT_NAME} STATIC src/tmp.cpp)
-target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
+
+if(TMP_MODULES)
+  target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
+  target_sources(${PROJECT_NAME}
+    PUBLIC
+      FILE_SET CXX_MODULES FILES
+        src/tmp.cppm
+)
+else()
+  target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
+endif()
+
 target_link_libraries(${PROJECT_NAME} PUBLIC std::filesystem)
 set_target_properties(${PROJECT_NAME} PROPERTIES EXPORT_NAME tmp)
 target_include_directories(

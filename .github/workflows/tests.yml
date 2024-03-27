@@ -27,3 +27,20 @@ jobs:
         run: cmake --build ${{ vars.BUILD_DIR }}
       - name: Run tests
         run: ctest --output-on-failure --test-dir ${{ vars.BUILD_DIR }}
+
+  test-modules:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-2022
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Configure CMake
+        run:  cmake -B ${{ vars.BUILD_DIR }} -DTMP_MODULES:BOOL=ON
+      - name: Build tests
+        run:  cmake --build ${{ vars.BUILD_DIR }}
+      - name: Run tests
+        run:  ctest --output-on-failure --test-dir ${{ vars.BUILD_DIR }}
