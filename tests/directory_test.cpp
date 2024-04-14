@@ -1,7 +1,7 @@
 #include <tmp/directory>
+#include <tmp/file>
 
 #include <gtest/gtest.h>
-#include <tmp/file>
 
 namespace fs = tmp::fs;
 
@@ -121,6 +121,7 @@ TEST(DirectoryTest, Copy) {
     }
     {
         const auto tmpfile = tmp::file(PREFIX);
-        ASSERT_THROW(tmp::directory::copy(tmpfile, PREFIX), fs::filesystem_error);
+        ASSERT_THROW(tmp::directory::copy(tmpfile, PREFIX),
+                     fs::filesystem_error);
     }
 }
