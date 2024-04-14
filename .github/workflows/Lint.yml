@@ -17,5 +17,6 @@ jobs:
 
       - name: Run clang-format
         run: |
-          find include src -name '*.h' -o -name '*.cc' | xargs clang-format -i -style=file
+          (find include/tmp -type f; find src tests -name '*.cpp') \
+            | xargs clang-format -i -style=file --verbose
           git diff --exit-code
