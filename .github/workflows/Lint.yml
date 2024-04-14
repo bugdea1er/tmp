@@ -1,4 +1,4 @@
-name: lint
+name: Lint
 
 on: pull_request
 
@@ -9,6 +9,9 @@ jobs:
   format:
     runs-on: macos-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
       - name: Install clang-format
         run: brew install clang-format
 
