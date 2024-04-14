@@ -1,8 +1,7 @@
+#include <tmp/directory>
 #include <tmp/file>
 
 #include <gtest/gtest.h>
-#include <tmp/directory>
-#include <fstream>
 
 namespace fs = tmp::fs;
 
