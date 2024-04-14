@@ -7,14 +7,10 @@ permissions:
 
 jobs:
   format:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
-
       - name: Install clang-format
-        uses: aminya/setup-cpp@v1
-        with:
-          clangformat: true
+        run: brew install clang-format
 
       - name: Run clang-format
         run: |
