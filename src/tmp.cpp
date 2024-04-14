@@ -1,7 +1,7 @@
+#include <tmp/directory>
+#include <tmp/file>
 #include <tmp/fs>
 #include <tmp/path>
-#include <tmp/file>
-#include <tmp/directory>
 
 #include <fstream>
 #include <string_view>
@@ -14,8 +14,8 @@ namespace tmp {
 namespace {
 
 /// Options for recursive overwriting copying
-const fs::copy_options copy_options = fs::copy_options::recursive
-                                      | fs::copy_options::overwrite_existing;
+const fs::copy_options copy_options =
+    fs::copy_options::recursive | fs::copy_options::overwrite_existing;
 
 /// Creates the parent directory of the given path if it does not exist
 /// @param path The path for which the parent directory needs to be created
@@ -104,7 +104,6 @@ std::ofstream stream(const file& file, bool binary, bool append) noexcept {
 }
 }    // namespace
 
-
 //===----------------------------------------------------------------------===//
 // tmp::path implementation
 //===----------------------------------------------------------------------===//
@@ -162,7 +161,6 @@ void path::move(const fs::path& to) {
     release();
 }
 
-
 //===----------------------------------------------------------------------===//
 // tmp::file implementation
 //===----------------------------------------------------------------------===//
@@ -186,9 +184,7 @@ file file::copy(const fs::path& path, std::string_view prefix) {
 
 std::ifstream file::read() const {
     const fs::path& file = *this;
-    return binary
-           ? std::ifstream(file, std::ios::binary)
-           : std::ifstream(file);
+    return binary ? std::ifstream(file, std::ios::binary) : std::ifstream(file);
 }
 
 std::string file::slurp() const {
@@ -208,7 +204,6 @@ file::~file() noexcept = default;
 
 file::file(file&&) noexcept = default;
 file& file::operator=(file&&) noexcept = default;
-
 
 //===----------------------------------------------------------------------===//
 // tmp::directory implementation
