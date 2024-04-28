@@ -33,7 +33,8 @@ cmake_push_check_state()
 
 set(CMAKE_REQUIRED_QUIET TRUE)
 set(CMAKE_REQUIRED_FLAGS -std=c++17)
-set(Filesystem_TEST_SOURCE "
+set(Filesystem_TEST_SOURCE
+    "
     #include <filesystem>
     #include <iostream>
     int main() {
@@ -47,13 +48,15 @@ if(STD_FILESYSTEM_NO_LINK)
     set(STD_FILESYSTEM_FOUND TRUE)
 else()
     set(CMAKE_REQUIRED_LIBRARIES -lstdc++fs)
-    check_cxx_source_compiles("${Filesystem_TEST_SOURCE}" STD_FILESYSTEM_STDCXXFS)
+    check_cxx_source_compiles(
+        "${Filesystem_TEST_SOURCE}" STD_FILESYSTEM_STDCXXFS)
     if(STD_FILESYSTEM_STDCXXFS)
         set(STD_FILESYSTEM_FOUND TRUE)
         set(STD_FILESYSTEM_LIBRARY stdc++fs)
     else()
         set(CMAKE_REQUIRED_LIBRARIES -lc++fs)
-        check_cxx_source_compiles("${Filesystem_TEST_SOURCE}" STD_FILESYSTEM_CXXFS)
+        check_cxx_source_compiles(
+            "${Filesystem_TEST_SOURCE}" STD_FILESYSTEM_CXXFS)
         if(STD_FILESYSTEM_STDCXXFS)
             set(STD_FILESYSTEM_FOUND TRUE)
             set(STD_FILESYSTEM_LIBRARY c++fs)
@@ -63,12 +66,17 @@ endif()
 
 cmake_pop_check_state()
 
-set(Filesystem_FOUND ${STD_FILESYSTEM_FOUND} CACHE BOOL "True if filesystem utilities are found")
-set(Filesystem_LIBRARIES ${STD_FILESYSTEM_LIBRARY} CACHE STRING "The filesystem utilities libraries")
+set(Filesystem_FOUND
+    ${STD_FILESYSTEM_FOUND}
+    CACHE BOOL "True if filesystem utilities are found")
+set(Filesystem_LIBRARIES
+    ${STD_FILESYSTEM_LIBRARY}
+    CACHE STRING "The filesystem utilities libraries")
 mark_as_advanced(STD_FILESYSTEM_FOUND STD_FILESYSTEM_LIBRARY)
 
 if(Filesystem_LIBRARIES)
-    find_package_handle_standard_args(Filesystem DEFAULT_MSG Filesystem_LIBRARIES)
+    find_package_handle_standard_args(
+        Filesystem DEFAULT_MSG Filesystem_LIBRARIES)
 else()
     find_package_handle_standard_args(Filesystem DEFAULT_MSG Filesystem_FOUND)
 endif()

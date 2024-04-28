@@ -15,8 +15,17 @@ jobs:
       - name: Install clang-format
         run: brew install clang-format
 
+      - name: Install cmake-format
+        run: pip install cmake-format
+
       - name: Run clang-format
         run: |
           (find include/tmp -type f; find src tests -name '*.cpp') \
             | xargs clang-format -i -style=file --verbose
+          git diff --color --exit-code
+
+      - name: Run cmake-format
+        run: |
+          (find cmake -name '*.cmake'; find . tests -maxdepth 1 -name 'CMakeLists.txt') \
+            | xargs cmake-format -i
           git diff --color --exit-code
