@@ -27,5 +27,5 @@ jobs:
       - name: Run cmake-format
         run: |
           (find cmake -name '*.cmake'; find . tests -maxdepth 1 -name 'CMakeLists.txt') \
-            | xargs clang-format -i -style=file --verbose
+            | xargs cmake-format -i
           git diff --color --exit-code
