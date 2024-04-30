@@ -3,18 +3,18 @@
 
 #include <gtest/gtest.h>
 
-namespace fs = tmp::fs;
+namespace tmp {
 
 TEST(DirectoryTest, CreateDirectory) {
     {
-        const auto tmpdir = tmp::directory(PREFIX);
+        const auto tmpdir = directory(PREFIX);
         const auto parent = tmpdir->parent_path();
 
         ASSERT_TRUE(fs::exists(tmpdir));
         ASSERT_TRUE(fs::equivalent(parent, fs::temp_directory_path() / PREFIX));
     }
     {
-        const auto tmpdir = tmp::directory();
+        const auto tmpdir = directory();
         const auto parent = tmpdir->parent_path();
 
         ASSERT_TRUE(fs::exists(tmpdir));
@@ -25,7 +25,7 @@ TEST(DirectoryTest, CreateDirectory) {
 TEST(DirectoryTest, RemoveDirectory) {
     auto path = fs::path();
     {
-        const auto tmpdir = tmp::directory(PREFIX);
+        const auto tmpdir = directory(PREFIX);
         path = tmpdir;
         ASSERT_TRUE(fs::exists(path));
     }
@@ -34,17 +34,17 @@ TEST(DirectoryTest, RemoveDirectory) {
 }
 
 TEST(DirectoryTest, CreateMultiple) {
-    const auto fst = tmp::directory(PREFIX);
+    const auto fst = directory(PREFIX);
     ASSERT_TRUE(fs::exists(fst));
 
-    const auto snd = tmp::directory(PREFIX);
+    const auto snd = directory(PREFIX);
     ASSERT_TRUE(fs::exists(snd));
 
     EXPECT_NE(fs::path(fst), fs::path(snd));
 }
 
 TEST(DirectoryTest, SubpathTest) {
-    const auto tmpdir = tmp::directory(PREFIX);
+    const auto tmpdir = directory(PREFIX);
     const auto child = tmpdir / "child";
 
     ASSERT_EQ(fs::path(tmpdir), child.parent_path());
@@ -53,7 +53,7 @@ TEST(DirectoryTest, SubpathTest) {
 TEST(DirectoryTest, Release) {
     auto path = fs::path();
     {
-        auto tmpdir = tmp::directory(PREFIX);
+        auto tmpdir = directory(PREFIX);
         auto expected = fs::path(tmpdir);
         path = tmpdir.release();
         ASSERT_EQ(path, expected);
@@ -68,7 +68,7 @@ TEST(DirectoryTest, MoveDirectory) {
     auto path = fs::path();
     auto to = fs::temp_directory_path() / PREFIX / "moved";
     {
-        auto tmpdir = tmp::directory(PREFIX);
+        auto tmpdir = directory(PREFIX);
         path = tmpdir;
 
         tmpdir.move(to);
@@ -80,7 +80,7 @@ TEST(DirectoryTest, MoveDirectory) {
 }
 
 TEST(DirectoryTest, MoveConstruction) {
-    auto fst = tmp::directory(PREFIX);
+    auto fst = directory(PREFIX);
     const auto snd = std::move(fst);
 
     ASSERT_TRUE(fst->empty());
@@ -88,8 +88,8 @@ TEST(DirectoryTest, MoveConstruction) {
 }
 
 TEST(DirectoryTest, MoveAssignment) {
-    auto fst = tmp::directory(PREFIX);
-    auto snd = tmp::directory(PREFIX);
+    auto fst = directory(PREFIX);
+    auto snd = directory(PREFIX);
 
     const auto path1 = fs::path(fst);
     const auto path2 = fs::path(snd);
@@ -105,13 +105,13 @@ TEST(DirectoryTest, MoveAssignment) {
 
 TEST(DirectoryTest, Copy) {
     {
-        const auto tmpdir = tmp::directory(PREFIX);
+        const auto tmpdir = directory(PREFIX);
 
         auto file = std::ofstream(tmpdir / "file");
         file << "Hello, world!";
         file.close();
 
-        const auto tmpcopy = tmp::directory::copy(tmpdir, PREFIX);
+        const auto tmpcopy = directory::copy(tmpdir, PREFIX);
 
         auto stream = std::ifstream(tmpcopy / "file");
         auto content = std::string(std::istreambuf_iterator<char>(stream), {});
@@ -120,8 +120,8 @@ TEST(DirectoryTest, Copy) {
         EXPECT_NE(fs::path(tmpdir), fs::path(tmpcopy));
     }
     {
-        const auto tmpfile = tmp::file(PREFIX);
-        ASSERT_THROW(tmp::directory::copy(tmpfile, PREFIX),
-                     fs::filesystem_error);
+        const auto tmpfile = file(PREFIX);
+        ASSERT_THROW(directory::copy(tmpfile, PREFIX), fs::filesystem_error);
     }
 }
+}    // namespace tmp
