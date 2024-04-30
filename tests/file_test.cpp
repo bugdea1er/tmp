@@ -5,6 +5,8 @@
 
 namespace tmp {
 
+namespace fs = std::filesystem;
+
 TEST(FileTest, CreateFile) {
     {
         const auto tmpfile = file(PREFIX);

@@ -5,6 +5,8 @@
 
 namespace tmp {
 
+namespace fs = std::filesystem;
+
 TEST(DirectoryTest, CreateDirectory) {
     {
         const auto tmpdir = directory(PREFIX);
