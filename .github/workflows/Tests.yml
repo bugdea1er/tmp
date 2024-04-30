@@ -46,14 +46,14 @@ jobs:
 
       - name: Test installation
         run: |
-          cat <<~EOS > main.cpp
+          cat <<EOS > main.cpp
             #include <iostream>
             #include <tmp/file>
             int main() {
               std::cout << tmp::file().release().native();
             }
           EOS
-          cat <<~EOS > CMakeLists.txt
+          cat <<EOS > CMakeLists.txt
             cmake_minimum_required(VERSION 3.12)
             project(install-test LANGUAGES CXX)
             find_package(tmp REQUIRED)
