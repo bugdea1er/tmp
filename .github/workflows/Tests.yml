@@ -1,6 +1,7 @@
 name: Tests
 on:
-  push
+  - push
+  - pull_request
 
 env:
   build_dir: ${{ github.workspace }}/build
