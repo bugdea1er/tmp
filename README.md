@@ -114,12 +114,22 @@ target_link_libraries(YourApp PRIVATE std::filesystem)
 ### CMake integration
 You can also use the CMake interface target `tmp::tmp` and described below:
 
+### External
+
+To use this library from a CMake project, locate it using `find_package`:
+```cmake
+find_package(tmp REQUIRED)
+# ...
+add_library(foo ...)
+target_link_libraries(foo PUBLIC tmp::tmp)
+```
+
 #### Embedded
 
 To embed the library into your existing CMake project, place the entire source tree in a subdirectory (for example, using `git submodule` commands) and call `add_subdirectory()` in your `CMakeLists.txt` file:
 ```cmake
 add_subdirectory(tmp)
-...
+# ...
 add_library(foo ...)
 target_link_libraries(foo PUBLIC tmp::tmp)
 ```
