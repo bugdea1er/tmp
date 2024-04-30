@@ -6,6 +6,8 @@ if(POLICY CMP0135)
 endif()
 
 include(FetchContent)
+set(INSTALL_GMOCK OFF)
+set(INSTALL_GTEST OFF)
 FetchContent_Declare(
     googletest
     URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.tar.gz)
