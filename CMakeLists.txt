@@ -34,7 +34,7 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
         INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/tmp)
     install(
         FILES "${CMAKE_CURRENT_BINARY_DIR}/tmpConfig.cmake"
-	      "${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindFilesystem.cmake"
+              "${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindFilesystem.cmake"
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/tmp)
 
     install(TARGETS ${PROJECT_NAME} EXPORT tmp-targets)

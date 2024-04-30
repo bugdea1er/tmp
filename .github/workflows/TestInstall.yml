@@ -1,0 +1,62 @@
+name: Tests
+on:
+  push
+
+env:
+  build_dir: ${{ github.workspace }}/build
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-20.04
+          - ubuntu-22.04
+          - macos-11
+          - macos-12
+          - macos-13
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Select Xcode 15.0 (for macOS 13)
+        run:  sudo xcode-select -s "/Applications/Xcode_15.0.app"
+        if:   matrix.os == 'macos-13'
+
+      - name: Configure CMake
+        run:  cmake -B ${{ env.build_dir }}
+
+      - name: Build project
+        run:  cmake --build ${{ env.build_dir }}
+
+      - name: Run install
+        run:  cmake --install ${{ env.build_dir }}
+        
+      - name: Run test
+        run: |
+          cat <<EOS > main.cpp
+          #include <tmp/file>
+          #include <iostream>
+          int main()
+          {
+            const auto tmpfile = tmp::file("tmp.test");
+            tmpfile.release();
+            std::cout << tmpfile;
+            return 0;
+          }
+          EOS
+          cat <<EOS > CMakeLists.txt
+          project(cmake-test LANGUAGES CXX)
+
+          find_package(tmp REQUIRED)
+
+          add_executable(cmake-test main.cpp)
+          target_link_libraries(cmake-test tmp::tmp)
+          EOS
+          cmake -B .
+          cmake --build .
+          test -f $(./cmake-test)
+        working-directory: ${{ env.build_dir }}/cmake-test
