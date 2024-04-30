@@ -1,1 +1,2 @@
 include/tmp/* linguist-language=C++
+tests/gtest/** linguist-vendored
