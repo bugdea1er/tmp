@@ -5,6 +5,7 @@ on:
 
 env:
   build_dir: ${{ github.workspace }}/build
+  install_test_dir: ${{ github.workspace }}/install-test
 
 jobs:
   test:
@@ -37,32 +38,29 @@ jobs:
         run:  ctest --build-config
         working-directory: ${{ env.build_dir }}
 
-      - name: Run install
+      - name: Run installation
         run:  sudo cmake --install ${{ env.build_dir }}
 
-      - name: Prepare install test directory
-        run: mkdir -p cmake-test
-        
-      - name: Run install test
+      - name: Prepare installation test directory
+        run: mkdir -p ${{ env.install_test_dir }}
+
+      - name: Test installation
         run: |
           cat <<EOS > main.cpp
-          #include <tmp/file>
-          #include <iostream>
-          int main()
-          {
-            auto tmpfile = tmp::file("tmp.test");
-            std::cout << tmpfile.release().native();
-            return 0;
-          }
+            #include <iostream>
+            #include <tmp/file>
+            int main() {
+              std::cout << tmp::file().release().native();
+            }
           EOS
           cat <<EOS > CMakeLists.txt
-          cmake_minimum_required(VERSION 3.12)
-          project(cmake-test LANGUAGES CXX)
-          find_package(tmp REQUIRED)
-          add_executable(cmake-test main.cpp)
-          target_link_libraries(cmake-test tmp::tmp)
+            cmake_minimum_required(VERSION 3.12)
+            project(install-test LANGUAGES CXX)
+            find_package(tmp REQUIRED)
+            add_executable(install-test main.cpp)
+            target_link_libraries(install-test tmp::tmp)
           EOS
           cmake -B .
           cmake --build .
-          test -f $(./cmake-test)
-        working-directory: ${{ github.workspace }}/cmake-test
+          test -f $(./install-test)
+        working-directory: ${{ env.install_test_dir }}
