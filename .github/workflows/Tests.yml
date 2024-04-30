@@ -50,21 +50,17 @@ jobs:
           int main()
           {
             auto tmpfile = tmp::file("tmp.test");
-            std::cout << tmpfile.release();
+            std::cout << tmpfile.release().native();
             return 0;
           }
           EOS
           cat <<EOS > CMakeLists.txt
           cmake_minimum_required(VERSION 3.12)
           project(cmake-test LANGUAGES CXX)
-
           find_package(tmp REQUIRED)
-
           add_executable(cmake-test main.cpp)
           target_link_libraries(cmake-test tmp::tmp)
           EOS
-          cat main.cpp
-          cat CMakeLists.txt
           cmake -B .
           cmake --build .
           test -f $(./cmake-test)
