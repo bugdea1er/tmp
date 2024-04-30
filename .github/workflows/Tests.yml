@@ -35,3 +35,32 @@ jobs:
       - name: Run tests
         run:  ctest --build-config
         working-directory: ${{ env.build_dir }}
+
+      - name: Run install
+        run:  cmake --install ${{ env.build_dir }}
+        
+      - name: Run install test
+        run: |
+          cat <<EOS > main.cpp
+          #include <tmp/file>
+          #include <iostream>
+          int main()
+          {
+            const auto tmpfile = tmp::file("tmp.test");
+            tmpfile.release();
+            std::cout << tmpfile;
+            return 0;
+          }
+          EOS
+          cat <<EOS > CMakeLists.txt
+          project(cmake-test LANGUAGES CXX)
+
+          find_package(tmp REQUIRED)
+
+          add_executable(cmake-test main.cpp)
+          target_link_libraries(cmake-test tmp::tmp)
+          EOS
+          cmake -B .
+          cmake --build .
+          test -f $(./cmake-test)
+        working-directory: ${{ env.build_dir }}/cmake-test
