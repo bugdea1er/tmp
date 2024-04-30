@@ -37,7 +37,10 @@ jobs:
         working-directory: ${{ env.build_dir }}
 
       - name: Run install
-        run:  cmake --install ${{ env.build_dir }}
+        run:  sudo cmake --install ${{ env.build_dir }}
+
+      - name: Prepare install test directory
+        run: mkdir -p cmake-test
         
       - name: Run install test
         run: |
@@ -63,4 +66,4 @@ jobs:
           cmake -B .
           cmake --build .
           test -f $(./cmake-test)
-        working-directory: ${{ env.build_dir }}/cmake-test
+        working-directory: ${{ github.workspace }}/cmake-test
