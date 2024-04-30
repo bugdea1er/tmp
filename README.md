@@ -109,6 +109,13 @@ find_package(Filesystem REQUIRED)
 target_link_libraries(YourApp PRIVATE std::filesystem)
 ```
 
+## Installation
+
+If you are using homebrew, use the following command:
+```shell
+brew install bugdea1er/tap/tmp
+```
+
 ## Integration
 
 ### CMake integration
