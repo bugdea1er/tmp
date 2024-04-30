@@ -1,7 +1,5 @@
 #pragma once
 
-#include <tmp/fs>
-
 #include <filesystem>
 #include <string_view>
 
@@ -15,28 +13,28 @@ namespace tmp {
 /// - the managing tmp::path object is assigned another path via operator=
 class path {
     /// The managed path
-    fs::path underlying;
+    std::filesystem::path underlying;
 
 public:
     /// Returns the managed path
-    operator const fs::path&() const noexcept;
+    operator const std::filesystem::path&() const noexcept;
 
     /// Dereferences the managed path
     /// @returns A pointer to the path owned by *this
-    const fs::path* operator->() const noexcept;
+    const std::filesystem::path* operator->() const noexcept;
 
     /// Releases the ownership of the managed path;
     /// the destructor will not delete the managed path after the call
     /// @returns The managed path
-    fs::path release() noexcept;
+    std::filesystem::path release() noexcept;
 
     /// Moves the managed path recursively to a given target, releasing
     /// ownership of the managed path
     ///
     /// The parent of the target path is created when this function is called
     /// @param to   A path to the target file or directory
-    /// @throws fs::filesystem_error if cannot move the owned path
-    void move(const fs::path& to);
+    /// @throws std::filesystem::filesystem_error if cannot move the owned path
+    void move(const std::filesystem::path& to);
 
     /// Deletes the managed path recursively if it is not empty
     virtual ~path() noexcept;
@@ -49,6 +47,6 @@ public:
 protected:
     /// Constructs a tmp::path which owns @p path
     /// @param path A path to manage
-    explicit path(fs::path path);
+    explicit path(std::filesystem::path path);
 };
 }    // namespace tmp

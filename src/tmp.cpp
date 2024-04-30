@@ -1,6 +1,5 @@
 #include <tmp/directory>
 #include <tmp/file>
-#include <tmp/fs>
 #include <tmp/path>
 
 #include <fstream>
@@ -10,8 +9,9 @@
 #include <utility>
 
 namespace tmp {
-
 namespace {
+
+namespace fs = std::filesystem;
 
 /// Options for recursive overwriting copying
 const fs::copy_options copy_options =
