@@ -11,8 +11,7 @@ set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
 
 set(CPACK_DEBIAN_TMP_PACKAGE_DEPENDS "libstdc++6 (>= 8)")
 set(CPACK_DEBIAN_TMP-DEV_PACKAGE_DEPENDS
-    "libstdc++-dev, libtmp (= ${CPACK_PACKAGE_VERSION})"
-)
+    "libstdc++-dev, libtmp (= ${CPACK_PACKAGE_VERSION})")
 
 set(CPACK_DEBIAN_TMP_DESCRIPTION
     "RAII-wrappers for unique temporary files and directories that are deleted automatically for C++17 and later. Library package"
