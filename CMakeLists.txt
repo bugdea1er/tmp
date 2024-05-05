@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.12)
 project(
-    tmp 
+    tmp
     VERSION 0.6.1
-    LANGUAGES CXX) 
+    LANGUAGES CXX)
 
 option(TMP_TEST "Generate test target for tmp" ON)
 
@@ -41,21 +41,23 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     install(
         FILES ${CMAKE_CURRENT_BINARY_DIR}/tmp-config.cmake
               ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindFilesystem.cmake
-	COMPONENT tmp-dev
+        COMPONENT tmp-dev
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/tmp)
 
-    install(TARGETS ${PROJECT_NAME} EXPORT tmp-targets
-    	COMPONENT tmp)
+    install(
+        TARGETS ${PROJECT_NAME}
+        EXPORT tmp-targets
+        COMPONENT tmp)
     install(
         EXPORT tmp-targets
         FILE TmpTargets.cmake
         NAMESPACE tmp::
-	COMPONENT tmp-dev
+        COMPONENT tmp-dev
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/tmp)
     install(
         DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
-	COMPONENT tmp-dev
+        COMPONENT tmp-dev
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-    include(TmpCPack) 
+    include(TmpCPack)
 endif()
