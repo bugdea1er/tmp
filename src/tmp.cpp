@@ -192,6 +192,10 @@ std::string file::slurp() const {
     return std::string(std::istreambuf_iterator<char>(stream), {});
 }
 
+std::ofstream file::write() const {
+    return stream(*this, binary, /*append=*/false);
+}
+
 void file::write(std::string_view content) const {
     stream(*this, binary, /*append=*/false) << content;
 }

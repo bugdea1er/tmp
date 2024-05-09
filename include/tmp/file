@@ -76,6 +76,9 @@ public:
     /// @returns A string with this file contents
     std::string slurp() const;
 
+    /// Returns a writable stream for this file
+    std::ofstream write() const;
+
     /// Writes the given content to this file discarding any previous content
     /// @param content  A string to write to this file
     void write(std::string_view content) const;
