@@ -182,18 +182,18 @@ file file::copy(const fs::path& path, std::string_view prefix) {
     return tmpfile;
 }
 
-std::ifstream file::read() const {
+std::ifstream file::ifstream() const {
     const fs::path& file = *this;
     return binary ? std::ifstream(file, std::ios::binary) : std::ifstream(file);
 }
 
 std::string file::slurp() const {
-    std::ifstream stream = read();
+    std::ifstream stream = ifstream();
     return std::string(std::istreambuf_iterator<char>(stream), {});
 }
 
-std::ofstream file::write() const {
-    return stream(*this, binary, /*append=*/false);
+std::ofstream file::ofstream(bool append) const {
+    return stream(*this, binary, append);
 }
 
 void file::write(std::string_view content) const {

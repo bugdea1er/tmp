@@ -68,16 +68,18 @@ public:
     static file copy(const std::filesystem::path& path,
                      std::string_view prefix = "");
 
-    /// Streams the contents of this file
+    /// Opens this file for reading
     /// @returns A file stream with this file contents
-    std::ifstream read() const;
+    std::ifstream ifstream() const;
 
     /// Reads the entire contents of this file
     /// @returns A string with this file contents
     std::string slurp() const;
 
-    /// Returns a writable stream for this file
-    std::ofstream write() const;
+    /// Opens this file for writing
+    /// @param append Whether to write to the end of the file
+    /// @returns A file stream for writing
+    std::ofstream ofstream(bool append = false) const;
 
     /// Writes the given content to this file discarding any previous content
     /// @param content  A string to write to this file

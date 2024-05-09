@@ -103,7 +103,7 @@ TEST(FileTest, Read) {
     tmpfile.write("Hello");
     tmpfile.append(", world!");
 
-    auto stream = tmpfile.read();
+    auto stream = tmpfile.ifstream();
 
     auto content = std::string(std::istreambuf_iterator<char>(stream), {});
     ASSERT_EQ(content, "Hello, world!");
@@ -119,12 +119,23 @@ TEST(FileTest, Slurp) {
 }
 
 TEST(FileTest, Write) {
-    const auto tmpfile = file(PREFIX);
-    tmpfile.write("Hello");
+    {
+        const auto tmpfile = file(PREFIX);
+        tmpfile.write("Hello");
 
-    auto stream = std::ifstream(fs::path(tmpfile));
-    auto content = std::string(std::istreambuf_iterator<char>(stream), {});
-    ASSERT_EQ(content, "Hello");
+        auto stream = std::ifstream(fs::path(tmpfile));
+        auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+        ASSERT_EQ(content, "Hello");
+    }
+    {
+        const auto tmpfile = file(PREFIX);
+
+        tmpfile.ofstream() << "Hello";
+        ASSERT_EQ(tmpfile.slurp(), "Hello");
+
+        tmpfile.ofstream(/*append=*/true) << ", world";
+        ASSERT_EQ(tmpfile.slurp(), "Hello, world");
+    }
 }
 
 TEST(FileTest, Append) {
