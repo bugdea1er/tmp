@@ -184,9 +184,9 @@ file file::copy(const fs::path& path, std::string_view prefix) {
 
 std::string file::read() const {
     const fs::path& file = *this;
-    std::ifstream stream =
-        binary ? std::ifstream(file, std::ios::binary) : std::ifstream(file);
+    std::ios::openmode mode = binary ? std::ios::binary : std::ios::openmode();
 
+    std::ifstream stream = std::ifstream(file, mode);
     return std::string(std::istreambuf_iterator<char>(stream), {});
 }
 
