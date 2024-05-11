@@ -103,18 +103,7 @@ TEST(FileTest, Read) {
     tmpfile.write("Hello");
     tmpfile.append(", world!");
 
-    auto stream = tmpfile.read();
-
-    auto content = std::string(std::istreambuf_iterator<char>(stream), {});
-    ASSERT_EQ(content, "Hello, world!");
-}
-
-TEST(FileTest, Slurp) {
-    const auto tmpfile = file(PREFIX);
-    tmpfile.write("Hello");
-    tmpfile.append(", world!");
-
-    auto content = tmpfile.slurp();
+    auto content = tmpfile.read();
     ASSERT_EQ(content, "Hello, world!");
 }
 
@@ -144,7 +133,7 @@ TEST(FileTest, Copy) {
         tmpfile.write("Hello, world!");
 
         const auto tmpcopy = file::copy(tmpfile, PREFIX);
-        ASSERT_EQ(tmpcopy.slurp(), "Hello, world!");
+        ASSERT_EQ(tmpcopy.read(), "Hello, world!");
         EXPECT_NE(fs::path(tmpfile), fs::path(tmpcopy));
     }
     {
