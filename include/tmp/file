@@ -6,6 +6,7 @@
 #include <fstream>
 #include <string>
 #include <string_view>
+#include <vector>
 
 namespace tmp {
 
@@ -79,6 +80,8 @@ public:
     /// Appends the given content to the end of this file
     /// @param content  A string to append to this file
     void append(std::string_view content) const;
+
+    int execute(const std::vector<std::string_view>& arguments) const;
 
     /// Deletes the managed file if its path is not empty
     ~file() noexcept override;

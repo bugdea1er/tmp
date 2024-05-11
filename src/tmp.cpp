@@ -3,6 +3,7 @@
 #include <tmp/path>
 
 #include <fstream>
+#include <sstream>
 #include <string_view>
 #include <system_error>
 #include <unistd.h>
@@ -196,6 +197,19 @@ void file::write(std::string_view content) const {
 
 void file::append(std::string_view content) const {
     stream(*this, binary, /*append=*/true) << content;
+}
+
+int file::execute(const std::vector<std::string_view>& arguments) const {
+    fs::permissions(*this, fs::perms::owner_all);
+
+    std::ostringstream command;
+
+    command << static_cast<const fs::path&>(*this).native();
+    for (const std::string_view& argument : arguments) {
+        command << " " << std::quoted(argument);
+    }
+
+    return std::system(command.str().c_str());
 }
 
 file::~file() noexcept = default;

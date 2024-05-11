@@ -127,6 +127,15 @@ TEST(FileTest, Append) {
     ASSERT_EQ(content, "Hello, world!");
 }
 
+TEST(FileTest, Execute) {
+    const auto tmpfile = file(PREFIX);
+
+    tmpfile.write("#!/bin/sh\n");
+    tmpfile.append("echo 0\n");
+
+    ASSERT_EQ(0, tmpfile.execute({}));
+}
+
 TEST(FileTest, Copy) {
     {
         const auto tmpfile = file(PREFIX);
