@@ -39,13 +39,13 @@ This module will set the following variables in your project:
 
 #]=======================================================================]
 
-if (TARGET GTest::gtest)
+if(TARGET GTest::gtest)
     return()
 endif()
 
 find_package(GTest QUIET CONFIG)
 
-if (GTest_FOUND)
+if(GTest_FOUND)
     message(found)
     find_package_handle_standard_args(GTest CONFIG_MODE)
     return()
