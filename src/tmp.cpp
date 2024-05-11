@@ -225,11 +225,14 @@ int file::execute(const std::vector<std::string_view>& arguments) const {
     }
 
     case 0: {
-        int ret = execve(path.c_str(), const_cast<char* const*>(argv.data()), environ);
+        int ret = execve(path.c_str(), const_cast<char* const*>(argv.data()),
+                         environ);
         if (ret == -1) {
             std::error_code ec = std::error_code(errno, std::system_category());
             throw fs::filesystem_error("Cannot execute temporary file", ec);
         }
+
+        return 0;
     }
 
     default: {
