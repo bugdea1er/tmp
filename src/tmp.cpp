@@ -5,9 +5,13 @@
 #include <fstream>
 #include <sstream>
 #include <string_view>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <system_error>
 #include <unistd.h>
 #include <utility>
+
+extern char** environ;
 
 namespace tmp {
 namespace {
@@ -201,15 +205,47 @@ void file::append(std::string_view content) const {
 
 int file::execute(const std::vector<std::string_view>& arguments) const {
     fs::permissions(*this, fs::perms::owner_all);
+    std::string path = fs::absolute(*this);
 
-    std::ostringstream command;
+    std::vector<const char*> argv;
+    argv.reserve(arguments.size() + 2);
 
-    command << static_cast<const fs::path&>(*this).native();
+    argv.push_back(path.c_str());
     for (const std::string_view& argument : arguments) {
-        command << " " << std::quoted(argument);
+        argv.push_back(argument.data());
     }
 
-    return std::system(command.str().c_str());
+    argv.push_back(nullptr);
+
+    pid_t pid = fork();
+    switch (pid) {
+    case -1: {
+        std::error_code ec = std::error_code(errno, std::system_category());
+        throw fs::filesystem_error("Cannot execute temporary file", ec);
+    }
+
+    case 0: {
+        int ret = execve(path.c_str(), const_cast<char* const*>(argv.data()), environ);
+        if (ret == -1) {
+            std::error_code ec = std::error_code(errno, std::system_category());
+            throw fs::filesystem_error("Cannot execute temporary file", ec);
+        }
+    }
+
+    default: {
+        int status = 0;
+        if (waitpid(pid, &status, 0) == -1) {
+            std::error_code ec = std::error_code(errno, std::system_category());
+            throw fs::filesystem_error("Cannot execute temporary file", ec);
+        }
+
+        if (WIFEXITED(status)) {
+            return WEXITSTATUS(status);
+        }
+
+        return -1;
+    }
+    }
 }
 
 file::~file() noexcept = default;
