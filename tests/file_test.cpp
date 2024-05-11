@@ -131,9 +131,10 @@ TEST(FileTest, Execute) {
     const auto tmpfile = file(PREFIX);
 
     tmpfile.write("#!/bin/sh\n");
-    tmpfile.append("echo 0\n");
+    tmpfile.append("echo $0\n");
+    tmpfile.append("echo $1\n");
 
-    ASSERT_EQ(0, tmpfile.execute({}));
+    ASSERT_EQ(0, tmpfile.execute({"1"}));
 }
 
 TEST(FileTest, Copy) {
