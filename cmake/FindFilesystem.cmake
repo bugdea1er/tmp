@@ -4,20 +4,23 @@ FindFilesystem
 
 Find the C++17 standard library's filesystem utilities
 
-IMPORTED Targets
+Imported targets
 ^^^^^^^^^^^^^^^^
 
-This module defines the following :prop_tgt:`IMPORTED` targets::
+This module defines the following :prop_tgt:`IMPORTED` targets:
 
- std::filesystem   - The filesystem library, if found.
+``std::filesystem``
+  The filesystem library, if found
 
 Result Variables
 ^^^^^^^^^^^^^^^^
 
-This module will set the following variables in your project::
+This module will set the following variables in your project:
 
- Filesystem_FOUND       - True if filesystem utilities are found.
- Filesystem_LIBRARIES   - The filesystem utilities libraries.
+``Filesystem_FOUND``
+  Found the filesystem utilities
+``Filesystem_LIBRARIES``
+  The filesystem utilities library
 
 #]=======================================================================]
 
