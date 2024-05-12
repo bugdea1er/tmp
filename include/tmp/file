@@ -63,7 +63,7 @@ public:
     ///
     /// @param path   A path to make a temporary copy from
     /// @param prefix A prefix to be used in the temporary directory path
-    /// @return The new temporary file
+    /// @returns The new temporary file
     /// @throws std::filesystem::filesystem_error if @p path is not a file
     static file copy(const std::filesystem::path& path,
                      std::string_view prefix = "");
