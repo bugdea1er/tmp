@@ -7,138 +7,169 @@ namespace tmp {
 
 namespace fs = std::filesystem;
 
-TEST(FileTest, CreateFile) {
-    {
-        const auto tmpfile = file(PREFIX);
-        const auto parent = tmpfile->parent_path();
+/// Tests file creation with prefix
+TEST(file, create_with_prefix) {
+    file tmpfile = file(PREFIX);
+    fs::path parent = tmpfile->parent_path();
 
-        ASSERT_TRUE(fs::exists(tmpfile));
-        ASSERT_TRUE(fs::equivalent(parent, fs::temp_directory_path() / PREFIX));
+    EXPECT_TRUE(fs::exists(tmpfile));
+    EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path() / PREFIX));
+}
+
+/// Tests file creation without prefix
+TEST(file, create_without_prefix) {
+    file tmpfile = file();
+    fs::path parent = tmpfile->parent_path();
+
+    EXPECT_TRUE(fs::exists(tmpfile));
+    EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path()));
+}
+
+/// Tests multiple file creation with the same prefix
+TEST(file, create_multiple) {
+    file fst = file(PREFIX);
+    file snd = file(PREFIX);
+
+    EXPECT_FALSE(fs::equivalent(fst, snd));
+}
+
+/// Tests creation of a temporary copy of a file
+TEST(file, copy_file) {
+    file tmpfile = file(PREFIX);
+    tmpfile.write("Hello, world!");
+
+    file tmpcopy = file::copy(tmpfile, PREFIX);
+    EXPECT_TRUE(fs::exists(tmpfile));
+    EXPECT_TRUE(fs::exists(tmpcopy));
+    EXPECT_FALSE(fs::equivalent(tmpfile, tmpcopy));
+
+    EXPECT_EQ(tmpcopy.read(), "Hello, world!");
+}
+
+/// Tests creation of a temporary copy of a directory
+TEST(file, copy_directory) {
+    directory tmpdir = directory(PREFIX);
+    EXPECT_THROW(file::copy(tmpdir, PREFIX), fs::filesystem_error);
+}
+
+/// Tests file reading
+TEST(file, read) {
+    file tmpfile = file(PREFIX);
+    std::ofstream stream = std::ofstream(fs::path(tmpfile));
+
+    stream << "Hello," << std::endl;
+    stream << "world!" << std::endl;
+
+    EXPECT_EQ(tmpfile.read(), "Hello,\nworld!\n");
+}
+
+/// Tests file writing
+TEST(file, write) {
+    file tmpfile = file(PREFIX);
+    tmpfile.write("Hello");
+
+    {
+        std::ifstream stream = std::ifstream(fs::path(tmpfile));
+        auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+        EXPECT_EQ(content, "Hello");
     }
-    {
-        const auto tmpfile = file();
-        const auto parent = tmpfile->parent_path();
 
-        ASSERT_TRUE(fs::exists(tmpfile));
-        ASSERT_TRUE(fs::equivalent(parent, fs::temp_directory_path()));
+    tmpfile.write("world!");
+
+    {
+        std::ifstream stream = std::ifstream(fs::path(tmpfile));
+        auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+        EXPECT_EQ(content, "world!");
     }
 }
 
-TEST(FileTest, RemoveFile) {
-    auto path = fs::path();
+/// Tests file appending
+TEST(file, append) {
+    file tmpfile = file(PREFIX);
+    std::ofstream(fs::path(tmpfile)) << "Hello, ";
+
+    tmpfile.append("world");
+
     {
-        const auto tmpfile = file(PREFIX);
+        std::ifstream stream = std::ifstream(fs::path(tmpfile));
+        auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+        EXPECT_EQ(content, "Hello, world");
+    }
+
+    tmpfile.append("!");
+
+    {
+        std::ifstream stream = std::ifstream(fs::path(tmpfile));
+        auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+        EXPECT_EQ(content, "Hello, world!");
+    }
+}
+
+/// Tests that destructor removes a file
+TEST(file, destructor) {
+    fs::path path = fs::path();
+    {
+        file tmpfile = file(PREFIX);
         path = tmpfile;
-        ASSERT_TRUE(fs::exists(path));
     }
 
     EXPECT_FALSE(fs::exists(path));
 }
 
-TEST(FileTest, CreateMultiple) {
-    const auto fst = file(PREFIX);
-    ASSERT_TRUE(fs::exists(fst));
+/// Tests file move constructor
+TEST(file, move_constructor) {
+    file fst = file(PREFIX);
+    file snd = std::move(fst);
 
-    const auto snd = file(PREFIX);
-    ASSERT_TRUE(fs::exists(snd));
-
-    EXPECT_NE(fs::path(fst), fs::path(snd));
+    EXPECT_TRUE(fst->empty());
+    EXPECT_TRUE(fs::exists(snd));
 }
 
-TEST(FileTest, Release) {
-    auto path = fs::path();
+/// Tests file move assignment operator
+TEST(file, move_assignment) {
+    file fst = file(PREFIX);
+    file snd = file(PREFIX);
+
+    fs::path path1 = fst;
+    fs::path path2 = snd;
+
+    fst = std::move(snd);
+
+    EXPECT_FALSE(fs::exists(path1));
+    EXPECT_TRUE(fs::exists(path2));
+
+    EXPECT_TRUE(fs::exists(fst));
+    EXPECT_TRUE(fs::equivalent(fst, path2));
+}
+
+/// Tests file releasing
+TEST(file, release) {
+    fs::path path = fs::path();
     {
-        auto tmpfile = file(PREFIX);
-        auto expected = fs::path(tmpfile);
+        file tmpfile = file(PREFIX);
+        fs::path expected = fs::path(tmpfile);
         path = tmpfile.release();
-        ASSERT_EQ(path, expected);
-        ASSERT_TRUE(fs::exists(path));
+
+        EXPECT_TRUE(fs::equivalent(path, expected));
     }
 
-    ASSERT_TRUE(fs::exists(path));
+    EXPECT_TRUE(fs::exists(path));
     fs::remove(path);
 }
 
-TEST(FileTest, MoveFile) {
-    auto path = fs::path();
-    auto to = fs::temp_directory_path() / PREFIX / "non-existing" / "parent";
+/// Tests file moving
+TEST(file, move) {
+    fs::path path = fs::path();
+    fs::path to = fs::temp_directory_path() / PREFIX / "non-existing/parent";
     {
-        auto tmpfile = file(PREFIX);
+        file tmpfile = file(PREFIX);
         path = tmpfile;
 
         tmpfile.move(to);
     }
 
-    ASSERT_FALSE(fs::exists(path));
-    ASSERT_TRUE(fs::exists(to));
+    EXPECT_FALSE(fs::exists(path));
+    EXPECT_TRUE(fs::exists(to));
     fs::remove_all(fs::temp_directory_path() / PREFIX / "non-existing");
-}
-
-TEST(FileTest, MoveConstruction) {
-    auto fst = file(PREFIX);
-    const auto snd = std::move(fst);
-
-    ASSERT_TRUE(fst->empty());
-    ASSERT_TRUE(fs::exists(snd));
-}
-
-TEST(FileTest, MoveAssignment) {
-    auto fst = file(PREFIX);
-    auto snd = file(PREFIX);
-
-    const auto path1 = fs::path(fst);
-    const auto path2 = fs::path(snd);
-
-    fst = std::move(snd);
-
-    ASSERT_FALSE(fs::exists(path1));
-    ASSERT_TRUE(fs::exists(path2));
-
-    ASSERT_TRUE(fs::exists(fst));
-    ASSERT_EQ(fs::path(fst), path2);
-}
-
-TEST(FileTest, Read) {
-    const auto tmpfile = file(PREFIX);
-    tmpfile.write("Hello");
-    tmpfile.append(", world!");
-
-    auto content = tmpfile.read();
-    ASSERT_EQ(content, "Hello, world!");
-}
-
-TEST(FileTest, Write) {
-    const auto tmpfile = file(PREFIX);
-    tmpfile.write("Hello");
-
-    auto stream = std::ifstream(fs::path(tmpfile));
-    auto content = std::string(std::istreambuf_iterator<char>(stream), {});
-    ASSERT_EQ(content, "Hello");
-}
-
-TEST(FileTest, Append) {
-    const auto tmpfile = file(PREFIX);
-
-    tmpfile.write("Hello");
-    tmpfile.append(", world!");
-
-    auto stream = std::ifstream(fs::path(tmpfile));
-    auto content = std::string(std::istreambuf_iterator<char>(stream), {});
-    ASSERT_EQ(content, "Hello, world!");
-}
-
-TEST(FileTest, Copy) {
-    {
-        const auto tmpfile = file(PREFIX);
-        tmpfile.write("Hello, world!");
-
-        const auto tmpcopy = file::copy(tmpfile, PREFIX);
-        ASSERT_EQ(tmpcopy.read(), "Hello, world!");
-        EXPECT_NE(fs::path(tmpfile), fs::path(tmpcopy));
-    }
-    {
-        const auto tmpdir = directory(PREFIX);
-        ASSERT_THROW(file::copy(tmpdir, PREFIX), fs::filesystem_error);
-    }
 }
 }    // namespace tmp
