@@ -5,12 +5,12 @@
 
 namespace tmp {
 
-TEST(fs, root) {
+TEST(filesystem, root) {
     EXPECT_NO_THROW(filesystem::root());
     EXPECT_NO_THROW(filesystem::root(PREFIX));
 }
 
-TEST(fs, space) {
+TEST(filesystem, space) {
     EXPECT_NO_THROW(filesystem::space());
 }
 }    // namespace tmp
