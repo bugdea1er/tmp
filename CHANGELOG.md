@@ -1,14 +1,19 @@
+## v0.7 (May 13, 2024)
+
+- **Breaking change:** Unify read and slurp methods ([#38](https://github.com/bugdea1er/tmp/pull/38))
+- **Experimental:** Add temporary filesystem utilities ([#41](https://github.com/bugdea1er/tmp/pull/41))
+
 ## v0.6.1 (May 01, 2024)
 
-* Add option not to build tests
+- Add option not to build tests
 
 ## v0.6 (May 01, 2024)
 
-* Add install target ([#30](https://github.com/bugdea1er/tmp/pull/30))
+- Add install target ([#30](https://github.com/bugdea1er/tmp/pull/30))
 
 ## v0.5 (Mar 12, 2024)
 
-* Add `tmp::file::copy` and `tmp::directory::copy` functions ([#20](https://github.com/bugdea1er/tmp/pull/20))
+- Add `tmp::file::copy` and `tmp::directory::copy` functions ([#20](https://github.com/bugdea1er/tmp/pull/20))
 
 ## v0.4 (Mar 03, 2024)
 
