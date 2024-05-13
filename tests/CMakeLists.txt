@@ -2,7 +2,7 @@ project(${PROJECT_NAME}.test)
 
 find_package(GTest)
 
-add_executable(${PROJECT_NAME} file.cpp directory.cpp)
+add_executable(${PROJECT_NAME} directory.cpp file.cpp fs.cpp)
 target_link_libraries(${PROJECT_NAME} tmp::tmp GTest::gtest_main)
 target_compile_definitions(
     ${PROJECT_NAME} PRIVATE PREFIX="com.github.bugdea1er.tmp")

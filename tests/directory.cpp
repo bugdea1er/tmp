@@ -5,24 +5,24 @@
 
 namespace tmp {
 
-namespace fs = std::filesystem;
+namespace stdfs = std::filesystem;
 
 /// Tests directory creation with prefix
 TEST(directory, create_with_prefix) {
     directory tmpdir = directory(PREFIX);
-    fs::path parent = tmpdir->parent_path();
+    stdfs::path parent = tmpdir->parent_path();
 
-    EXPECT_TRUE(fs::exists(tmpdir));
-    EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path() / PREFIX));
+    EXPECT_TRUE(stdfs::exists(tmpdir));
+    EXPECT_TRUE(stdfs::equivalent(parent, stdfs::temp_directory_path() / PREFIX));
 }
 
 /// Tests directory creation without prefix
 TEST(directory, create_without_prefix) {
     directory tmpdir = directory();
-    fs::path parent = tmpdir->parent_path();
+    stdfs::path parent = tmpdir->parent_path();
 
-    EXPECT_TRUE(fs::exists(tmpdir));
-    EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path()));
+    EXPECT_TRUE(stdfs::exists(tmpdir));
+    EXPECT_TRUE(stdfs::equivalent(parent, stdfs::temp_directory_path()));
 }
 
 /// Tests multiple directories creation with the same prefix
@@ -30,7 +30,7 @@ TEST(directory, create_multiple) {
     directory fst = directory(PREFIX);
     directory snd = directory(PREFIX);
 
-    EXPECT_FALSE(fs::equivalent(fst, snd));
+    EXPECT_FALSE(stdfs::equivalent(fst, snd));
 }
 
 /// Tests creation of a temporary copy of a directory
@@ -39,9 +39,9 @@ TEST(directory, copy_directory) {
     std::ofstream(tmpdir / "file") << "Hello, world!";
 
     directory tmpcopy = directory::copy(tmpdir, PREFIX);
-    EXPECT_TRUE(fs::exists(tmpdir));
-    EXPECT_TRUE(fs::exists(tmpcopy));
-    EXPECT_FALSE(fs::equivalent(tmpdir, tmpcopy));
+    EXPECT_TRUE(stdfs::exists(tmpdir));
+    EXPECT_TRUE(stdfs::exists(tmpcopy));
+    EXPECT_FALSE(stdfs::equivalent(tmpdir, tmpcopy));
 
     std::ifstream stream = std::ifstream(tmpcopy / "file");
     auto content = std::string(std::istreambuf_iterator<char>(stream), {});
@@ -51,26 +51,26 @@ TEST(directory, copy_directory) {
 /// Tests creation of a temporary copy of a file
 TEST(directory, copy_file) {
     file tmpfile = file(PREFIX);
-    EXPECT_THROW(directory::copy(tmpfile, PREFIX), fs::filesystem_error);
+    EXPECT_THROW(directory::copy(tmpfile, PREFIX), stdfs::filesystem_error);
 }
 
 /// Tests `operator/` of directory
 TEST(directory, subpath) {
     directory tmpdir = directory(PREFIX);
-    fs::path child = tmpdir / "child";
+    stdfs::path child = tmpdir / "child";
 
-    EXPECT_TRUE(fs::equivalent(tmpdir, child.parent_path()));
+    EXPECT_TRUE(stdfs::equivalent(tmpdir, child.parent_path()));
 }
 
 /// Tests that destructor removes a directory
 TEST(directory, destructor) {
-    fs::path path = fs::path();
+    stdfs::path path = stdfs::path();
     {
         directory tmpdir = directory(PREFIX);
         path = tmpdir;
     }
 
-    EXPECT_FALSE(fs::exists(path));
+    EXPECT_FALSE(stdfs::exists(path));
 }
 
 /// Tests directory move constructor
@@ -79,7 +79,7 @@ TEST(directory, move_constructor) {
     directory snd = std::move(fst);
 
     EXPECT_TRUE(fst->empty());
-    EXPECT_TRUE(fs::exists(snd));
+    EXPECT_TRUE(stdfs::exists(snd));
 }
 
 /// Tests directory move assignment operator
@@ -87,37 +87,37 @@ TEST(directory, move_assignment) {
     directory fst = directory(PREFIX);
     directory snd = directory(PREFIX);
 
-    fs::path path1 = fst;
-    fs::path path2 = snd;
+    stdfs::path path1 = fst;
+    stdfs::path path2 = snd;
 
     fst = std::move(snd);
 
-    EXPECT_FALSE(fs::exists(path1));
-    EXPECT_TRUE(fs::exists(path2));
+    EXPECT_FALSE(stdfs::exists(path1));
+    EXPECT_TRUE(stdfs::exists(path2));
 
-    EXPECT_TRUE(fs::exists(fst));
-    EXPECT_TRUE(fs::equivalent(fst, path2));
+    EXPECT_TRUE(stdfs::exists(fst));
+    EXPECT_TRUE(stdfs::equivalent(fst, path2));
 }
 
 /// Tests directory releasing
 TEST(directory, release) {
-    fs::path path = fs::path();
+    stdfs::path path = stdfs::path();
     {
         directory tmpdir = directory(PREFIX);
-        fs::path expected = tmpdir;
+        stdfs::path expected = tmpdir;
         path = tmpdir.release();
 
-        EXPECT_TRUE(fs::equivalent(path, expected));
+        EXPECT_TRUE(stdfs::equivalent(path, expected));
     }
 
-    EXPECT_TRUE(fs::exists(path));
-    fs::remove(path);
+    EXPECT_TRUE(stdfs::exists(path));
+    stdfs::remove(path);
 }
 
 /// Tests directory moving
 TEST(directory, move) {
-    fs::path path = fs::path();
-    fs::path to = fs::temp_directory_path() / PREFIX / "non-existing/parent";
+    stdfs::path path = stdfs::path();
+    stdfs::path to = stdfs::temp_directory_path() / PREFIX / "non-existing/parent";
     {
         directory tmpdir = directory(PREFIX);
         path = tmpdir;
@@ -125,8 +125,8 @@ TEST(directory, move) {
         tmpdir.move(to);
     }
 
-    EXPECT_FALSE(fs::exists(path));
-    EXPECT_TRUE(fs::exists(to));
-    fs::remove_all(fs::temp_directory_path() / PREFIX / "non-existing");
+    EXPECT_FALSE(stdfs::exists(path));
+    EXPECT_TRUE(stdfs::exists(to));
+    stdfs::remove_all(stdfs::temp_directory_path() / PREFIX / "non-existing");
 }
 }    // namespace tmp
