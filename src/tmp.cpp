@@ -1,5 +1,6 @@
 #include <tmp/directory>
 #include <tmp/file>
+#include <tmp/filesystem>
 #include <tmp/path>
 
 #include <fstream>
@@ -53,7 +54,7 @@ void remove(const path& path) noexcept {
 /// @returns A path pattern for the unique temporary path
 /// @throws fs::filesystem_error if cannot create the parent of the path pattern
 fs::path make_pattern(std::string_view prefix) {
-    fs::path pattern = fs::temp_directory_path() / prefix / "XXXXXX";
+    fs::path pattern = filesystem::root() / prefix / "XXXXXX";
     create_parent(pattern);
 
     return pattern;
@@ -229,4 +230,16 @@ directory::~directory() noexcept = default;
 
 directory::directory(directory&&) noexcept = default;
 directory& directory::operator=(directory&&) noexcept = default;
+
+//===----------------------------------------------------------------------===//
+// tmp::fs implementation
+//===----------------------------------------------------------------------===//
+
+fs::path filesystem::root(std::string_view prefix) {
+    return fs::temp_directory_path() / prefix;
+}
+
+fs::space_info filesystem::space() {
+    return fs::space(root());
+}
 }    // namespace tmp
