@@ -1,0 +1,20 @@
+#pragma once
+
+#include <filesystem>
+
+namespace tmp {
+
+/// Temporary filesystem related operations
+/// @note This API is experimental and is subject to change
+class fs final {
+public:
+    /// Retrieves the root path of the temporary filesystem
+    /// @param prefix   A prefix to be used in the temporary filesystem path
+    /// @return The temporary filesystem root path with the specified prefix
+    static std::filesystem::path root(std::string_view prefix = "");
+
+    /// Determines the information about the temporary filesystem
+    /// @return The temporary filesystem information
+    static std::filesystem::space_info space();
+};
+}    // namespace tmp
