@@ -6,7 +6,7 @@ namespace tmp {
 
 /// Temporary filesystem related operations
 /// @note This API is experimental and is subject to change
-class fs final {
+class filesystem final {
 public:
     /// Retrieves the root path of the temporary filesystem
     /// @param prefix   A prefix to be used in the temporary filesystem path
