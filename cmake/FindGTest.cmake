@@ -46,7 +46,6 @@ endif()
 find_package(GTest QUIET CONFIG)
 
 if(GTest_FOUND)
-    message(found)
     find_package_handle_standard_args(GTest CONFIG_MODE)
     return()
 endif()
