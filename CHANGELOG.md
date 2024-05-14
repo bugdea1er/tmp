@@ -1,3 +1,8 @@
+## v0.7.1 (May 14, 2024)
+
+- Optimise building when used as a submodule
+- Use CTest's BUILD_TESTING instead of custom option
+
 ## v0.7 (May 13, 2024)
 
 - **Breaking change:** Unify read and slurp methods ([#38](https://github.com/bugdea1er/tmp/pull/38))
