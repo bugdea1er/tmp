@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 project(tmp LANGUAGES CXX)
 
-option(TMP_TEST "Generate test target for tmp" ON)
-
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/)
 
 include(GNUInstallDirs)
@@ -19,17 +17,17 @@ target_include_directories(
 
 add_library(tmp::tmp ALIAS ${PROJECT_NAME})
 
-if(TMP_TEST)
-    enable_testing()
-    add_subdirectory(tests)
-
+if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     if(CMAKE_CXX_COMPILER_ID MATCHES GNU|Clang)
         target_compile_options(${PROJECT_NAME} PRIVATE -Werror)
         target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic)
     endif()
-endif()
 
-if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+    include(CTest)
+    if(BUILD_TESTING)
+        add_subdirectory(tests)
+    endif()
+
     include(CMakePackageConfigHelpers)
     configure_package_config_file(
         ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Config.cmake.in

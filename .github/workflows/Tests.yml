@@ -1,7 +1,8 @@
 name: Tests
 on:
-  - push
-  - pull_request
+  push:
+    branches: [ main ]
+  pull_request:
 
 env:
   build_dir: ${{ github.workspace }}/build
@@ -35,14 +36,13 @@ jobs:
         run:  cmake --build ${{ env.build_dir }}
 
       - name: Run tests
-        run:  ctest --build-config
-        working-directory: ${{ env.build_dir }}
+        run:  ctest --output-on-failure --test-dir ${{ env.build_dir }}
 
       - name: Run installation
         run:  sudo cmake --install ${{ env.build_dir }}
 
       - name: Prepare installation test directory
-        run: mkdir -p ${{ env.install_test_dir }}
+        run:  mkdir -p ${{ env.install_test_dir }}
 
       - name: Test installation
         run: |
