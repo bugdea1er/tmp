@@ -35,8 +35,7 @@ jobs:
         run:  cmake --build ${{ env.build_dir }}
 
       - name: Run tests
-        run:  ctest --build-config
-        working-directory: ${{ env.build_dir }}
+        run:  ctest --test-dir ${{ env.build_dir }}
 
       - name: Run installation
         run:  sudo cmake --install ${{ env.build_dir }}
