@@ -6,7 +6,6 @@ on:
 
 env:
   build_dir: ${{ github.workspace }}/build
-  install_test_dir: ${{ github.workspace }}/install-test
 
 jobs:
   test:
@@ -41,11 +40,9 @@ jobs:
       - name: Run installation
         run:  sudo cmake --install ${{ env.build_dir }}
 
-      - name: Prepare installation test directory
-        run:  mkdir -p ${{ env.install_test_dir }}
-
       - name: Test installation
         run: |
+          cd $(mktemp -d)
           cat <<EOS > main.cpp
             #include <iostream>
             #include <tmp/file>
@@ -63,4 +60,3 @@ jobs:
           cmake -B .
           cmake --build .
           test -f $(./install-test)
-        working-directory: ${{ env.install_test_dir }}
