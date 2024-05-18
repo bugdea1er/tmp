@@ -46,15 +46,17 @@ void remove(const path& path) noexcept {
 /// Creates a temporary path pattern with the given prefix
 ///
 /// The pattern consists of the system's temporary directory path, the given
-/// prefix, and six 'X' characters that must be replaced by random
-/// characters to ensure uniqueness
+/// prefix, six 'X' characters that must be replaced by random characters
+/// to ensure uniqueness, and the given suffix
 ///
 /// The parent of the resulting path is created when this function is called
 /// @param prefix   A prefix to be used in the path pattern
+/// @param suffix   A suffix to be used in the path pattern
 /// @returns A path pattern for the unique temporary path
 /// @throws fs::filesystem_error if cannot create the parent of the path pattern
-fs::path make_pattern(std::string_view prefix) {
+fs::path make_pattern(std::string_view prefix, std::string_view suffix) {
     fs::path pattern = filesystem::root() / prefix / "XXXXXX";
+    pattern += suffix;
     create_parent(pattern);
 
     return pattern;
@@ -63,11 +65,12 @@ fs::path make_pattern(std::string_view prefix) {
 /// Creates a temporary file with the given prefix in the system's
 /// temporary directory, and returns its path
 /// @param prefix   The prefix to use for the temporary file name
+/// @param suffix   The suffix to use for the temporary file name
 /// @returns A path to the created temporary file
 /// @throws fs::filesystem_error if cannot create the temporary file
-fs::path create_file(std::string_view prefix) {
-    std::string pattern = make_pattern(prefix);
-    if (mkstemp(pattern.data()) == -1) {
+fs::path create_file(std::string_view prefix, std::string_view suffix) {
+    std::string pattern = make_pattern(prefix, suffix);
+    if (mkstemps(pattern.data(), suffix.size()) == -1) {
         std::error_code ec = std::error_code(errno, std::system_category());
         throw fs::filesystem_error("Cannot create temporary file", ec);
     }
@@ -81,7 +84,7 @@ fs::path create_file(std::string_view prefix) {
 /// @returns A path to the created temporary directory
 /// @throws fs::filesystem_error if cannot create the temporary directory
 fs::path create_directory(std::string_view prefix) {
-    std::string pattern = make_pattern(prefix);
+    std::string pattern = make_pattern(prefix, "");
     if (mkdtemp(pattern.data()) == nullptr) {
         std::error_code ec = std::error_code(errno, std::system_category());
         throw fs::filesystem_error("Cannot create temporary directory", ec);
@@ -166,19 +169,20 @@ void path::move(const fs::path& to) {
 // tmp::file implementation
 //===----------------------------------------------------------------------===//
 
-file::file(std::string_view prefix)
-    : file(prefix, /*binary=*/true) {}
+file::file(std::string_view prefix, std::string_view suffix)
+    : file(prefix, suffix, /*binary=*/true) {}
 
-file::file(std::string_view prefix, bool binary)
-    : path(create_file(prefix)),
+file::file(std::string_view prefix, std::string_view suffix, bool binary)
+    : path(create_file(prefix, suffix)),
       binary(binary) {}
 
-file file::text(std::string_view prefix) {
-    return file(prefix, /*binary=*/false);
+file file::text(std::string_view prefix, std::string_view suffix) {
+    return file(prefix, suffix, /*binary=*/false);
 }
 
-file file::copy(const fs::path& path, std::string_view prefix) {
-    file tmpfile = file(prefix);
+file file::copy(const fs::path& path, std::string_view prefix,
+                std::string_view suffix) {
+    file tmpfile = file(prefix, suffix);
     fs::copy(path, tmpfile, copy_options);
     return tmpfile;
 }
