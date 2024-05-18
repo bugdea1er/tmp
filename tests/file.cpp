@@ -63,7 +63,7 @@ TEST(file, copy_directory) {
 /// Tests file reading
 TEST(file, read) {
     file tmpfile = file(PREFIX);
-    std::ofstream stream = std::ofstream(fs::path(tmpfile));
+    std::ofstream stream = std::ofstream(fs::path(tmpfile), std::ios::binary);
 
     stream << "Hello," << std::endl;
     stream << "world!" << std::endl;
@@ -77,7 +77,7 @@ TEST(file, write) {
     tmpfile.write("Hello");
 
     {
-        std::ifstream stream = std::ifstream(fs::path(tmpfile));
+        auto stream = std::ifstream(fs::path(tmpfile), std::ios::binary);
         auto content = std::string(std::istreambuf_iterator<char>(stream), {});
         EXPECT_EQ(content, "Hello");
     }
@@ -85,7 +85,7 @@ TEST(file, write) {
     tmpfile.write("world!");
 
     {
-        std::ifstream stream = std::ifstream(fs::path(tmpfile));
+        auto stream = std::ifstream(fs::path(tmpfile), std::ios::binary);
         auto content = std::string(std::istreambuf_iterator<char>(stream), {});
         EXPECT_EQ(content, "world!");
     }
@@ -94,12 +94,12 @@ TEST(file, write) {
 /// Tests file appending
 TEST(file, append) {
     file tmpfile = file(PREFIX);
-    std::ofstream(fs::path(tmpfile)) << "Hello, ";
+    std::ofstream(fs::path(tmpfile), std::ios::binary) << "Hello, ";
 
     tmpfile.append("world");
 
     {
-        std::ifstream stream = std::ifstream(fs::path(tmpfile));
+        auto stream = std::ifstream(fs::path(tmpfile), std::ios::binary);
         auto content = std::string(std::istreambuf_iterator<char>(stream), {});
         EXPECT_EQ(content, "Hello, world");
     }
@@ -107,7 +107,7 @@ TEST(file, append) {
     tmpfile.append("!");
 
     {
-        std::ifstream stream = std::ifstream(fs::path(tmpfile));
+        auto stream = std::ifstream(fs::path(tmpfile), std::ios::binary);
         auto content = std::string(std::istreambuf_iterator<char>(stream), {});
         EXPECT_EQ(content, "Hello, world!");
     }
