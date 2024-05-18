@@ -21,6 +21,8 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     if(CMAKE_CXX_COMPILER_ID MATCHES GNU|Clang)
         target_compile_options(${PROJECT_NAME} PRIVATE -Werror)
         target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic)
+    elseif(MSVC)
+        target_compile_options(${PROJECT_NAME} PRIVATE /WX /W3)
     endif()
 
     include(CTest)

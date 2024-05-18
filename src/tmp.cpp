@@ -9,9 +9,8 @@
 #include <utility>
 
 #ifdef WIN32
+#include <sstream>
 #include <windows.h>
-#include <iostream>
-
 #else
 #include <unistd.h>
 #endif
@@ -50,14 +49,40 @@ void remove(const path& path) noexcept {
     throw fs::filesystem_error("Cannot move temporary resource", to, ec);
 }
 
+#ifdef WIN32
+std::string to_string(const GUID& guid) {
+    std::stringstream sstr;
+    sstr << std::uppercase;
+    sstr.width(8);
+    sstr << std::hex << guid.Data1 << '-';
+
+    sstr.width(4);
+    sstr << std::hex << guid.Data2 << '-';
+
+    sstr.width(4);
+    sstr << std::hex << guid.Data3 << '-';
+
+    sstr.width(2);
+    sstr << std::hex
+         << static_cast<short>(guid.Data4[0])
+         << static_cast<short>(guid.Data4[1])
+         << '-'
+         << static_cast<short>(guid.Data4[2])
+         << static_cast<short>(guid.Data4[3])
+         << static_cast<short>(guid.Data4[4])
+         << static_cast<short>(guid.Data4[5])
+         << static_cast<short>(guid.Data4[6])
+         << static_cast<short>(guid.Data4[7]);
+    sstr << std::nouppercase;
+    return std::move(sstr).str();
+}
+#endif
+
 /// Creates a temporary path pattern with the given prefix
 ///
-/// On POSIX systems the pattern consists of the system's temporary directory
-/// path, the given prefix, and six 'X' characters that must be replaced
-/// by random characters to ensure uniqueness
-///
-/// On Windows the pattern consists of the system's temporary directory path
-/// and the given prefix, and must be appended with a unique filename
+/// The pattern consists of the system's temporary directory path, the given
+/// prefix, six 'X' characters that must be replaced by random characters
+/// to ensure uniqueness, and the given suffix
 ///
 /// The parent of the resulting path is created when this function is called
 /// @param prefix   A prefix to be used in the path pattern
@@ -65,14 +90,18 @@ void remove(const path& path) noexcept {
 /// @returns A path pattern for the unique temporary path
 /// @throws fs::filesystem_error if cannot create the parent of the path pattern
 fs::path make_pattern(std::string_view prefix, std::string_view suffix) {
-    fs::path pattern = filesystem::root() / prefix;
-    fs::create_directories(pattern);
+#ifdef WIN32
+    GUID guid;
+    CoCreateGuid(&guid);
 
-#ifndef WIN32
-    pattern /= "XXXXXX";
+    fs::path pattern = filesystem::root() / prefix / to_string(guid);
+#else
+    fs::path pattern = filesystem::root() / prefix / "XXXXXX";
 #endif
 
     pattern += suffix;
+    create_parent(pattern);
+
     return pattern;
 }
 
@@ -83,25 +112,32 @@ fs::path make_pattern(std::string_view prefix, std::string_view suffix) {
 /// @returns A path to the created temporary file
 /// @throws fs::filesystem_error if cannot create the temporary file
 fs::path create_file(std::string_view prefix, std::string_view suffix) {
-    fs::path pattern = make_pattern(prefix, suffix);
-    fs::path::string_type native = pattern.native();
+    fs::path::string_type path = make_pattern(prefix, suffix);
+    std::error_code ec;
 #ifdef WIN32
-    wchar_t tempfile[MAX_PATH];
-    if (GetTempFileNameW(native.data(), L"", 0, tempfile) == 0) {
-        // TODO: this is not how you use GetLastError
-        std::error_code ec = std::error_code(GetLastError(), std::system_category());
-        throw fs::filesystem_error("Cannot create temporary file", ec);
-    }
+    HANDLE file =
+        CreateFileW(path.c_str(), GENERIC_READ | GENERIC_WRITE,
+                    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                    nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
 
-    return fs::path(pattern / tempfile);
+    if (file == INVALID_HANDLE_VALUE) {
+        DWORD err = GetLastError();
+        if (err == ERROR_ALREADY_EXISTS) {
+            return create_file(prefix, suffix);
+        }
+
+        ec = std::error_code(err, std::system_category());
+    }
 #else
-    if (mkstemps(pattern.data(), suffix.size()) == -1) {
-        std::error_code ec = std::error_code(errno, std::system_category());
+    if (mkstemps(path.data(), suffix.size()) == -1) {
+        ec = std::error_code(errno, std::system_category());
+    }
+#endif
+    if (ec) {
         throw fs::filesystem_error("Cannot create temporary file", ec);
     }
 
-    return pattern;
-#endif
+    return path;
 }
 
 /// Creates a temporary directory with the given prefix in the system's
@@ -110,19 +146,27 @@ fs::path create_file(std::string_view prefix, std::string_view suffix) {
 /// @returns A path to the created temporary directory
 /// @throws fs::filesystem_error if cannot create the temporary directory
 fs::path create_directory(std::string_view prefix) {
+    fs::path::string_type path = make_pattern(prefix, "");
+    std::error_code ec;
 #ifdef WIN32
-    fs::path pattern = make_pattern(prefix, "");
-    fs::path::string_type native = pattern.native();
-    return fs::path();
+    if(!CreateDirectoryW(path.c_str(), nullptr)) {
+        DWORD err = GetLastError();
+        if (err == ERROR_ALREADY_EXISTS) {
+            return create_directory(prefix);
+        }
+
+        ec = std::error_code(err, std::system_category());
+    }
 #else
-    std::string pattern = make_pattern(prefix, "");
-    if (mkdtemp(pattern.data()) == nullptr) {
-        std::error_code ec = std::error_code(errno, std::system_category());
+    if (mkdtemp(path.data()) == nullptr) {
+        ec = std::error_code(errno, std::system_category());
+    }
+#endif
+    if (ec) {
         throw fs::filesystem_error("Cannot create temporary directory", ec);
     }
 
-    return pattern;
-#endif
+    return path;
 }
 
 /// Opens a temporary file for writing and returns an output file stream

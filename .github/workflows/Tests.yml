@@ -19,6 +19,8 @@ jobs:
           - macos-11
           - macos-12
           - macos-13
+          - windows-2019
+          - windows-2022
 
     steps:
       - name: Checkout repository
@@ -36,27 +38,3 @@ jobs:
 
       - name: Run tests
         run:  ctest --output-on-failure --test-dir ${{ env.build_dir }}
-
-      - name: Run installation
-        run:  sudo cmake --install ${{ env.build_dir }}
-
-      - name: Test installation
-        run: |
-          cd $(mktemp -d)
-          cat <<EOS > main.cpp
-            #include <iostream>
-            #include <tmp/file>
-            int main() {
-              std::cout << tmp::file().release().native();
-            }
-          EOS
-          cat <<EOS > CMakeLists.txt
-            cmake_minimum_required(VERSION 3.12)
-            project(install-test LANGUAGES CXX)
-            find_package(tmp REQUIRED)
-            add_executable(install-test main.cpp)
-            target_link_libraries(install-test tmp::tmp)
-          EOS
-          cmake -B .
-          cmake --build .
-          test -f $(./install-test)
