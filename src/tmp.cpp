@@ -9,7 +9,6 @@
 #include <utility>
 
 #ifdef WIN32
-#include <array>
 #include <windows.h>
 #define CHARS_IN_GUID 39
 #else
@@ -123,7 +122,7 @@ fs::path create_directory(std::string_view prefix) {
     fs::path::string_type path = make_pattern(prefix, "");
     std::error_code ec;
 #ifdef WIN32
-    if(!CreateDirectoryW(path.c_str(), nullptr)) {
+    if (!CreateDirectoryW(path.c_str(), nullptr)) {
         DWORD err = GetLastError();
         if (err == ERROR_ALREADY_EXISTS) {
             return create_directory(prefix);
