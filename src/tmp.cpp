@@ -9,8 +9,9 @@
 #include <utility>
 
 #ifdef WIN32
-#include <sstream>
+#include <array>
 #include <windows.h>
+#define CHARS_IN_GUID 39
 #else
 #include <unistd.h>
 #endif
@@ -49,40 +50,7 @@ void remove(const path& path) noexcept {
     throw fs::filesystem_error("Cannot move temporary resource", to, ec);
 }
 
-#ifdef WIN32
-std::string to_string(const GUID& guid) {
-    std::stringstream sstr;
-    sstr << std::uppercase;
-    sstr.width(8);
-    sstr << std::hex << guid.Data1 << '-';
-
-    sstr.width(4);
-    sstr << std::hex << guid.Data2 << '-';
-
-    sstr.width(4);
-    sstr << std::hex << guid.Data3 << '-';
-
-    sstr.width(2);
-    sstr << std::hex
-         << static_cast<short>(guid.Data4[0])
-         << static_cast<short>(guid.Data4[1])
-         << '-'
-         << static_cast<short>(guid.Data4[2])
-         << static_cast<short>(guid.Data4[3])
-         << static_cast<short>(guid.Data4[4])
-         << static_cast<short>(guid.Data4[5])
-         << static_cast<short>(guid.Data4[6])
-         << static_cast<short>(guid.Data4[7]);
-    sstr << std::nouppercase;
-    return std::move(sstr).str();
-}
-#endif
-
-/// Creates a temporary path pattern with the given prefix
-///
-/// The pattern consists of the system's temporary directory path, the given
-/// prefix, six 'X' characters that must be replaced by random characters
-/// to ensure uniqueness, and the given suffix
+/// Creates a temporary path pattern with the given prefix and suffix
 ///
 /// The parent of the resulting path is created when this function is called
 /// @param prefix   A prefix to be used in the path pattern
@@ -94,10 +62,16 @@ fs::path make_pattern(std::string_view prefix, std::string_view suffix) {
     GUID guid;
     CoCreateGuid(&guid);
 
-    fs::path pattern = filesystem::root() / prefix / to_string(guid);
+    wchar_t name[CHARS_IN_GUID];
+    swprintf(name, CHARS_IN_GUID,
+             L"%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X", guid.Data1,
+             guid.Data2, guid.Data3, guid.Data4[0], guid.Data4[1],
+             guid.Data4[2], guid.Data4[3], guid.Data4[4], guid.Data4[5],
+             guid.Data4[6], guid.Data4[7]);
 #else
-    fs::path pattern = filesystem::root() / prefix / "XXXXXX";
+    char name[] = "XXXXXX";
 #endif
+    fs::path pattern = filesystem::root() / prefix / name;
 
     pattern += suffix;
     create_parent(pattern);
