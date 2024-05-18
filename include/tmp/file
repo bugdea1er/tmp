@@ -64,9 +64,9 @@ public:
 
     /// Creates a unique temporary copy from the given path
     ///
-    /// @param path     A path to make a temporary copy from
-    /// @param prefix   A prefix to be used in the temporary file path
-    /// @param suffix   A suffix to be used in the temporary file path
+    /// @param path   A path to make a temporary copy from
+    /// @param prefix A prefix to be used in the temporary directory path
+    /// @param suffix A suffix to be used in the temporary file path
     /// @returns The new temporary file
     /// @throws std::filesystem::filesystem_error if @p path is not a file
     static file copy(const std::filesystem::path& path,
