@@ -25,8 +25,8 @@ TEST(file, create_without_prefix) {
     EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path()));
 }
 
-/// Tests file creation with extension
-TEST(file, create_with_extension) {
+/// Tests file creation with suffix
+TEST(file, create_with_suffix) {
     file tmpfile = file("", ".test");
 
     EXPECT_TRUE(fs::exists(tmpfile));

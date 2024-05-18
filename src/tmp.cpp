@@ -169,20 +169,20 @@ void path::move(const fs::path& to) {
 // tmp::file implementation
 //===----------------------------------------------------------------------===//
 
-file::file(std::string_view prefix, std::string_view extension)
-    : file(prefix, extension, /*binary=*/true) {}
+file::file(std::string_view prefix, std::string_view suffix)
+    : file(prefix, suffix, /*binary=*/true) {}
 
-file::file(std::string_view prefix, std::string_view extension, bool binary)
-    : path(create_file(prefix, extension)),
+file::file(std::string_view prefix, std::string_view suffix, bool binary)
+    : path(create_file(prefix, suffix)),
       binary(binary) {}
 
-file file::text(std::string_view prefix, std::string_view extension) {
-    return file(prefix, extension, /*binary=*/false);
+file file::text(std::string_view prefix, std::string_view suffix) {
+    return file(prefix, suffix, /*binary=*/false);
 }
 
 file file::copy(const fs::path& path, std::string_view prefix,
-                std::string_view extension) {
-    file tmpfile = file(prefix, extension);
+                std::string_view suffix) {
+    file tmpfile = file(prefix, suffix);
     fs::copy(path, tmpfile, copy_options);
     return tmpfile;
 }
