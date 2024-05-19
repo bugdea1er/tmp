@@ -1,3 +1,9 @@
+## v0.8 (May 19, 2024)
+
+- Add Windows support ([#26](https://github.com/bugdea1er/tmp/pull/26))
+- Add support for creation tmp::file with requested suffix ([#44](https://github.com/bugdea1er/tmp/pull/44))
+- Add explicit path getter method ([#46](https://github.com/bugdea1er/tmp/pull/46))
+
 ## v0.7.1 (May 14, 2024)
 
 - Optimise building when used as a submodule
