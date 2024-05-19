@@ -13,6 +13,7 @@ TEST(file, create_with_prefix) {
     fs::path parent = tmpfile->parent_path();
 
     EXPECT_TRUE(fs::exists(tmpfile));
+    EXPECT_TRUE(fs::is_regular_file(tmpfile));
     EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path() / PREFIX));
 }
 
@@ -22,6 +23,7 @@ TEST(file, create_without_prefix) {
     fs::path parent = tmpfile->parent_path();
 
     EXPECT_TRUE(fs::exists(tmpfile));
+    EXPECT_TRUE(fs::is_regular_file(tmpfile));
     EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path()));
 }
 
@@ -30,6 +32,7 @@ TEST(file, create_with_suffix) {
     file tmpfile = file("", ".test");
 
     EXPECT_TRUE(fs::exists(tmpfile));
+    EXPECT_TRUE(fs::is_regular_file(tmpfile));
     EXPECT_EQ(tmpfile->extension(), ".test");
 }
 
@@ -50,6 +53,8 @@ TEST(file, copy_file) {
     EXPECT_TRUE(fs::exists(tmpfile));
     EXPECT_TRUE(fs::exists(tmpcopy));
     EXPECT_FALSE(fs::equivalent(tmpfile, tmpcopy));
+
+    EXPECT_TRUE(fs::is_regular_file(tmpfile));
 
     EXPECT_EQ(tmpcopy.read(), "Hello, world!");
 }
