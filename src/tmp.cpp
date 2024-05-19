@@ -153,7 +153,7 @@ std::ofstream stream(const file& file, bool binary, bool append) noexcept {
         mode |= std::ios::binary;
     }
 
-    return std::ofstream(static_cast<const fs::path&>(file), mode);
+    return std::ofstream(file.path(), mode);
 }
 }    // namespace
 
@@ -222,7 +222,7 @@ file::file(std::string_view prefix, std::string_view suffix)
     : file(prefix, suffix, /*binary=*/true) {}
 
 file::file(std::string_view prefix, std::string_view suffix, bool binary)
-    : path(create_file(prefix, suffix)),
+    : tmp::path(create_file(prefix, suffix)),
       binary(binary) {}
 
 file file::text(std::string_view prefix, std::string_view suffix) {
@@ -236,11 +236,14 @@ file file::copy(const fs::path& path, std::string_view prefix,
     return tmpfile;
 }
 
-std::string file::read() const {
-    const fs::path& file = *this;
-    std::ios::openmode mode = binary ? std::ios::binary : std::ios::openmode();
+const fs::path& file::path() const noexcept {
+    return *this;
+}
 
-    std::ifstream stream = std::ifstream(file, mode);
+std::string file::read() const {
+    std::ios::openmode mode = binary ? std::ios::binary : std::ios::openmode();
+    std::ifstream stream = std::ifstream(path(), mode);
+
     return std::string(std::istreambuf_iterator<char>(stream), {});
 }
 
@@ -262,7 +265,7 @@ file& file::operator=(file&&) noexcept = default;
 //===----------------------------------------------------------------------===//
 
 directory::directory(std::string_view prefix)
-    : path(create_directory(prefix)) {}
+    : tmp::path(create_directory(prefix)) {}
 
 directory directory::copy(const fs::path& path, std::string_view prefix) {
     if (fs::is_regular_file(path)) {
@@ -275,8 +278,12 @@ directory directory::copy(const fs::path& path, std::string_view prefix) {
     return tmpdir;
 }
 
+const fs::path& directory::path() const noexcept {
+    return *this;
+}
+
 fs::path directory::operator/(std::string_view source) const {
-    return static_cast<const fs::path&>(*this) / source;
+    return path() / source;
 }
 
 directory::~directory() noexcept = default;

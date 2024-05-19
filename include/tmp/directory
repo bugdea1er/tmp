@@ -54,6 +54,9 @@ public:
     static directory copy(const std::filesystem::path& path,
                           std::string_view prefix = "");
 
+    /// Returns a path to this directory
+    const std::filesystem::path& path() const noexcept;
+
     /// Concatenates this directory path with a given @p source
     /// @param source   A string which represents a path name
     /// @returns The result of path concatenation
