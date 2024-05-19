@@ -74,6 +74,7 @@ public:
                      std::string_view suffix = "");
 
     /// Returns a path to this file
+    /// @returns The full path to this file
     const std::filesystem::path& path() const noexcept;
 
     /// Reads the entire contents of this file

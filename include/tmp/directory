@@ -55,6 +55,7 @@ public:
                           std::string_view prefix = "");
 
     /// Returns a path to this directory
+    /// @returns The full path to this directory
     const std::filesystem::path& path() const noexcept;
 
     /// Concatenates this directory path with a given @p source
