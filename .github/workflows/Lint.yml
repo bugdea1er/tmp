@@ -29,3 +29,14 @@ jobs:
           (find cmake -name '*.cmake.in'; find cmake -name '*.cmake'; find . tests -maxdepth 1 -name 'CMakeLists.txt') \
             | xargs cmake-format -i
           git diff --color --exit-code
+  tidy:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install clang-tidy
+        run:  brew install llvm
+
+      - name: Run clang-tidy
+        run:  $HOMEBREW_PREFIX/opt/llvm/bin/clang-tidy --quiet src/tmp.cpp -- -std=c++17 -Iinclude/
