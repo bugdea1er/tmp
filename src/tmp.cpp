@@ -3,7 +3,11 @@
 #include <tmp/filesystem>
 #include <tmp/path>
 
+#include <filesystem>
 #include <fstream>
+#include <ios>
+#include <iterator>
+#include <memory>
 #include <string_view>
 #include <system_error>
 #include <utility>
@@ -11,6 +15,7 @@
 #ifdef WIN32
 #include <windows.h>
 #else
+#include <cerrno>
 #include <unistd.h>
 #endif
 
@@ -68,7 +73,7 @@ fs::path make_pattern(std::string_view prefix, std::string_view suffix) {
              guid.Data4[2], guid.Data4[3], guid.Data4[4], guid.Data4[5],
              guid.Data4[6], guid.Data4[7]);
 #else
-    char name[] = "XXXXXX";
+    const char name[] = "XXXXXX";
 #endif
     fs::path pattern = filesystem::root(prefix) / name;
 
