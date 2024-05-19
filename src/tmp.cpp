@@ -10,7 +10,6 @@
 
 #ifdef WIN32
 #include <windows.h>
-#define CHARS_IN_GUID 39
 #else
 #include <unistd.h>
 #endif
@@ -58,6 +57,7 @@ void remove(const path& path) noexcept {
 /// @throws fs::filesystem_error if cannot create the parent of the path pattern
 fs::path make_pattern(std::string_view prefix, std::string_view suffix) {
 #ifdef WIN32
+    constexpr static std::size_t CHARS_IN_GUID = 39;
     GUID guid;
     CoCreateGuid(&guid);
 
@@ -70,7 +70,7 @@ fs::path make_pattern(std::string_view prefix, std::string_view suffix) {
 #else
     char name[] = "XXXXXX";
 #endif
-    fs::path pattern = filesystem::root() / prefix / name;
+    fs::path pattern = filesystem::root(prefix) / name;
 
     pattern += suffix;
     create_parent(pattern);
