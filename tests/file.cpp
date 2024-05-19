@@ -68,7 +68,7 @@ TEST(file, copy_directory) {
 /// Tests binary file reading
 TEST(file, read_binary) {
     file tmpfile = file(PREFIX);
-    std::ofstream stream = std::ofstream(fs::path(tmpfile), std::ios::binary);
+    std::ofstream stream = std::ofstream(tmpfile.path(), std::ios::binary);
 
     stream << "Hello," << std::endl;
     stream << "world!" << std::endl;
@@ -79,7 +79,7 @@ TEST(file, read_binary) {
 /// Tests text file reading
 TEST(file, read_text) {
     file tmpfile = file::text(PREFIX);
-    std::ofstream stream = std::ofstream(fs::path(tmpfile));
+    std::ofstream stream = std::ofstream(tmpfile.path());
 
     stream << "Hello," << std::endl;
     stream << "world!" << std::endl;
@@ -93,7 +93,7 @@ TEST(file, write_binary) {
     tmpfile.write("Hello\n");
 
     {
-        auto stream = std::ifstream(fs::path(tmpfile), std::ios::binary);
+        auto stream = std::ifstream(tmpfile.path(), std::ios::binary);
         auto content = std::string(std::istreambuf_iterator<char>(stream), {});
         EXPECT_EQ(content, "Hello\n");
     }
@@ -101,7 +101,7 @@ TEST(file, write_binary) {
     tmpfile.write("world!\n");
 
     {
-        auto stream = std::ifstream(fs::path(tmpfile), std::ios::binary);
+        auto stream = std::ifstream(tmpfile.path(), std::ios::binary);
         auto content = std::string(std::istreambuf_iterator<char>(stream), {});
         EXPECT_EQ(content, "world!\n");
     }
@@ -113,7 +113,7 @@ TEST(file, write_text) {
     tmpfile.write("Hello\n");
 
     {
-        auto stream = std::ifstream(fs::path(tmpfile));
+        auto stream = std::ifstream(tmpfile.path());
         auto content = std::string(std::istreambuf_iterator<char>(stream), {});
         EXPECT_EQ(content, "Hello\n");
     }
@@ -121,7 +121,7 @@ TEST(file, write_text) {
     tmpfile.write("world!\n");
 
     {
-        auto stream = std::ifstream(fs::path(tmpfile));
+        auto stream = std::ifstream(tmpfile.path());
         auto content = std::string(std::istreambuf_iterator<char>(stream), {});
         EXPECT_EQ(content, "world!\n");
     }
@@ -130,12 +130,12 @@ TEST(file, write_text) {
 /// Tests binary file appending
 TEST(file, append_binary) {
     file tmpfile = file(PREFIX);
-    std::ofstream(fs::path(tmpfile), std::ios::binary) << "Hello, ";
+    std::ofstream(tmpfile.path(), std::ios::binary) << "Hello, ";
 
     tmpfile.append("world");
 
     {
-        auto stream = std::ifstream(fs::path(tmpfile), std::ios::binary);
+        auto stream = std::ifstream(tmpfile.path(), std::ios::binary);
         auto content = std::string(std::istreambuf_iterator<char>(stream), {});
         EXPECT_EQ(content, "Hello, world");
     }
@@ -143,7 +143,7 @@ TEST(file, append_binary) {
     tmpfile.append("!");
 
     {
-        auto stream = std::ifstream(fs::path(tmpfile), std::ios::binary);
+        auto stream = std::ifstream(tmpfile.path(), std::ios::binary);
         auto content = std::string(std::istreambuf_iterator<char>(stream), {});
         EXPECT_EQ(content, "Hello, world!");
     }
@@ -152,12 +152,12 @@ TEST(file, append_binary) {
 /// Tests text file appending
 TEST(file, append_text) {
     file tmpfile = file::text(PREFIX);
-    std::ofstream(fs::path(tmpfile)) << "Hello,\n ";
+    std::ofstream(tmpfile.path()) << "Hello,\n ";
 
     tmpfile.append("world");
 
     {
-        auto stream = std::ifstream(fs::path(tmpfile));
+        auto stream = std::ifstream(tmpfile.path());
         auto content = std::string(std::istreambuf_iterator<char>(stream), {});
         EXPECT_EQ(content, "Hello,\n world");
     }
@@ -165,7 +165,7 @@ TEST(file, append_text) {
     tmpfile.append("!");
 
     {
-        auto stream = std::ifstream(fs::path(tmpfile));
+        auto stream = std::ifstream(tmpfile.path());
         auto content = std::string(std::istreambuf_iterator<char>(stream), {});
         EXPECT_EQ(content, "Hello,\n world!");
     }
@@ -187,7 +187,7 @@ TEST(file, move_constructor) {
     file fst = file(PREFIX);
     file snd = std::move(fst);
 
-    EXPECT_TRUE(fst->empty());
+    EXPECT_TRUE(fst.path().empty());
     EXPECT_TRUE(fs::exists(snd));
 }
 
@@ -213,7 +213,7 @@ TEST(file, release) {
     fs::path path = fs::path();
     {
         file tmpfile = file(PREFIX);
-        fs::path expected = fs::path(tmpfile);
+        fs::path expected = tmpfile;
         path = tmpfile.release();
 
         EXPECT_TRUE(fs::equivalent(path, expected));
