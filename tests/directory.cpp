@@ -13,6 +13,7 @@ TEST(directory, create_with_prefix) {
     fs::path parent = tmpdir->parent_path();
 
     EXPECT_TRUE(fs::exists(tmpdir));
+    EXPECT_TRUE(fs::is_directory(tmpdir));
     EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path() / PREFIX));
 }
 
@@ -22,6 +23,7 @@ TEST(directory, create_without_prefix) {
     fs::path parent = tmpdir->parent_path();
 
     EXPECT_TRUE(fs::exists(tmpdir));
+    EXPECT_TRUE(fs::is_directory(tmpdir));
     EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path()));
 }
 
@@ -42,6 +44,8 @@ TEST(directory, copy_directory) {
     EXPECT_TRUE(fs::exists(tmpdir));
     EXPECT_TRUE(fs::exists(tmpcopy));
     EXPECT_FALSE(fs::equivalent(tmpdir, tmpcopy));
+
+    EXPECT_TRUE(fs::is_directory(tmpcopy));
 
     std::ifstream stream = std::ifstream(tmpcopy / "file");
     auto content = std::string(std::istreambuf_iterator<char>(stream), {});
