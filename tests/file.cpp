@@ -65,8 +65,8 @@ TEST(file, copy_directory) {
     EXPECT_THROW(file::copy(tmpdir, PREFIX), fs::filesystem_error);
 }
 
-/// Tests file reading
-TEST(file, read) {
+/// Tests binary file reading
+TEST(file, read_binary) {
     file tmpfile = file(PREFIX);
     std::ofstream stream = std::ofstream(fs::path(tmpfile), std::ios::binary);
 
@@ -76,28 +76,59 @@ TEST(file, read) {
     EXPECT_EQ(tmpfile.read(), "Hello,\nworld!\n");
 }
 
-/// Tests file writing
-TEST(file, write) {
+/// Tests text file reading
+TEST(file, read_text) {
+    file tmpfile = file::text(PREFIX);
+    std::ofstream stream = std::ofstream(fs::path(tmpfile));
+
+    stream << "Hello," << std::endl;
+    stream << "world!" << std::endl;
+
+    EXPECT_EQ(tmpfile.read(), "Hello,\nworld!\n");
+}
+
+/// Tests binary file writing
+TEST(file, write_binary) {
     file tmpfile = file(PREFIX);
-    tmpfile.write("Hello");
+    tmpfile.write("Hello\n");
 
     {
         auto stream = std::ifstream(fs::path(tmpfile), std::ios::binary);
         auto content = std::string(std::istreambuf_iterator<char>(stream), {});
-        EXPECT_EQ(content, "Hello");
+        EXPECT_EQ(content, "Hello\n");
     }
 
-    tmpfile.write("world!");
+    tmpfile.write("world!\n");
 
     {
         auto stream = std::ifstream(fs::path(tmpfile), std::ios::binary);
         auto content = std::string(std::istreambuf_iterator<char>(stream), {});
-        EXPECT_EQ(content, "world!");
+        EXPECT_EQ(content, "world!\n");
     }
 }
 
-/// Tests file appending
-TEST(file, append) {
+/// Tests text file writing
+TEST(file, write_text) {
+    file tmpfile = file::text(PREFIX);
+    tmpfile.write("Hello\n");
+
+    {
+        auto stream = std::ifstream(fs::path(tmpfile));
+        auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+        EXPECT_EQ(content, "Hello\n");
+    }
+
+    tmpfile.write("world!\n");
+
+    {
+        auto stream = std::ifstream(fs::path(tmpfile));
+        auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+        EXPECT_EQ(content, "world!\n");
+    }
+}
+
+/// Tests binary file appending
+TEST(file, append_binary) {
     file tmpfile = file(PREFIX);
     std::ofstream(fs::path(tmpfile), std::ios::binary) << "Hello, ";
 
@@ -115,6 +146,28 @@ TEST(file, append) {
         auto stream = std::ifstream(fs::path(tmpfile), std::ios::binary);
         auto content = std::string(std::istreambuf_iterator<char>(stream), {});
         EXPECT_EQ(content, "Hello, world!");
+    }
+}
+
+/// Tests text file appending
+TEST(file, append_text) {
+    file tmpfile = file::text(PREFIX);
+    std::ofstream(fs::path(tmpfile)) << "Hello,\n ";
+
+    tmpfile.append("world");
+
+    {
+        auto stream = std::ifstream(fs::path(tmpfile));
+        auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+        EXPECT_EQ(content, "Hello,\n world");
+    }
+
+    tmpfile.append("!");
+
+    {
+        auto stream = std::ifstream(fs::path(tmpfile));
+        auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+        EXPECT_EQ(content, "Hello,\n world!");
     }
 }
 
