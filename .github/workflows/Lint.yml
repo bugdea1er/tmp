@@ -31,6 +31,6 @@ jobs:
         uses: actions/checkout@v4
       - name: Run cmake-format
         run: |
-          sudo pip install cmake-format
+          sudo pipx install cmake-format
           cmake-format -i **/*.cmake **/CMakeLists.txt
           git diff --color --exit-code
