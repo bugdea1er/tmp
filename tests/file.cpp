@@ -10,7 +10,7 @@ namespace fs = std::filesystem;
 /// Tests file creation with prefix
 TEST(file, create_with_prefix) {
     file tmpfile = file(PREFIX);
-    fs::path parent = tmpfile->parent_path();
+    fs::path parent = tmpfile.path().parent_path();
 
     EXPECT_TRUE(fs::exists(tmpfile));
     EXPECT_TRUE(fs::is_regular_file(tmpfile));
@@ -20,7 +20,7 @@ TEST(file, create_with_prefix) {
 /// Tests file creation without prefix
 TEST(file, create_without_prefix) {
     file tmpfile = file();
-    fs::path parent = tmpfile->parent_path();
+    fs::path parent = tmpfile.path().parent_path();
 
     EXPECT_TRUE(fs::exists(tmpfile));
     EXPECT_TRUE(fs::is_regular_file(tmpfile));
@@ -33,7 +33,7 @@ TEST(file, create_with_suffix) {
 
     EXPECT_TRUE(fs::exists(tmpfile));
     EXPECT_TRUE(fs::is_regular_file(tmpfile));
-    EXPECT_EQ(tmpfile->extension(), ".test");
+    EXPECT_EQ(tmpfile.path().extension(), ".test");
 }
 
 /// Tests multiple file creation with the same prefix
