@@ -11,26 +11,27 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
       - name: Run yamllint
-        run: yamllint .github/workflows/*.yml -f github
-  format:
+        run: yamllint .github/workflows/ -f github
+
+  clang-format:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Run clang-format
+        run: |
+          clang-format -i $(find include/tmp -type f; find . -name '*.cpp')
+          git diff --color --exit-code
+
+  cmake-format:
     runs-on: macos-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install clang-format
-        run: brew install clang-format
-
       - name: Install cmake-format
         run: pip install cmake-format
-
-      - name: Run clang-format
-        run: |
-          (find include/tmp -type f; find src tests -name '*.cpp') \
-            | xargs clang-format -i -style=file --verbose
-          git diff --color --exit-code
 
       - name: Run cmake-format
         run: |
