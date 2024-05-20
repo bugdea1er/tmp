@@ -1,5 +1,6 @@
 ---
 WarningsAsErrors: "*"
+HeaderFilterRegex: '.*'
 Checks: >
   bugprone-*,
   cert-*,
