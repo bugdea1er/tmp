@@ -10,6 +10,7 @@ Checks: >
   portability-*,
   readability-*,
   -bugprone-easily-swappable-parameters,
+  -misc-const-correctness,
   -misc-include-cleaner,
   -modernize-return-braced-init-list,
   -modernize-use-trailing-return-type
