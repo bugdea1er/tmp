@@ -73,7 +73,7 @@ fs::path make_pattern(std::string_view prefix, std::string_view suffix) {
              guid.Data4[2], guid.Data4[3], guid.Data4[4], guid.Data4[5],
              guid.Data4[6], guid.Data4[7]);
 #else
-    const char name[] = "XXXXXX";
+    std::string_view name = "XXXXXX";
 #endif
     fs::path pattern = filesystem::root(prefix) / name;
 

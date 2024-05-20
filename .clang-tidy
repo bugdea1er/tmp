@@ -11,8 +11,8 @@ Checks: >
   readability-*,
   -bugprone-easily-swappable-parameters,
   -misc-include-cleaner,
-  -modernize-return-braced-init-list
-  -modernize-use-trailing-return-type,
+  -modernize-return-braced-init-list,
+  -modernize-use-trailing-return-type
 
 CheckOptions:
   readability-identifier-length.IgnoredParameterNames: 'ec|to'
