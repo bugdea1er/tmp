@@ -8,4 +8,4 @@ target_compile_definitions(
     ${PROJECT_NAME} PRIVATE PREFIX="com.github.bugdea1er.tmp")
 
 include(GoogleTest)
-gtest_discover_tests(${PROJECT_NAME})
+gtest_discover_tests(${PROJECT_NAME} EXTRA_ARGS --gtest_color=yes)
