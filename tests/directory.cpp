@@ -10,7 +10,7 @@ namespace fs = std::filesystem;
 /// Tests directory creation with prefix
 TEST(directory, create_with_prefix) {
     directory tmpdir = directory(PREFIX);
-    fs::path parent = tmpdir->parent_path();
+    fs::path parent = tmpdir.path().parent_path();
 
     EXPECT_TRUE(fs::exists(tmpdir));
     EXPECT_TRUE(fs::is_directory(tmpdir));
@@ -20,7 +20,7 @@ TEST(directory, create_with_prefix) {
 /// Tests directory creation without prefix
 TEST(directory, create_without_prefix) {
     directory tmpdir = directory();
-    fs::path parent = tmpdir->parent_path();
+    fs::path parent = tmpdir.path().parent_path();
 
     EXPECT_TRUE(fs::exists(tmpdir));
     EXPECT_TRUE(fs::is_directory(tmpdir));
@@ -82,7 +82,7 @@ TEST(directory, move_constructor) {
     directory fst = directory(PREFIX);
     directory snd = std::move(fst);
 
-    EXPECT_TRUE(fst->empty());
+    EXPECT_TRUE(fst.path().empty());
     EXPECT_TRUE(fs::exists(snd));
 }
 

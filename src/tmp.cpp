@@ -38,7 +38,7 @@ void create_parent(const fs::path& path) {
 /// Deletes the given path recursively, ignoring any errors
 /// @param path The path to remove recursively
 void remove(const path& path) noexcept {
-    if (!path->empty()) {
+    if (!static_cast<const fs::path&>(path).empty()) {
         std::error_code ec;
         fs::remove_all(path, ec);
     }
