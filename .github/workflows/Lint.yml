@@ -29,3 +29,12 @@ jobs:
           (find cmake -name '*.cmake.in'; find cmake -name '*.cmake'; find . tests -maxdepth 1 -name 'CMakeLists.txt') \
             | xargs cmake-format -i
           git diff --color --exit-code
+
+  yamllint:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Run yamllint
+        run:  yamllint .github/workflows/*.yml -f github
