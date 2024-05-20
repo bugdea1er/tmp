@@ -1,0 +1,46 @@
+---
+name: lint
+"on":
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  yamllint:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Run yamllint
+        run: yamllint .github/workflows/ .clang-format -f github
+
+  cmake-format:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Run cmake-format
+        run: |
+          pip install cmake-format
+          cmake-format -i **/*.cmake **/CMakeLists.txt
+          git diff --color --exit-code
+
+  clang-format:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Run clang-format
+        run: |
+          clang-format -i include/tmp/* **/*.cpp
+          git diff --color --exit-code
+
+  clang-tidy:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Run clang-tidy
+        run: |
+          clang-tidy --version
+          clang-tidy src/tmp.cpp -- -std=c++17 -Iinclude/

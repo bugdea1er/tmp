@@ -1,7 +1,8 @@
-name: Tests
-on:
+---
+name: tests
+"on":
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
 
 env:
@@ -20,16 +21,12 @@ jobs:
           - macos-14
           - windows-2019
           - windows-2022
-
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
-
+        uses: actions/checkout@v4
       - name: Configure CMake
-        run:  cmake -B ${{ env.build_dir }}
-
+        run: cmake -B ${{ env.build_dir }}
       - name: Build tests
-        run:  cmake --build ${{ env.build_dir }}
-
+        run: cmake --build ${{ env.build_dir }}
       - name: Run tests
-        run:  ctest --output-on-failure --test-dir ${{ env.build_dir }}
+        run: ctest --output-on-failure --test-dir ${{ env.build_dir }}
