@@ -1,3 +1,8 @@
+## v0.8.1 (May 21, 2024)
+
+- Operator `path::operator->` is now marked deprecated ([#57](https://github.com/bugdea1er/tmp/pull/57))
+- Add nodiscard attribute to some methods ([#47](https://github.com/bugdea1er/tmp/pull/47))
+
 ## v0.8 (May 19, 2024)
 
 - Add Windows support ([#26](https://github.com/bugdea1er/tmp/pull/26))
