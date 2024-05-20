@@ -25,7 +25,7 @@ jobs:
       - name: Run clang-tidy
         run: |
           cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -B ${{ env.build_dir }}
-          clang-tidy --checks=* src/*.cpp -p ${{ env.build_dir }}
+          clang-tidy --checks=* --use-color src/*.cpp -p ${{ env.build_dir }}
 
   clang-format:
     runs-on: ubuntu-24.04
