@@ -21,21 +21,16 @@ jobs:
         uses: actions/checkout@v4
       - name: Run clang-format
         run: |
-          clang-format -i $(find include/tmp -type f; find . -name '*.cpp')
+          clang-format -i include/tmp/* **/*.cpp
           git diff --color --exit-code
 
   cmake-format:
-    runs-on: macos-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Install cmake-format
-        run: pip install cmake-format
-
       - name: Run cmake-format
         run: |
-          (find cmake -name '*.cmake.in'; find cmake -name '*.cmake'; \
-          find . tests -maxdepth 1 -name 'CMakeLists.txt') \
-            | xargs cmake-format -i
+          apt install cmakelang
+          cmake-format -i **/*.cmake **/CMakeLists.txt
           git diff --color --exit-code
