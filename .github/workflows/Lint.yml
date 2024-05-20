@@ -23,12 +23,12 @@ jobs:
 
       - name: Run clang-format
         run: |
-          (find include/tmp -type f; find src tests -name '*.cpp') \
-            | xargs clang-format -i --verbose
+          clang-format -i $(find include/tmp -type f)
+          clang-format -i $(find src tests -name '*.cpp')
           git diff --color --exit-code
 
   cmake-format:
-    runs-on: ubuntu-24.04
+    runs-on: macos-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
