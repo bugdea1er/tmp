@@ -12,7 +12,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Run yamllint
-        run: yamllint .github/workflows/ .clang-format -f github
+        run: yamllint .github/workflows/ .clang-* -f github
+
+  clang-tidy:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Run clang-tidy
+        run: |
+          cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -B ${{ vars.BUILD_DIR }}
+          clang-tidy --use-color src/*.cpp -p ${{ vars.BUILD_DIR }}
 
   clang-format:
     runs-on: ubuntu-24.04

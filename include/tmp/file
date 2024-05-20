@@ -75,11 +75,11 @@ public:
 
     /// Returns a path to this file
     /// @returns The full path to this file
-    const std::filesystem::path& path() const noexcept;
+    [[nodiscard]] const std::filesystem::path& path() const noexcept;
 
     /// Reads the entire contents of this file
     /// @returns A string with this file contents
-    std::string read() const;
+    [[nodiscard]] std::string read() const;
 
     /// Writes the given content to this file discarding any previous content
     /// @param content  A string to write to this file
