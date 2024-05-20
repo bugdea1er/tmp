@@ -13,18 +13,16 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Run yamllint
-        run: yamllint .github/workflows/*.yml -f github
+        run: yamllint .github/workflows/ -f github
+
   format:
-    runs-on: macos-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install clang-format
-        run: brew install clang-format
-
       - name: Install cmake-format
-        run: pip install cmake-format
+        run: sudo apt install cmake-format
 
       - name: Run clang-format
         run: |
