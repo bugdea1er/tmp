@@ -5,6 +5,9 @@ name: lint
     branches: [main]
   pull_request:
 
+env:
+  build_dir: ${{ github.workspace }}/build
+
 jobs:
   yamllint:
     runs-on: ubuntu-24.04
@@ -20,7 +23,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Run clang-tidy
-        run: clang-tidy src/tmp.cpp -- -std=c++17 -Iinclude/
+        run: |
+          cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -B ${{ env.build_dir }}
+          clang-tidy --checks=* src/*.cpp -p ${{ env.build_dir }}
 
   clang-format:
     runs-on: ubuntu-24.04
