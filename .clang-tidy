@@ -10,7 +10,9 @@ Checks: >
   portability-*,
   readability-*,
   -bugprone-easily-swappable-parameters,
-  -modernize-use-trailing-return-type
+  -misc-include-cleaner,
+  -modernize-return-braced-init-list
+  -modernize-use-trailing-return-type,
 
 CheckOptions:
   readability-identifier-length.IgnoredParameterNames: 'ec|to'
