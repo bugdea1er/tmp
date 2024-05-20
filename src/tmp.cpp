@@ -107,7 +107,7 @@ fs::path create_file(std::string_view prefix, std::string_view suffix) {
         ec = std::error_code(err, std::system_category());
     }
 #else
-    if (mkstemps(path.data(), suffix.size()) == -1) {
+    if (mkstemps(path.data(), static_cast<int>(suffix.size())) == -1) {
         ec = std::error_code(errno, std::system_category());
     }
 #endif
