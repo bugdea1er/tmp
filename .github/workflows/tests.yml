@@ -5,9 +5,6 @@ name: tests
     branches: [main]
   pull_request:
 
-env:
-  build_dir: ${{ github.workspace }}/build
-
 jobs:
   test:
     runs-on: ${{ matrix.os }}
@@ -25,8 +22,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Configure CMake
-        run: cmake -B ${{ env.build_dir }}
+        run: cmake -B $BUILD_DIR
       - name: Build tests
-        run: cmake --build ${{ env.build_dir }}
+        run: cmake --build $BUILD_DIR
       - name: Run tests
-        run: ctest --output-on-failure --test-dir ${{ env.build_dir }}
+        run: ctest --output-on-failure --test-dir $BUILD_DIR
