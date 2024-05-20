@@ -8,4 +8,10 @@ Checks: >
   modernize-*,
   performance-*,
   portability-*,
-  readability-*
+  readability-*,
+  -bugprone-easily-swappable-parameters,
+  -modernize-use-trailing-return-type
+
+CheckOptions:
+  readability-identifier-length.IgnoredParameterNames: 'ec|to'
+  readability-identifier-length.IgnoredVariableNames: 'ec|to'
