@@ -1,0 +1,11 @@
+---
+WarningsAsErrors: "*"
+Checks: >
+  bugprone-*,
+  cert-*,
+  cppcoreguidelines-*,
+  misc-*,
+  modernize-*,
+  performance-*,
+  portability-*,
+  readability-*
