@@ -22,8 +22,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Configure CMake
-        run: cmake -B $BUILD_DIR
+        run: cmake -B ${{ vars.BUILD_DIR }}
       - name: Build tests
-        run: cmake --build $BUILD_DIR
+        run: cmake --build ${{ vars.BUILD_DIR }}
       - name: Run tests
-        run: ctest --output-on-failure --test-dir $BUILD_DIR
+        run: ctest --output-on-failure --test-dir ${{ vars.BUILD_DIR }}
