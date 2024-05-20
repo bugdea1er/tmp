@@ -5,9 +5,6 @@ name: lint
     branches: [main]
   pull_request:
 
-env:
-  build_dir: ${{ github.workspace }}/build
-
 jobs:
   yamllint:
     runs-on: ubuntu-24.04
@@ -24,8 +21,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Run clang-tidy
         run: |
-          cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -B ${{ env.build_dir }}
-          clang-tidy --checks=* --use-color src/*.cpp -p ${{ env.build_dir }}
+          cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -B ${{ vars.BUILD_DIR }}
+          clang-tidy --checks=* --use-color src/*.cpp -p ${{ vars.BUILD_DIR }}
 
   clang-format:
     runs-on: ubuntu-24.04
