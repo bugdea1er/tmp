@@ -28,7 +28,7 @@ jobs:
       - name: Run tests
         run: ctest --output-on-failure --test-dir ${{ vars.BUILD_DIR }}
 
-  test-modules:
+  test-modules-windows:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -40,6 +40,32 @@ jobs:
         uses: actions/checkout@v3
       - name: Configure CMake
         run: cmake -B ${{ vars.BUILD_DIR }} -DTMP_MODULES:BOOL=ON
+      - name: Build tests
+        run: cmake --build ${{ vars.BUILD_DIR }}
+      - name: Run tests
+        run: ctest --output-on-failure --test-dir ${{ vars.BUILD_DIR }}
+
+  test-modules-linux:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-24.04
+        compiler:
+          - clang++-17
+          - g++-14
+    steps:
+      - name: Install Ninja
+        run: sudo apt-get install ninja-build
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Configure CMake
+        run: cmake
+          -B ${{ vars.BUILD_DIR }}
+          -DTMP_MODULES:BOOL=ON
+          -DCMAKE_CXX_COMPILER:STRING=${{ matrix.compiler }}
+          -G Ninja
       - name: Build tests
         run: cmake --build ${{ vars.BUILD_DIR }}
       - name: Run tests
