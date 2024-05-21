@@ -57,7 +57,10 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
               ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindFilesystem.cmake
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/tmp)
 
-    install(TARGETS ${PROJECT_NAME} EXPORT tmp-targets)
+    install(
+      TARGETS ${PROJECT_NAME}
+      EXPORT tmp-targets
+      FILE_SET CXX_MODULES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
     install(
         EXPORT tmp-targets
         FILE TmpTargets.cmake
