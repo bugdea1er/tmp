@@ -1,4 +1,3 @@
-#include <tmp/file>
 #include <tmp/filesystem>
 
 #include <gtest/gtest.h>

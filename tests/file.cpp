@@ -3,6 +3,13 @@
 
 #include <gtest/gtest.h>
 
+#include <filesystem>
+#include <fstream>
+#include <ios>
+#include <iterator>
+#include <ostream>
+#include <utility>
+
 namespace tmp {
 
 namespace fs = std::filesystem;
