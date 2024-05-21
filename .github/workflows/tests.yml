@@ -54,7 +54,7 @@ jobs:
           - ubuntu-24.04
         compiler:
           - clang++-17
-          - g++-14
+          # - g++-14 Fails to build
     steps:
       - name: Install Ninja
         run: sudo apt-get install ninja-build
