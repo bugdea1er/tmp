@@ -28,8 +28,8 @@ jobs:
       - name: Run tests
         run: ctest --output-on-failure --test-dir ${{ vars.BUILD_DIR }}
 
-      - name: Run installation
-        run: cmake --install ${{ vars.BUILD_DIR }}
+      - name: Run installation with sudo
+        run: sudo cmake --install ${{ vars.BUILD_DIR }}
 
       - name: Test installation
         run: |
