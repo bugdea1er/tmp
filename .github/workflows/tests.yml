@@ -2,7 +2,7 @@
 name: tests
 "on":
   push:
-    branches: [main]
+    branches: [main, installation]
   pull_request:
 
 jobs:
@@ -27,3 +27,27 @@ jobs:
         run: cmake --build ${{ vars.BUILD_DIR }}
       - name: Run tests
         run: ctest --output-on-failure --test-dir ${{ vars.BUILD_DIR }}
+
+      - name: Run installation
+        run: cmake --install ${{ env.build_dir }}
+
+      - name: Test installation
+        run: |
+          cd $(mktemp -d)
+          cat <<EOS > main.cpp
+            #include <iostream>
+            #include <tmp/file>
+            int main() {
+              std::cout << tmp::file().release().native();
+            }
+          EOS
+          cat <<EOS > CMakeLists.txt
+            cmake_minimum_required(VERSION 3.12)
+            project(install-test LANGUAGES CXX)
+            find_package(tmp REQUIRED)
+            add_executable(install-test main.cpp)
+            target_link_libraries(install-test tmp::tmp)
+          EOS
+          cmake -B .
+          cmake --build .
+          test -f $(./install-test)
