@@ -29,7 +29,7 @@ jobs:
         run: ctest --output-on-failure --test-dir ${{ vars.BUILD_DIR }}
 
       - name: Run installation
-        run: cmake --install ${{ env.build_dir }}
+        run: cmake --install ${{ vars.BUILD_DIR }}
 
       - name: Test installation
         run: |
