@@ -12,8 +12,8 @@ target_link_libraries(${PROJECT_NAME} PUBLIC std::filesystem)
 set_target_properties(${PROJECT_NAME} PROPERTIES EXPORT_NAME tmp)
 target_include_directories(
     ${PROJECT_NAME}
-    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-           $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+    PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+           "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
 
 add_library(tmp::tmp ALIAS ${PROJECT_NAME})
 
