@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
 project(tmp LANGUAGES CXX)
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
 include(GNUInstallDirs)
 find_package(Filesystem REQUIRED)
@@ -12,8 +12,8 @@ target_link_libraries(${PROJECT_NAME} PUBLIC std::filesystem)
 set_target_properties(${PROJECT_NAME} PROPERTIES EXPORT_NAME tmp)
 target_include_directories(
     ${PROJECT_NAME}
-    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-           $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+    PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+           "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
 
 add_library(tmp::tmp ALIAS ${PROJECT_NAME})
 
@@ -32,21 +32,21 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 
     include(CMakePackageConfigHelpers)
     configure_package_config_file(
-        ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Config.cmake.in
-        ${CMAKE_CURRENT_BINARY_DIR}/tmp-config.cmake
-        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/tmp)
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Config.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/tmp-config.cmake"
+        INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/tmp")
     install(
-        FILES ${CMAKE_CURRENT_BINARY_DIR}/tmp-config.cmake
-              ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindFilesystem.cmake
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/tmp)
+        FILES "${CMAKE_CURRENT_BINARY_DIR}/tmp-config.cmake"
+              "${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindFilesystem.cmake"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/tmp")
 
     install(TARGETS ${PROJECT_NAME} EXPORT tmp-targets)
     install(
         EXPORT tmp-targets
-        FILE TmpTargets.cmake
+        FILE tmp-targets.cmake
         NAMESPACE tmp::
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/tmp)
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/tmp")
     install(
-        DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+        DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/"
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 endif()
