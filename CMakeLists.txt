@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(tmp VERSION 0.8.1)
+project(tmp LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
