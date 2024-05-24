@@ -11,12 +11,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-        - os: macos-14
-          platform: arm64_macos
-        - os: macos-12
-          platform: x86_64_macos
-        - os: ubuntu-20.04
-          platform: x86_64_linux
+          - os: macos-14
+            platform: arm64_macos
+          - os: macos-12
+            platform: x86_64_macos
+          - os: ubuntu-20.04
+            platform: x86_64_linux
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -33,6 +33,6 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: tmp-${{ github.event.release.tag_name }}-${{ matrix.platform }}.tar.gz
+          asset_path: ${{ vars.BUILD_DIR }}/tmp-${{ github.event.release.tag_name }}-${{ matrix.platform }}.tar.gz
           asset_name: tmp-${{ github.event.release.tag_name }}-${{ matrix.platform }}.tar.gz
           asset_content_type: application/gzip
