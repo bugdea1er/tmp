@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(tmp LANGUAGES CXX)
+project(tmp VERSION 0.8.1)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
@@ -49,4 +49,5 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     install(
         DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/"
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+    include(CPack)
 endif()

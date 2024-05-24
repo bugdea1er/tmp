@@ -1,0 +1,28 @@
+---
+name: package
+on:
+  push:
+    branches: [package]
+
+jobs:
+  package:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-20.04
+          - ubuntu-24.04
+          - macos-12
+          - macos-14
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Configure CMake
+        run: cmake -B ${{ vars.BUILD_DIR }}
+      - name: Package
+        run: cpack -G TGZ
+        working-directory: ${{ vars.BUILD_DIR }}
+      - name: Check contents
+        run: tar -tf tmp*.tar.gz
+        working-directory: ${{ vars.BUILD_DIR }}
