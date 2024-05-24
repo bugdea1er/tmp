@@ -10,11 +10,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - ubuntu-20.04
-          - ubuntu-24.04
-          - macos-12
-          - macos-14
+        include:
+        - os: macos-14
+          platform: arm64_sonoma
+        - os: macos-13-xlarge
+          platform: arm64_ventura
+        - os: macos-14-large
+          platform: sonoma
+        - os: macos-13
+          platform: ventura
+        - os: macos-12
+          platform: monterey
+        - os: ubuntu-20.04
+          platform: x86_64_linux
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
