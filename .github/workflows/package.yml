@@ -21,7 +21,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Configure CMake
-        run: cmake -B ${{ vars.BUILD_DIR }} -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DCPACK_SYSTEM_NAME=${{ matrix.platform }}
+        run: cmake -B ${{ vars.BUILD_DIR }} \
+             -DCMAKE_BUILD_TYPE=Release     \
+             -DBUILD_TESTING=OFF            \
+             -DCPACK_SYSTEM_NAME=${{ matrix.platform }}
       - name: Build library
         run: cmake --build ${{ vars.BUILD_DIR }}
       - name: Package library
