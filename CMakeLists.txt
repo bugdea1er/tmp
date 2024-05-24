@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.12)
 option(TMP_USE_MODULES "Build C++20 modules" OFF)
 if(TMP_USE_MODULES)
   cmake_minimum_required(VERSION 3.28)
-else()
 endif()
 
 project(tmp LANGUAGES CXX)
