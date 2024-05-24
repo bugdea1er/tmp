@@ -12,20 +12,20 @@ jobs:
       matrix:
         include:
         - os: macos-14
-          platform: arm64_sonoma
-        - os: macos-13
-          platform: ventura
+          platform: arm64_macos
         - os: macos-12
-          platform: monterey
+          platform: x86_64_macos
         - os: ubuntu-20.04
           platform: x86_64_linux
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Configure CMake
-        run: cmake -B ${{ vars.BUILD_DIR }}
-      - name: Package
-        run: cpack -DCPACK_SYSTEM_NAME=${{ matrix.platform }} -G TGZ
+        run: cmake -B ${{ vars.BUILD_DIR }} -DCMAKE_BUILD_TYPE=Release -DCPACK_SYSTEM_NAME=${{ matrix.platform }}
+      - name: Build library
+        run: cmake --build ${{ vars.BUILD_DIR }}
+      - name: Package library
+        run: cpack -G TGZ
         working-directory: ${{ vars.BUILD_DIR }}
       - name: Check contents
         run: tar -tf tmp*.tar.gz
