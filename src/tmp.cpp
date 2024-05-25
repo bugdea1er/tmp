@@ -223,12 +223,12 @@ void path::move(const fs::path& to) {
 // tmp::file implementation
 //===----------------------------------------------------------------------===//
 
-file::file(std::string_view prefix, std::string_view suffix)
-    : file(prefix, suffix, /*binary=*/true) {}
-
 file::file(std::string_view prefix, std::string_view suffix, bool binary)
     : tmp::path(create_file(prefix, suffix)),
       binary(binary) {}
+
+file::file(std::string_view prefix, std::string_view suffix)
+    : file(prefix, suffix, /*binary=*/true) {}
 
 file file::text(std::string_view prefix, std::string_view suffix) {
     return file(prefix, suffix, /*binary=*/false);
