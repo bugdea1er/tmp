@@ -75,6 +75,10 @@ fs::path create_file(std::string_view prefix, std::string_view suffix) {
 
     std::error_code ec;
     create_parent(path, ec);
+    if (ec) {
+        throw fs::filesystem_error("Cannot create temporary file", ec);
+    }
+
 #ifdef WIN32
     HANDLE file =
         CreateFileW(path.c_str(), GENERIC_READ | GENERIC_WRITE,
@@ -111,6 +115,10 @@ fs::path create_directory(std::string_view prefix) {
 
     std::error_code ec;
     create_parent(path, ec);
+    if (ec) {
+        throw fs::filesystem_error("Cannot create temporary directory", ec);
+    }
+
 #ifdef WIN32
     if (!CreateDirectoryW(path.c_str(), nullptr)) {
         DWORD err = GetLastError();
@@ -205,8 +213,11 @@ fs::path path::release() noexcept {
 
 void path::move(const fs::path& to) {
     std::error_code ec;
-
     create_parent(to, ec);
+    if (ec) {
+        throw_move_error(to, ec);
+    }
+
     fs::rename(*this, to, ec);
     if (ec == std::errc::cross_device_link) {
         if (fs::is_regular_file(*this) && fs::is_directory(to)) {
