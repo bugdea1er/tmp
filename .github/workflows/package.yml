@@ -36,3 +36,9 @@ jobs:
           asset_path: ${{ vars.BUILD_DIR }}/tmp-${{ github.event.release.tag_name }}-${{ matrix.platform }}.tar.gz
           asset_name: tmp-${{ github.event.release.tag_name }}-${{ matrix.platform }}.tar.gz
           asset_content_type: application/gzip
+
+  homebrew:
+    runs-on: macos-latest
+    steps:
+      - name: Bump homebrew tap
+        run: brew bump-formula-pr --url https://github.com/bugdea1er/tmp/archive/refs/tags/${{ github.event.release.tag_name }}.tar.gz bugdea1er/tap/tmp
