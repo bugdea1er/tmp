@@ -25,7 +25,7 @@ namespace {
 namespace fs = std::filesystem;
 
 /// Options for recursive overwriting copying
-const fs::copy_options copy_options =
+constexpr fs::copy_options copy_options =
     fs::copy_options::recursive | fs::copy_options::overwrite_existing;
 
 /// Creates the parent directory of the given path if it does not exist
