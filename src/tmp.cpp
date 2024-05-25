@@ -236,8 +236,15 @@ file file::text(std::string_view prefix, std::string_view suffix) {
 
 file file::copy(const fs::path& path, std::string_view prefix,
                 std::string_view suffix) {
+    std::error_code ec;
     file tmpfile = file(prefix, suffix);
-    fs::copy(path, tmpfile, copy_options);
+
+    fs::copy_file(path, tmpfile, copy_options, ec);
+
+    if (ec) {
+        throw fs::filesystem_error("Cannot create a temporary copy", path, ec);
+    }
+
     return tmpfile;
 }
 
@@ -273,13 +280,19 @@ directory::directory(std::string_view prefix)
     : tmp::path(create_directory(prefix)) {}
 
 directory directory::copy(const fs::path& path, std::string_view prefix) {
-    if (fs::is_regular_file(path)) {
-        std::error_code ec = std::make_error_code(std::errc::not_a_directory);
-        throw fs::filesystem_error("Cannot copy temporary directory", ec);
+    std::error_code ec;
+    directory tmpdir = directory(prefix);
+
+    if (fs::is_directory(path)) {
+        fs::copy(path, tmpdir, copy_options, ec);
+    } else {
+        ec = std::make_error_code(std::errc::not_a_directory);
     }
 
-    directory tmpdir = directory(prefix);
-    fs::copy(path, tmpdir, copy_options);
+    if (ec) {
+        throw fs::filesystem_error("Cannot create a temporary copy", path, ec);
+    }
+
     return tmpdir;
 }
 
