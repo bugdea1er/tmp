@@ -37,28 +37,6 @@ bool create_parent(const fs::path& path, std::error_code& ec) {
     return fs::create_directories(path.parent_path(), ec);
 }
 
-/// Deletes the given path recursively, ignoring any errors
-/// @param[in]  path The path to delete
-void remove(const fs::path& path) noexcept {
-    if (!path.empty()) {
-        try {
-            std::error_code ec;
-            fs::remove_all(path, ec);    // Can still throw std::bad_alloc
-        } catch (const std::bad_alloc& ex) {
-            static_cast<void>(ex);
-        }
-    }
-}
-
-/// Throws a filesystem error indicating that a temporary resource cannot be
-/// moved to the specified path
-/// @param to   The target path where the resource was intended to be moved
-/// @param ec   The error code associated with the failure to move the resource
-/// @throws fs::filesystem_error when called
-[[noreturn]] void throw_move_error(const fs::path& to, std::error_code ec) {
-    throw fs::filesystem_error("Cannot move temporary resource", to, ec);
-}
-
 /// Creates a temporary path pattern with the given prefix and suffix
 ///
 /// The parent of the resulting path is created when this function is called
@@ -84,7 +62,12 @@ fs::path make_pattern(std::string_view prefix, std::string_view suffix) {
     fs::path pattern = filesystem::root(prefix) / name;
 
     pattern += suffix;
-    create_parent(pattern);
+
+    std::error_code ec;
+    create_parent(pattern, ec);
+    if (ec) {
+        throw fs::filesystem_error("Cannot create temporary pattern", ec);
+    }
 
     return pattern;
 }
@@ -166,6 +149,28 @@ std::ofstream stream(const file& file, bool binary, bool append) noexcept {
 
     return std::ofstream(file.path(), mode);
 }
+
+/// Deletes the given path recursively, ignoring any errors
+/// @param[in]  path The path to delete
+void remove(const fs::path& path) noexcept {
+    if (!path.empty()) {
+        try {
+            std::error_code ec;
+            fs::remove_all(path, ec);    // Can still throw std::bad_alloc
+        } catch (const std::bad_alloc& ex) {
+            static_cast<void>(ex);
+        }
+    }
+}
+
+/// Throws a filesystem error indicating that a temporary resource cannot be
+/// moved to the specified path
+/// @param to   The target path where the resource was intended to be moved
+/// @param ec   The error code associated with the failure to move the resource
+/// @throws fs::filesystem_error when called
+[[noreturn]] void throw_move_error(const fs::path& to, std::error_code ec) {
+    throw fs::filesystem_error("Cannot move temporary resource", to, ec);
+}
 }    // namespace
 
 //===----------------------------------------------------------------------===//
@@ -203,9 +208,9 @@ fs::path path::release() noexcept {
 }
 
 void path::move(const fs::path& to) {
-    create_parent(to);
-
     std::error_code ec;
+
+    create_parent(to, ec);
     fs::rename(*this, to, ec);
     if (ec == std::errc::cross_device_link) {
         if (fs::is_regular_file(*this) && fs::is_directory(to)) {
