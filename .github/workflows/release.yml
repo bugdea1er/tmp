@@ -1,0 +1,17 @@
+---
+name: release
+"on":
+  release:
+    types: [released]
+
+jobs:
+  homebrew:
+    runs-on: macos-latest
+    env:
+      HOMEBREW_GITHUB_API_TOKEN: ${{ github.token }}
+    steps:
+      - name: Bump homebrew tap
+        run: |
+          brew tap ${{ vars.BREW_TAP }}
+          brew bump-formula-pr --url ${{ github.event.release.tarball_url }} \
+               ${{ vars.BREW_TAP }}/tmp
