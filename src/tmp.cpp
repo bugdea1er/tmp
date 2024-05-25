@@ -36,11 +36,15 @@ void create_parent(const fs::path& path) {
 }
 
 /// Deletes the given path recursively, ignoring any errors
-/// @param path The path to remove recursively
+/// @param path The path to delete
 void remove(const path& path) noexcept {
-    if (!static_cast<const fs::path&>(path).empty()) {
-        std::error_code ec;
-        fs::remove_all(path, ec);
+    try {
+        if (!static_cast<const fs::path&>(path).empty()) {
+            std::error_code ec;
+            fs::remove_all(path, ec); // can still throw std::bad_alloc
+        }
+    } catch (const std::bad_alloc& ex) {
+        static_cast<void>(ex);
     }
 }
 
