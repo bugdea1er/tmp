@@ -25,41 +25,24 @@ namespace {
 namespace fs = std::filesystem;
 
 /// Options for recursive overwriting copying
-const fs::copy_options copy_options =
+constexpr fs::copy_options copy_options =
     fs::copy_options::recursive | fs::copy_options::overwrite_existing;
 
 /// Creates the parent directory of the given path if it does not exist
-/// @param path The path for which the parent directory needs to be created
-/// @throws fs::filesystem_error if cannot create the parent of the given path
-void create_parent(const fs::path& path) {
-    fs::create_directories(path.parent_path());
-}
-
-/// Deletes the given path recursively, ignoring any errors
-/// @param path The path to remove recursively
-void remove(const path& path) noexcept {
-    if (!static_cast<const fs::path&>(path).empty()) {
-        std::error_code ec;
-        fs::remove_all(path, ec);
-    }
-}
-
-/// Throws a filesystem error indicating that a temporary resource cannot be
-/// moved to the specified path
-/// @param to   The target path where the resource was intended to be moved
-/// @param ec   The error code associated with the failure to move the resource
-/// @throws fs::filesystem_error when called
-[[noreturn]] void throw_move_error(const fs::path& to, std::error_code ec) {
-    throw fs::filesystem_error("Cannot move temporary resource", to, ec);
+/// @param[in]  path The path for which the parent directory needs to be created
+/// @param[out] ec   Parameter for error reporting
+/// @returns @c true if a parent directory was newly created, @c false otherwise
+/// @throws std::bad_alloc if memory allocation fails
+bool create_parent(const fs::path& path, std::error_code& ec) {
+    return fs::create_directories(path.parent_path(), ec);
 }
 
 /// Creates a temporary path pattern with the given prefix and suffix
-///
-/// The parent of the resulting path is created when this function is called
-/// @param prefix   A prefix to be used in the path pattern
-/// @param suffix   A suffix to be used in the path pattern
+/// @param[in]  prefix   A prefix to be used in the path pattern
+/// @param[in]  suffix   A suffix to be used in the path pattern
+/// @param[out] ec       Parameter for error reporting
 /// @returns A path pattern for the unique temporary path
-/// @throws fs::filesystem_error if cannot create the parent of the path pattern
+/// @throws std::bad_alloc if memory allocation fails
 fs::path make_pattern(std::string_view prefix, std::string_view suffix) {
 #ifdef WIN32
     constexpr static std::size_t CHARS_IN_GUID = 39;
@@ -78,8 +61,6 @@ fs::path make_pattern(std::string_view prefix, std::string_view suffix) {
     fs::path pattern = filesystem::root(prefix) / name;
 
     pattern += suffix;
-    create_parent(pattern);
-
     return pattern;
 }
 
@@ -91,7 +72,13 @@ fs::path make_pattern(std::string_view prefix, std::string_view suffix) {
 /// @throws fs::filesystem_error if cannot create the temporary file
 fs::path create_file(std::string_view prefix, std::string_view suffix) {
     fs::path::string_type path = make_pattern(prefix, suffix);
+
     std::error_code ec;
+    create_parent(path, ec);
+    if (ec) {
+        throw fs::filesystem_error("Cannot create temporary file", ec);
+    }
+
 #ifdef WIN32
     HANDLE file =
         CreateFileW(path.c_str(), GENERIC_READ | GENERIC_WRITE,
@@ -125,7 +112,13 @@ fs::path create_file(std::string_view prefix, std::string_view suffix) {
 /// @throws fs::filesystem_error if cannot create the temporary directory
 fs::path create_directory(std::string_view prefix) {
     fs::path::string_type path = make_pattern(prefix, "");
+
     std::error_code ec;
+    create_parent(path, ec);
+    if (ec) {
+        throw fs::filesystem_error("Cannot create temporary directory", ec);
+    }
+
 #ifdef WIN32
     if (!CreateDirectoryW(path.c_str(), nullptr)) {
         DWORD err = GetLastError();
@@ -159,6 +152,28 @@ std::ofstream stream(const file& file, bool binary, bool append) noexcept {
     }
 
     return std::ofstream(file.path(), mode);
+}
+
+/// Deletes the given path recursively, ignoring any errors
+/// @param[in]  path The path to delete
+void remove(const fs::path& path) noexcept {
+    if (!path.empty()) {
+        try {
+            std::error_code ec;
+            fs::remove_all(path, ec);    // Can still throw std::bad_alloc
+        } catch (const std::bad_alloc& ex) {
+            static_cast<void>(ex);
+        }
+    }
+}
+
+/// Throws a filesystem error indicating that a temporary resource cannot be
+/// moved to the specified path
+/// @param to   The target path where the resource was intended to be moved
+/// @param ec   The error code associated with the failure to move the resource
+/// @throws fs::filesystem_error when called
+[[noreturn]] void throw_move_error(const fs::path& to, std::error_code ec) {
+    throw fs::filesystem_error("Cannot move temporary resource", to, ec);
 }
 }    // namespace
 
@@ -197,9 +212,12 @@ fs::path path::release() noexcept {
 }
 
 void path::move(const fs::path& to) {
-    create_parent(to);
-
     std::error_code ec;
+    create_parent(to, ec);
+    if (ec) {
+        throw_move_error(to, ec);
+    }
+
     fs::rename(*this, to, ec);
     if (ec == std::errc::cross_device_link) {
         if (fs::is_regular_file(*this) && fs::is_directory(to)) {
@@ -223,12 +241,12 @@ void path::move(const fs::path& to) {
 // tmp::file implementation
 //===----------------------------------------------------------------------===//
 
-file::file(std::string_view prefix, std::string_view suffix)
-    : file(prefix, suffix, /*binary=*/true) {}
-
 file::file(std::string_view prefix, std::string_view suffix, bool binary)
     : tmp::path(create_file(prefix, suffix)),
       binary(binary) {}
+
+file::file(std::string_view prefix, std::string_view suffix)
+    : file(prefix, suffix, /*binary=*/true) {}
 
 file file::text(std::string_view prefix, std::string_view suffix) {
     return file(prefix, suffix, /*binary=*/false);
@@ -236,8 +254,15 @@ file file::text(std::string_view prefix, std::string_view suffix) {
 
 file file::copy(const fs::path& path, std::string_view prefix,
                 std::string_view suffix) {
+    std::error_code ec;
     file tmpfile = file(prefix, suffix);
-    fs::copy(path, tmpfile, copy_options);
+
+    fs::copy_file(path, tmpfile, copy_options, ec);
+
+    if (ec) {
+        throw fs::filesystem_error("Cannot create a temporary copy", path, ec);
+    }
+
     return tmpfile;
 }
 
@@ -273,13 +298,19 @@ directory::directory(std::string_view prefix)
     : tmp::path(create_directory(prefix)) {}
 
 directory directory::copy(const fs::path& path, std::string_view prefix) {
-    if (fs::is_regular_file(path)) {
-        std::error_code ec = std::make_error_code(std::errc::is_a_directory);
-        throw fs::filesystem_error("Cannot copy temporary directory", ec);
+    std::error_code ec;
+    directory tmpdir = directory(prefix);
+
+    if (fs::is_directory(path)) {
+        fs::copy(path, tmpdir, copy_options, ec);
+    } else {
+        ec = std::make_error_code(std::errc::not_a_directory);
     }
 
-    directory tmpdir = directory(prefix);
-    fs::copy(path, tmpdir, copy_options);
+    if (ec) {
+        throw fs::filesystem_error("Cannot create a temporary copy", path, ec);
+    }
+
     return tmpdir;
 }
 

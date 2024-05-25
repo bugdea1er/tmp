@@ -1,3 +1,7 @@
+## v0.8.2 (May 25, 2024)
+
+- Better error reporting ([#61](https://github.com/bugdea1er/tmp/pull/62))
+
 ## v0.8.1 (May 21, 2024)
 
 - Operator `path::operator->` is now marked deprecated ([#57](https://github.com/bugdea1er/tmp/pull/57))
