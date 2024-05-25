@@ -38,13 +38,14 @@ bool create_parent(const fs::path& path, std::error_code& ec) {
 }
 
 /// Creates a temporary path pattern with the given prefix and suffix
-///
-/// The parent of the resulting path is created when this function is called
-/// @param prefix   A prefix to be used in the path pattern
-/// @param suffix   A suffix to be used in the path pattern
+/// @note The parent of the resulting path is created when this is called
+/// @param[in]  prefix   A prefix to be used in the path pattern
+/// @param[in]  suffix   A suffix to be used in the path pattern
+/// @param[out] ec       Parameter for error reporting
 /// @returns A path pattern for the unique temporary path
-/// @throws fs::filesystem_error if cannot create the parent of the path pattern
-fs::path make_pattern(std::string_view prefix, std::string_view suffix) {
+/// @throws std::bad_alloc if memory allocation fails
+fs::path make_pattern(std::string_view prefix, std::string_view suffix,
+                      std::error_code& ec) {
 #ifdef WIN32
     constexpr static std::size_t CHARS_IN_GUID = 39;
     GUID guid;
@@ -63,12 +64,7 @@ fs::path make_pattern(std::string_view prefix, std::string_view suffix) {
 
     pattern += suffix;
 
-    std::error_code ec;
     create_parent(pattern, ec);
-    if (ec) {
-        throw fs::filesystem_error("Cannot create temporary pattern", ec);
-    }
-
     return pattern;
 }
 
@@ -79,8 +75,8 @@ fs::path make_pattern(std::string_view prefix, std::string_view suffix) {
 /// @returns A path to the created temporary file
 /// @throws fs::filesystem_error if cannot create the temporary file
 fs::path create_file(std::string_view prefix, std::string_view suffix) {
-    fs::path::string_type path = make_pattern(prefix, suffix);
     std::error_code ec;
+    fs::path::string_type path = make_pattern(prefix, suffix, ec);
 #ifdef WIN32
     HANDLE file =
         CreateFileW(path.c_str(), GENERIC_READ | GENERIC_WRITE,
@@ -113,8 +109,8 @@ fs::path create_file(std::string_view prefix, std::string_view suffix) {
 /// @returns A path to the created temporary directory
 /// @throws fs::filesystem_error if cannot create the temporary directory
 fs::path create_directory(std::string_view prefix) {
-    fs::path::string_type path = make_pattern(prefix, "");
     std::error_code ec;
+    fs::path::string_type path = make_pattern(prefix, "", ec);
 #ifdef WIN32
     if (!CreateDirectoryW(path.c_str(), nullptr)) {
         DWORD err = GetLastError();
