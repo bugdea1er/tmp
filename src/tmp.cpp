@@ -29,19 +29,21 @@ const fs::copy_options copy_options =
     fs::copy_options::recursive | fs::copy_options::overwrite_existing;
 
 /// Creates the parent directory of the given path if it does not exist
-/// @param path The path for which the parent directory needs to be created
-/// @throws fs::filesystem_error if cannot create the parent of the given path
-void create_parent(const fs::path& path) {
-    fs::create_directories(path.parent_path());
+/// @param[in]  path The path for which the parent directory needs to be created
+/// @param[out] ec   Parameter for error reporting
+/// @returns @c true if a parent directory was newly created, @c false otherwise
+/// @throws std::bad_alloc if memory allocation fails
+bool create_parent(const fs::path& path, std::error_code& ec) {
+    return fs::create_directories(path.parent_path(), ec);
 }
 
 /// Deletes the given path recursively, ignoring any errors
-/// @param path The path to delete
+/// @param[in]  path The path to delete
 void remove(const path& path) noexcept {
     try {
         if (!static_cast<const fs::path&>(path).empty()) {
             std::error_code ec;
-            fs::remove_all(path, ec); // can still throw std::bad_alloc
+            fs::remove_all(path, ec); // Can still throw std::bad_alloc
         }
     } catch (const std::bad_alloc& ex) {
         static_cast<void>(ex);
