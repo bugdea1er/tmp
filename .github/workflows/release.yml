@@ -15,3 +15,42 @@ jobs:
           brew tap ${{ vars.BREW_TAP }}
           brew bump-formula-pr --url ${{ github.event.release.tarball_url }} \
                --no-audit ${{ vars.BREW_TAP }}/tmp
+
+  package:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            platform: arm64_macos
+          - os: macos-12
+            platform: x86_64_macos
+          - os: ubuntu-20.04
+            platform: x86_64_linux
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -B ${{ vars.BUILD_DIR }} \
+                   -DCMAKE_BUILD_TYPE=Release \
+                   -DBUILD_TESTING=OFF \
+                   -DCPACK_SYSTEM_NAME=${{ matrix.platform }} \
+                   -DCPACK_PACKAGE_VERSION=${{ github.event.release.tag_name }}
+      - name: Build
+        run: cmake --build ${{ vars.BUILD_DIR }}
+      - name: Package
+        id: package
+        working-directory: ${{ vars.BUILD_DIR }}
+        run: |
+          cpack -G TGZ
+          echo "::set-output name=package::$(find . -name 'tmp*.gz' -depth 1)"
+      - name: Publish
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ${{ vars.BUILD_DIR }}/${{ steps.package.outputs.package }}
+          asset_name: ${{ steps.package.outputs.package }}
+          asset_content_type: application/gzip
