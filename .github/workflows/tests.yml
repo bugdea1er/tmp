@@ -33,16 +33,23 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - os: ubuntu-24.04
-            compiler: clang++-17
-          - os: windows-2022
-            platform: c++
+        os:
+          - ubuntu-24.04
+          - windows-2022
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      - name: Configure CMake
-        run: CXX=${{ matrix.compiler }} cmake -B ${{ vars.BUILD_DIR }} -DTMP_USE_MODULES:BOOL=ON
+      - name: Configure CMake (LLVM Clang)
+        if: ${{ matrix.os == 'ubuntu-24.04' }}
+        run: |
+          sudo apt install ninja-build
+          cmake -B ${{ vars.BUILD_DIR }} 
+                -DTMP_USE_MODULES:BOOL=ON
+                -DCMAKE_CXX_COMPILER=clang++-17
+                -G Ninja
+      - name: Configure CMake (MSVC)
+        if: ${{ matrix.os == 'windows-2022' }}
+        run:  cmake -B ${{ vars.BUILD_DIR }} -DTMP_USE_MODULES:BOOL=ON
       - name: Build tests
         run: cmake --build ${{ vars.BUILD_DIR }}
       - name: Run tests
