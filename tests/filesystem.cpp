@@ -1,4 +1,8 @@
+#ifdef TMP_USE_MODULES
+import tmp;
+#else
 #include <tmp/filesystem>
+#endif
 
 #include <gtest/gtest.h>
 
