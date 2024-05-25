@@ -274,7 +274,7 @@ directory::directory(std::string_view prefix)
 
 directory directory::copy(const fs::path& path, std::string_view prefix) {
     if (fs::is_regular_file(path)) {
-        std::error_code ec = std::make_error_code(std::errc::is_a_directory);
+        std::error_code ec = std::make_error_code(std::errc::not_a_directory);
         throw fs::filesystem_error("Cannot copy temporary directory", ec);
     }
 
