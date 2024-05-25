@@ -1,6 +1,8 @@
 ---
 name: package
 "on":
+  push:
+    branches: [package]
   release:
     types: [released]
 
@@ -17,6 +19,8 @@ jobs:
             platform: x86_64_macos
           - os: ubuntu-20.04
             platform: x86_64_linux
+          - os: windows-2019
+            platform: x86_64_windows
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -41,4 +45,4 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Bump homebrew tap
-        run: brew bump-formula-pr --url https://github.com/bugdea1er/tmp/archive/refs/tags/${{ github.event.release.tag_name }}.tar.gz bugdea1er/tap/tmp
+        run: brew bump-formula-pr -n --url https://github.com/bugdea1er/tmp/archive/refs/tags/${{ github.event.release.tag_name }}.tar.gz bugdea1er/tap/tmp
