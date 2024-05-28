@@ -35,12 +35,12 @@ jobs:
           git diff --color --exit-code
 
   cmake-format:
-    runs-on: macos-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Run cmake-format
         run: |
-          pip install pyyaml cmake-format
+          sudo apt install cmake-format
           cmake-format -i **/*.cmake **/CMakeLists.txt
           git diff --color --exit-code
