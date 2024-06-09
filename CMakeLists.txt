@@ -9,37 +9,9 @@ endif()
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
 include(GNUInstallDirs)
-find_package(Filesystem REQUIRED)
+add_subdirectory(src)
 
-add_library(${PROJECT_NAME} STATIC src/tmp.cpp)
-target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
-
-if(TMP_USE_MODULES)
-    target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
-    target_sources(
-        ${PROJECT_NAME}
-        PUBLIC FILE_SET CXX_MODULES
-               FILES src/tmp.cppm
-               BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/src)
-endif()
-
-target_link_libraries(${PROJECT_NAME} PUBLIC std::filesystem)
-set_target_properties(${PROJECT_NAME} PROPERTIES EXPORT_NAME tmp)
-target_include_directories(
-    ${PROJECT_NAME}
-    PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-           "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
-
-add_library(tmp::tmp ALIAS ${PROJECT_NAME})
-
-if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
-    if(CMAKE_CXX_COMPILER_ID MATCHES GNU|Clang)
-        target_compile_options(${PROJECT_NAME} PRIVATE -Werror)
-        target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic)
-    elseif(MSVC)
-        target_compile_options(${PROJECT_NAME} PRIVATE /WX /W3)
-    endif()
-
+if(PROJECT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     include(CTest)
     if(BUILD_TESTING)
         add_subdirectory(tests)
