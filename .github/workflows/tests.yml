@@ -22,8 +22,35 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Configure CMake
-        run: cmake -B ${{ vars.BUILD_DIR }}
+        run: cmake -B build
       - name: Build tests
-        run: cmake --build ${{ vars.BUILD_DIR }}
+        run: cmake --build build
       - name: Run tests
-        run: ctest --output-on-failure --test-dir ${{ vars.BUILD_DIR }}
+        run: ctest --output-on-failure --test-dir build
+
+  test-modules:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-24.04
+          - windows-2022
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Configure CMake (LLVM Clang)
+        if: ${{ matrix.os == 'ubuntu-24.04' }}
+        run: |
+          sudo apt install ninja-build
+          cmake -B build \
+                -DTMP_USE_MODULES:BOOL=ON \
+                -DCMAKE_CXX_COMPILER=clang++-17 \
+                -G Ninja
+      - name: Configure CMake (MSVC)
+        if: ${{ matrix.os == 'windows-2022' }}
+        run: cmake -B build -DTMP_USE_MODULES:BOOL=ON
+      - name: Build tests
+        run: cmake --build build
+      - name: Run tests
+        run: ctest --output-on-failure --test-dir build
