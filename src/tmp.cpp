@@ -93,10 +93,16 @@ fs::path create_file(std::string_view prefix, std::string_view suffix) {
 
         ec = std::error_code(err, std::system_category());
     }
+
+    CloseHandle(file);
 #else
-    if (mkstemps(path.data(), static_cast<int>(suffix.size())) == -1) {
+    const int fileDescriptor =
+        mkstemps(path.data(), static_cast<int>(suffix.size()));
+    if (fileDescriptor == -1) {
         ec = std::error_code(errno, std::system_category());
     }
+
+    close(fileDescriptor);
 #endif
     if (ec) {
         throw fs::filesystem_error("Cannot create temporary file", ec);
