@@ -65,7 +65,7 @@ public:
     /// Creates a unique temporary copy from the given path
     ///
     /// @param path   A path to make a temporary copy from
-    /// @param prefix A prefix to be used in the temporary directory path
+    /// @param prefix A prefix to be used in the temporary file path
     /// @param suffix A suffix to be used in the temporary file path
     /// @returns The new temporary file
     /// @throws std::filesystem::filesystem_error if @p path is not a file
@@ -110,7 +110,6 @@ private:
     /// @param suffix   A suffix to be used in the temporary file path
     /// @param binary   Whether the managed file is opened in binary write mode
     /// @throws fs::filesystem_error if cannot create a file
-    explicit file(std::string_view prefix, std::string_view suffix,
-                  bool binary);
+    file(std::string_view prefix, std::string_view suffix, bool binary);
 };
 }    // namespace tmp
