@@ -7,6 +7,10 @@
 #include <string>
 #include <string_view>
 
+#ifdef WIN32
+#include <windows.h>
+#endif
+
 namespace tmp {
 
 /// tmp::file is a smart handle that owns and manages a temporary file and
@@ -41,6 +45,14 @@ namespace tmp {
 /// @endcode
 class file final : public path {
 public:
+    /// Implementation-defined handle type
+    using native_handle_type =
+#ifdef WIN32
+        HANDLE;
+#else
+        int;
+#endif
+
     /// Creates a unique temporary binary file
     ///
     /// The file path consists of the system's temporary directory path, the
@@ -73,6 +85,10 @@ public:
                      std::string_view prefix = "",
                      std::string_view suffix = "");
 
+    /// Returns an implementation-defined handle of this file
+    /// @returns An implementation-defined handle of this file
+    [[nodiscard]] native_handle_type native_handle() const noexcept;
+
     /// Returns a path to this file
     /// @returns The full path to this file
     [[nodiscard]] const std::filesystem::path& path() const noexcept;
@@ -98,6 +114,9 @@ public:
     auto operator=(const file&) = delete;    ///< not copy-assignable
 
 private:
+    /// Implementation-defined handle to the file
+    native_handle_type handle;
+
     /// Whether the managed file is opened in binary write mode
     bool binary;
 
@@ -111,5 +130,13 @@ private:
     /// @param binary   Whether the managed file is opened in binary write mode
     /// @throws fs::filesystem_error if cannot create a file
     file(std::string_view prefix, std::string_view suffix, bool binary);
+
+    /// Creates a unique temporary file
+    ///
+    /// @param handle   A path to the created temporary file and its
+    ///                 implementation-defined handle
+    /// @param binary   Whether the managed file is opened in binary write mode
+    file(std::pair<std::filesystem::path, native_handle_type> handle,
+         bool binary) noexcept;
 };
 }    // namespace tmp

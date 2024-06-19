@@ -14,18 +14,49 @@ import tmp;
 #include <ostream>
 #include <utility>
 
+#ifdef WIN32
+#include <windows.h>
+#else
+#include <fcntl.h>
+#endif
+
 namespace tmp {
 
 namespace fs = std::filesystem;
 
+namespace {
+
+/// Checks if the given implementation-defined file handle is valid
+/// @param handle handle to check
+/// @returns @c true if the handle is valid, @c false otherwise
+bool native_handle_is_valid(file::native_handle_type handle) {
+#ifdef WIN32
+    BY_HANDLE_FILE_INFORMATION info;
+    return GetFileInformationByHandle(handle, &info);
+#else
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
+    return fcntl(handle, F_GETFD) >= 0;
+#endif
+}
+}    // namespace
+
 /// Tests file creation with prefix
 TEST(file, create_with_prefix) {
-    file tmpfile = file(PREFIX);
-    fs::path parent = tmpfile.path().parent_path();
+    file::native_handle_type handle{};
 
-    EXPECT_TRUE(fs::exists(tmpfile));
-    EXPECT_TRUE(fs::is_regular_file(tmpfile));
-    EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path() / PREFIX));
+    {
+        file tmpfile = file(PREFIX);
+        fs::path parent = tmpfile.path().parent_path();
+
+        EXPECT_TRUE(fs::exists(tmpfile));
+        EXPECT_TRUE(fs::is_regular_file(tmpfile));
+        EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path() / PREFIX));
+
+        handle = tmpfile.native_handle();
+        EXPECT_TRUE(native_handle_is_valid(handle));
+    }
+
+    EXPECT_FALSE(native_handle_is_valid(handle));
 }
 
 /// Tests file creation without prefix
@@ -249,4 +280,16 @@ TEST(file, move) {
     EXPECT_TRUE(fs::exists(to));
     fs::remove_all(fs::temp_directory_path() / PREFIX / "non-existing");
 }
+
+/// Tests native handle management
+TEST(file, native_handle) {
+    std::optional<file> tmpfile = std::make_optional<file>(PREFIX);
+
+    const file::native_handle_type handle = tmpfile->native_handle();
+    EXPECT_TRUE(native_handle_is_valid(handle));
+
+    tmpfile.reset();
+    EXPECT_FALSE(native_handle_is_valid(handle));
+}
+
 }    // namespace tmp
