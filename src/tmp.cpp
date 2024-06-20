@@ -323,7 +323,7 @@ file& file::operator=(file&& other) noexcept {
     this->handle = other.handle;
 
     return *this;
-};
+}
 
 //===----------------------------------------------------------------------===//
 // tmp::directory implementation
