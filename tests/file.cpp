@@ -64,7 +64,7 @@ TEST(file, native_handle_type) {
     static_assert(std::is_trivially_copyable_v<file::native_handle_type>);
 #ifdef WIN32
     // Confirm that `HANDLE` is `void*` as implemented in `file`
-    static_assert(std::same_as<HANDLE, void*>);
+    static_assert(std::is_same_v<HANDLE, void*>);
 #endif
 }
 
