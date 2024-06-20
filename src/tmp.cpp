@@ -321,9 +321,10 @@ file::~file() noexcept {
 file::file(file&&) noexcept = default;
 
 file& file::operator=(file&& other) noexcept {
-    close(*this);
 
     tmp::path::operator=(std::move(other));
+
+    close(*this);
 
     this->binary = other.binary;    // NOLINT(bugprone-use-after-move)
     this->handle = other.handle;    // NOLINT(bugprone-use-after-move)

@@ -242,6 +242,7 @@ TEST(file, move_constructor) {
 
     EXPECT_TRUE(fst.path().empty());
     EXPECT_TRUE(fs::exists(snd));
+    EXPECT_TRUE(native_handle_is_valid(snd.native_handle()));
 }
 
 /// Tests file move assignment operator
