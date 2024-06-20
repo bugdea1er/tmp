@@ -113,10 +113,8 @@ private:
     /// Whether the managed file is opened in binary write mode
     bool binary;
 
-    /// Creates a unique temporary file
-    ///
-    /// The file path consists of the system's temporary directory path, the
-    /// given prefix, suffix, and random characters to ensure path uniqueness
+    /// Creates a unique temporary file and opens it for reading and writing
+    /// in the specified mode
     ///
     /// @param prefix   A prefix to be used in the temporary file path
     /// @param suffix   A suffix to be used in the temporary file path

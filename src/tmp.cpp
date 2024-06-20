@@ -38,9 +38,8 @@ bool create_parent(const fs::path& path, std::error_code& ec) {
 }
 
 /// Creates a temporary path pattern with the given prefix and suffix
-/// @param[in]  prefix   A prefix to be used in the path pattern
-/// @param[in]  suffix   A suffix to be used in the path pattern
-/// @param[out] ec       Parameter for error reporting
+/// @param prefix   A prefix to be used in the path pattern
+/// @param suffix   A suffix to be used in the path pattern
 /// @returns A path pattern for the unique temporary path
 /// @throws std::bad_alloc if memory allocation fails
 fs::path make_pattern(std::string_view prefix, std::string_view suffix) {
@@ -65,11 +64,11 @@ fs::path make_pattern(std::string_view prefix, std::string_view suffix) {
 }
 
 /// Creates a temporary file with the given prefix in the system's
-/// temporary directory, and returns its path
+/// temporary directory, and opens it for reading and writing
+///
 /// @param prefix   The prefix to use for the temporary file name
 /// @param suffix   The suffix to use for the temporary file name
-/// @returns A path to the created temporary file and its implementation-defined
-///          handle
+/// @returns A path to the created temporary file and a handle to it
 /// @throws fs::filesystem_error if cannot create the temporary file
 std::pair<fs::path, file::native_handle_type>
 create_file(std::string_view prefix, std::string_view suffix) {
@@ -95,19 +94,18 @@ create_file(std::string_view prefix, std::string_view suffix) {
 
         ec = std::error_code(err, std::system_category());
     }
-
 #else
     const int handle = mkstemps(path.data(), static_cast<int>(suffix.size()));
     if (handle == -1) {
         ec = std::error_code(errno, std::system_category());
     }
-
 #endif
+
     if (ec) {
         throw fs::filesystem_error("Cannot create temporary file", ec);
     }
 
-    return {path, handle};
+    return std::pair(path, handle);
 }
 
 /// Creates a temporary directory with the given prefix in the system's
@@ -138,6 +136,7 @@ fs::path create_directory(std::string_view prefix) {
         ec = std::error_code(errno, std::system_category());
     }
 #endif
+
     if (ec) {
         throw fs::filesystem_error("Cannot create temporary directory", ec);
     }
@@ -246,8 +245,7 @@ void path::move(const fs::path& to) {
 // tmp::file implementation
 //===----------------------------------------------------------------------===//
 
-file::file(std::pair<std::filesystem::path, native_handle_type> handle,
-           bool binary) noexcept
+file::file(std::pair<fs::path, native_handle_type> handle, bool binary) noexcept
     : tmp::path(std::move(handle.first)),
       handle(handle.second),
       binary(binary) {}
