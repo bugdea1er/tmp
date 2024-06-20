@@ -254,10 +254,6 @@ void path::move(const fs::path& to) {
         throw_move_error(to, ec);
     }
 
-    if (file* file = dynamic_cast<class file*>(this)) {
-        close(*file);
-    }
-
     remove(*this);
     release();
 }
@@ -329,8 +325,8 @@ file& file::operator=(file&& other) noexcept {
 
     tmp::path::operator=(std::move(other));
 
-    this->binary = other.binary; // NOLINT(bugprone-use-after-move)
-    this->handle = other.handle; // NOLINT(bugprone-use-after-move)
+    this->binary = other.binary;    // NOLINT(bugprone-use-after-move)
+    this->handle = other.handle;    // NOLINT(bugprone-use-after-move)
 
     return *this;
 };
