@@ -299,18 +299,33 @@ void file::append(std::string_view content) const {
     stream(*this, binary, /*append=*/true) << content;
 }
 
-file::~file() noexcept {
+// NOLINTNEXTLINE(readability-make-member-function-const): logically not const
+void file::close() {
     if (!this->path().empty()) {
 #ifdef WIN32
         CloseHandle(this->handle);
 #else
-        close(this->handle);
+        ::close(this->handle);
 #endif
     }
 }
 
+file::~file() noexcept {
+    this->close();
+}
+
 file::file(file&&) noexcept = default;
-file& file::operator=(file&&) noexcept = default;
+
+file& file::operator=(file&& other) noexcept {
+    tmp::path::operator=(std::move(other));
+
+    this->close();
+
+    this->binary = other.binary;
+    this->handle = other.handle;
+
+    return *this;
+};
 
 //===----------------------------------------------------------------------===//
 // tmp::directory implementation

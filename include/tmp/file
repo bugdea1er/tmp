@@ -138,5 +138,8 @@ private:
     /// @param binary   Whether the managed file is opened in binary write mode
     file(std::pair<std::filesystem::path, native_handle_type> handle,
          bool binary) noexcept;
+
+    /// Closes the implementation-defined handle
+    void close();
 };
 }    // namespace tmp
