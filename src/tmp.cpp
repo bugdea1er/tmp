@@ -222,8 +222,13 @@ const fs::path* path::operator->() const noexcept {
 }
 
 fs::path path::release() noexcept {
+    if (file* file = dynamic_cast<class file*>(this)) {
+        close(*file);
+    }
+
     fs::path path = std::move(underlying);
     underlying.clear();
+
     return path;
 }
 
@@ -247,6 +252,10 @@ void path::move(const fs::path& to) {
 
     if (ec) {
         throw_move_error(to, ec);
+    }
+
+    if (file* file = dynamic_cast<class file*>(this)) {
+        close(*file);
     }
 
     remove(*this);
@@ -287,7 +296,7 @@ file file::copy(const fs::path& path, std::string_view prefix,
 }
 
 file::native_handle_type file::native_handle() const noexcept {
-    return this->handle;
+    return handle;
 }
 
 const fs::path& file::path() const noexcept {
