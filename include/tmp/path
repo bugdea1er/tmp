@@ -47,7 +47,7 @@ protected:
     /// @param path A path to manage
     explicit path(std::filesystem::path path);
 
-    path(path&&) noexcept;                   ///< move-constructible
-    path& operator=(path&&) noexcept;        ///< move-assignable
+    path(path&&) noexcept;               ///< move-constructible
+    path& operator=(path&&) noexcept;    ///< move-assignable
 };
 }    // namespace tmp

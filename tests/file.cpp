@@ -26,7 +26,7 @@ namespace fs = std::filesystem;
 
 namespace {
 
-/// Checks if the given implementation-defined file handle is valid
+/// Checks if the given file handle is valid
 /// @param handle handle to check
 /// @returns @c true if the handle is valid, @c false otherwise
 bool native_handle_is_valid(file::native_handle_type handle) {
@@ -34,8 +34,7 @@ bool native_handle_is_valid(file::native_handle_type handle) {
     BY_HANDLE_FILE_INFORMATION info;
     return GetFileInformationByHandle(handle, &info);
 #else
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
-    return fcntl(handle, F_GETFD) >= 0;
+    return fcntl(handle, F_GETFD) != -1;
 #endif
 }
 }    // namespace
@@ -225,12 +224,15 @@ TEST(file, append_text) {
 /// Tests that destructor removes a file
 TEST(file, destructor) {
     fs::path path = fs::path();
+    file::native_handle_type handle;
     {
         file tmpfile = file(PREFIX);
         path = tmpfile;
+        handle = tmpfile.native_handle();
     }
 
     EXPECT_FALSE(fs::exists(path));
+    EXPECT_FALSE(native_handle_is_valid(handle));
 }
 
 /// Tests file move constructor
@@ -250,6 +252,9 @@ TEST(file, move_assignment) {
     fs::path path1 = fst;
     fs::path path2 = snd;
 
+    file::native_handle_type fst_handle = fst.native_handle();
+    file::native_handle_type snd_handle = snd.native_handle();
+
     fst = std::move(snd);
 
     EXPECT_FALSE(fs::exists(path1));
@@ -257,48 +262,48 @@ TEST(file, move_assignment) {
 
     EXPECT_TRUE(fs::exists(fst));
     EXPECT_TRUE(fs::equivalent(fst, path2));
+
+    EXPECT_FALSE(native_handle_is_valid(fst_handle));
+    EXPECT_TRUE(native_handle_is_valid(snd_handle));
 }
 
 /// Tests file releasing
 TEST(file, release) {
     fs::path path = fs::path();
+    file::native_handle_type handle;
     {
         file tmpfile = file(PREFIX);
         fs::path expected = tmpfile;
-        path = tmpfile.release();
+        handle = tmpfile.native_handle();
 
+        path = tmpfile.release();
         EXPECT_TRUE(fs::equivalent(path, expected));
     }
 
     EXPECT_TRUE(fs::exists(path));
+    EXPECT_FALSE(native_handle_is_valid(handle));
+
     fs::remove(path);
 }
 
 /// Tests file moving
 TEST(file, move) {
     fs::path path = fs::path();
+    file::native_handle_type handle;
+
     fs::path to = fs::temp_directory_path() / PREFIX / "non-existing/parent";
     {
         file tmpfile = file(PREFIX);
         path = tmpfile;
+        handle = tmpfile.native_handle();
 
         tmpfile.move(to);
     }
 
     EXPECT_FALSE(fs::exists(path));
     EXPECT_TRUE(fs::exists(to));
+    EXPECT_FALSE(native_handle_is_valid(handle));
+
     fs::remove_all(fs::temp_directory_path() / PREFIX / "non-existing");
 }
-
-/// Tests native handle management
-TEST(file, native_handle) {
-    std::optional<file> tmpfile = std::make_optional<file>(PREFIX);
-
-    const file::native_handle_type handle = tmpfile->native_handle();
-    EXPECT_TRUE(native_handle_is_valid(handle));
-
-    tmpfile.reset();
-    EXPECT_FALSE(native_handle_is_valid(handle));
-}
-
 }    // namespace tmp
