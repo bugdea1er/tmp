@@ -62,6 +62,10 @@ TEST(file, create_with_prefix) {
 TEST(file, native_handle_type) {
     // `TriviallyCopyable` named requirement
     static_assert(std::is_trivially_copyable_v<file::native_handle_type>);
+#ifdef WIN32
+    // Confirm that `HANDLE` is `void*` as implemented in `file`
+    static_assert(std::same_as<HANDLE, void*>);
+#endif
 }
 
 /// Tests file creation without prefix
