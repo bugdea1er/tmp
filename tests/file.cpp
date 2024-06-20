@@ -59,6 +59,11 @@ TEST(file, create_with_prefix) {
     EXPECT_FALSE(native_handle_is_valid(handle));
 }
 
+TEST(file, native_handle_type) {
+    // `TriviallyCopyable` named requirement
+    static_assert(std::is_trivially_copyable_v<file::native_handle_type>);
+}
+
 /// Tests file creation without prefix
 TEST(file, create_without_prefix) {
     file tmpfile = file();
