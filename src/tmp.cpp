@@ -159,15 +159,27 @@ std::ofstream stream(const file& file, bool binary, bool append) noexcept {
 }
 
 /// Deletes the given path recursively, ignoring any errors
-/// @param[in]  path The path to delete
+/// @param path     The path to delete
 void remove(const fs::path& path) noexcept {
     if (!path.empty()) {
         try {
             std::error_code ec;
-            fs::remove_all(path, ec);    // Can still throw std::bad_alloc
+            fs::remove_all(path, ec);    // Can throw std::bad_alloc
         } catch (const std::bad_alloc& ex) {
             static_cast<void>(ex);
         }
+    }
+}
+
+/// Closes the given file, ignoring any errors
+/// @param file     The file to close
+void close(const file& file) noexcept {
+    if (!file.path().empty()) {
+#ifdef WIN32
+        CloseHandle(file.native_handle());
+#else
+        ::close(file.native_handle());
+#endif
     }
 }
 
@@ -297,19 +309,8 @@ void file::append(std::string_view content) const {
     stream(*this, binary, /*append=*/true) << content;
 }
 
-// NOLINTNEXTLINE(readability-make-member-function-const): logically not const
-void file::close() {
-    if (!this->path().empty()) {
-#ifdef WIN32
-        CloseHandle(this->handle);
-#else
-        ::close(this->handle);
-#endif
-    }
-}
-
 file::~file() noexcept {
-    this->close();
+    close(*this);
 }
 
 file::file(file&&) noexcept = default;
@@ -317,7 +318,7 @@ file::file(file&&) noexcept = default;
 file& file::operator=(file&& other) noexcept {
     tmp::path::operator=(std::move(other));
 
-    this->close();
+    close(*this);
 
     this->binary = other.binary;
     this->handle = other.handle;
