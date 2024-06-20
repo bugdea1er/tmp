@@ -41,7 +41,7 @@ namespace tmp {
 /// @endcode
 class file final : public path {
 public:
-    /// Implementation-defined handle type
+    /// Implementation-defined handle type to the temporary file
 #if defined(WIN32)
     using native_handle_type = void*;    // HANDLE
 #elif __has_include(<unistd.h>)
@@ -50,20 +50,16 @@ public:
 #error "Provide a native file handle!"
 #endif
 
-    /// Creates a unique temporary binary file
-    ///
-    /// The file path consists of the system's temporary directory path, the
-    /// given prefix, suffix, and random characters to ensure path uniqueness
+    /// Creates a unique temporary file and opens it for reading and writing
+    /// in binary mode
     ///
     /// @param prefix   A prefix to be used in the temporary file path
     /// @param suffix   A suffix to be used in the temporary file path
     /// @throws std::filesystem::filesystem_error if cannot create a file
     explicit file(std::string_view prefix = "", std::string_view suffix = "");
 
-    /// Creates a unique temporary text file
-    ///
-    /// The file path consists of the system's temporary directory path, the
-    /// given prefix, suffix, and random characters to ensure path uniqueness
+    /// Creates a unique temporary file and opens it for reading and writing
+    /// in text mode
     ///
     /// @param prefix   A prefix to be used in the temporary file path
     /// @param suffix   A suffix to be used in the temporary file path
@@ -82,8 +78,8 @@ public:
                      std::string_view prefix = "",
                      std::string_view suffix = "");
 
-    /// Returns an implementation-defined handle of this file
-    /// @returns An implementation-defined handle of this file
+    /// Returns an implementation-defined handle to this file
+    /// @returns The underlying implementation-defined handle
     [[nodiscard]] native_handle_type native_handle() const noexcept;
 
     /// Returns a path to this file
