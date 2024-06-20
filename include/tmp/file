@@ -7,10 +7,6 @@
 #include <string>
 #include <string_view>
 
-#ifdef WIN32
-#include <windows.h>
-#endif
-
 namespace tmp {
 
 /// tmp::file is a smart handle that owns and manages a temporary file and
@@ -46,11 +42,12 @@ namespace tmp {
 class file final : public path {
 public:
     /// Implementation-defined handle type
-    using native_handle_type =
-#ifdef WIN32
-        HANDLE;
+#if defined(WIN32)
+    using native_handle_type = void*;    // HANDLE
+#elif __has_include(<unistd.h>)
+    using native_handle_type = int;    // POSIX file descriptor
 #else
-        int;
+#error "Provide a native file handle!"
 #endif
 
     /// Creates a unique temporary binary file
