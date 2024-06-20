@@ -325,15 +325,15 @@ file::~file() noexcept {
 file::file(file&&) noexcept = default;
 
 file& file::operator=(file&& other) noexcept {
-    tmp::path::operator=(std::move(other));
-
     close(*this);
 
-    this->binary = other.binary;
-    this->handle = other.handle;
+    tmp::path::operator=(std::move(other));
+
+    this->binary = other.binary; // NOLINT(bugprone-use-after-move)
+    this->handle = other.handle; // NOLINT(bugprone-use-after-move)
 
     return *this;
-}
+};
 
 //===----------------------------------------------------------------------===//
 // tmp::directory implementation
