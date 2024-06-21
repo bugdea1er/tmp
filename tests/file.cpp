@@ -39,6 +39,16 @@ bool native_handle_is_valid(file::native_handle_type handle) {
 }
 }    // namespace
 
+/// Tests requirements for native_handle_type
+TEST(file, native_handle_type) {
+    // `TriviallyCopyable` named requirement
+    static_assert(std::is_trivially_copyable_v<file::native_handle_type>);
+#ifdef WIN32
+    // Confirm that `HANDLE` is `void*` as implemented in `file`
+    static_assert(std::is_same_v<HANDLE, void*>);
+#endif
+}
+
 /// Tests file creation with prefix
 TEST(file, create_with_prefix) {
     file tmpfile = file(PREFIX);
@@ -47,15 +57,7 @@ TEST(file, create_with_prefix) {
     EXPECT_TRUE(fs::exists(tmpfile));
     EXPECT_TRUE(fs::is_regular_file(tmpfile));
     EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path() / PREFIX));
-}
-
-TEST(file, native_handle_type) {
-    // `TriviallyCopyable` named requirement
-    static_assert(std::is_trivially_copyable_v<file::native_handle_type>);
-#ifdef WIN32
-    // Confirm that `HANDLE` is `void*` as implemented in `file`
-    static_assert(std::is_same_v<HANDLE, void*>);
-#endif
+    EXPECT_TRUE(native_handle_is_valid(tmpfile.native_handle()));
 }
 
 /// Tests file creation without prefix
@@ -66,6 +68,7 @@ TEST(file, create_without_prefix) {
     EXPECT_TRUE(fs::exists(tmpfile));
     EXPECT_TRUE(fs::is_regular_file(tmpfile));
     EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path()));
+    EXPECT_TRUE(native_handle_is_valid(tmpfile.native_handle()));
 }
 
 /// Tests file creation with suffix
@@ -75,6 +78,7 @@ TEST(file, create_with_suffix) {
     EXPECT_TRUE(fs::exists(tmpfile));
     EXPECT_TRUE(fs::is_regular_file(tmpfile));
     EXPECT_EQ(tmpfile.path().extension(), ".test");
+    EXPECT_TRUE(native_handle_is_valid(tmpfile.native_handle()));
 }
 
 /// Tests multiple file creation with the same prefix
