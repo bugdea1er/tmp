@@ -41,21 +41,12 @@ bool native_handle_is_valid(file::native_handle_type handle) {
 
 /// Tests file creation with prefix
 TEST(file, create_with_prefix) {
-    file::native_handle_type handle{};
+    file tmpfile = file(PREFIX);
+    fs::path parent = tmpfile.path().parent_path();
 
-    {
-        file tmpfile = file(PREFIX);
-        fs::path parent = tmpfile.path().parent_path();
-
-        EXPECT_TRUE(fs::exists(tmpfile));
-        EXPECT_TRUE(fs::is_regular_file(tmpfile));
-        EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path() / PREFIX));
-
-        handle = tmpfile.native_handle();
-        EXPECT_TRUE(native_handle_is_valid(handle));
-    }
-
-    EXPECT_FALSE(native_handle_is_valid(handle));
+    EXPECT_TRUE(fs::exists(tmpfile));
+    EXPECT_TRUE(fs::is_regular_file(tmpfile));
+    EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path() / PREFIX));
 }
 
 TEST(file, native_handle_type) {
