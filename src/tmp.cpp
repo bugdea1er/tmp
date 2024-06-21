@@ -257,10 +257,6 @@ void path::move(const fs::path& to) {
         throw_move_error(to, ec);
     }
 
-    if (file* file = dynamic_cast<class file*>(this)) {
-        close(*file);
-    }
-
     remove(*this);
     release();
 }
