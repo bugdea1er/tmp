@@ -24,6 +24,8 @@ TEST(directory, create_with_prefix) {
     EXPECT_TRUE(fs::exists(tmpdir));
     EXPECT_TRUE(fs::is_directory(tmpdir));
     EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path() / PREFIX));
+
+    EXPECT_EQ(fs::status(tmpdir).permissions(), fs::perms::owner_all);
 }
 
 /// Tests directory creation without prefix

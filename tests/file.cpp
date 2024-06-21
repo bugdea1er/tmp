@@ -48,6 +48,9 @@ TEST(file, create_with_prefix) {
     EXPECT_TRUE(fs::is_regular_file(tmpfile));
     EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path() / PREFIX));
     EXPECT_TRUE(native_handle_is_valid(tmpfile.native_handle()));
+
+    EXPECT_EQ(fs::status(tmpfile).permissions(),
+              fs::perms::owner_read | fs::perms::owner_write);
 }
 
 /// Tests file creation without prefix
@@ -59,6 +62,9 @@ TEST(file, create_without_prefix) {
     EXPECT_TRUE(fs::is_regular_file(tmpfile));
     EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path()));
     EXPECT_TRUE(native_handle_is_valid(tmpfile.native_handle()));
+
+    EXPECT_EQ(fs::status(tmpfile).permissions(),
+              fs::perms::owner_read | fs::perms::owner_write);
 }
 
 /// Tests file creation with suffix
