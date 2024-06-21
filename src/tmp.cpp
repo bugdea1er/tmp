@@ -57,6 +57,7 @@ fs::path make_pattern(std::string_view prefix, std::string_view suffix) {
 #else
     std::string_view name = "XXXXXX";
 #endif
+
     fs::path pattern = filesystem::root(prefix) / name;
 
     pattern += suffix;
@@ -95,7 +96,7 @@ create_file(std::string_view prefix, std::string_view suffix) {
         ec = std::error_code(err, std::system_category());
     }
 #else
-    const int handle = mkstemps(path.data(), static_cast<int>(suffix.size()));
+    int handle = mkstemps(path.data(), static_cast<int>(suffix.size()));
     if (handle == -1) {
         ec = std::error_code(errno, std::system_category());
     }
@@ -164,7 +165,7 @@ void remove(const fs::path& path) noexcept {
     if (!path.empty()) {
         try {
             std::error_code ec;
-            fs::remove_all(path, ec);    // Can throw std::bad_alloc
+            fs::remove_all(path, ec);    // Throws std::bad_alloc
         } catch (const std::bad_alloc& ex) {
             static_cast<void>(ex);
         }
