@@ -24,7 +24,7 @@ public:
     [[deprecated]] const std::filesystem::path* operator->() const noexcept;
 
     /// Releases the ownership of the managed path;
-    /// the destructor will not delete or close the managed path after the call
+    /// the destructor will not delete the managed path after the call
     /// @returns The managed path
     std::filesystem::path release() noexcept;
 

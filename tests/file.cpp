@@ -267,7 +267,7 @@ TEST(file, release) {
     }
 
     EXPECT_TRUE(fs::exists(path));
-    EXPECT_TRUE(native_handle_is_valid(handle));
+    EXPECT_FALSE(native_handle_is_valid(handle));
 
     fs::remove(path);
 }

@@ -183,13 +183,11 @@ void remove(const fs::path& path) noexcept {
 /// Closes the given file, ignoring any errors
 /// @param file     The file to close
 void close(const file& file) noexcept {
-    if (!file.path().empty()) {
 #ifdef WIN32
         CloseHandle(file.native_handle());
 #else
         ::close(file.native_handle());
 #endif
-    }
 }
 
 /// Throws a filesystem error indicating that a temporary resource cannot be
