@@ -223,10 +223,6 @@ const fs::path* path::operator->() const noexcept {
 }
 
 fs::path path::release() noexcept {
-    if (file* file = dynamic_cast<class file*>(this)) {
-        close(*file);
-    }
-
     fs::path path = std::move(underlying);
     underlying.clear();
 
@@ -253,6 +249,10 @@ void path::move(const fs::path& to) {
 
     if (ec) {
         throw_move_error(to, ec);
+    }
+
+    if (file* file = dynamic_cast<class file*>(this)) {
+        close(*file);
     }
 
     remove(*this);
@@ -322,7 +322,6 @@ file::~file() noexcept {
 file::file(file&&) noexcept = default;
 
 file& file::operator=(file&& other) noexcept {
-
     tmp::path::operator=(std::move(other));
 
     close(*this);
@@ -331,7 +330,7 @@ file& file::operator=(file&& other) noexcept {
     this->handle = other.handle;    // NOLINT(bugprone-use-after-move)
 
     return *this;
-};
+}
 
 //===----------------------------------------------------------------------===//
 // tmp::directory implementation
