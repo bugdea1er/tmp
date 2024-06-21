@@ -38,9 +38,8 @@ bool create_parent(const fs::path& path, std::error_code& ec) {
 }
 
 /// Creates a temporary path pattern with the given prefix and suffix
-/// @param[in]  prefix   A prefix to be used in the path pattern
-/// @param[in]  suffix   A suffix to be used in the path pattern
-/// @param[out] ec       Parameter for error reporting
+/// @param prefix   A prefix to be used in the path pattern
+/// @param suffix   A suffix to be used in the path pattern
 /// @returns A path pattern for the unique temporary path
 /// @throws std::bad_alloc if memory allocation fails
 fs::path make_pattern(std::string_view prefix, std::string_view suffix) {
@@ -58,6 +57,7 @@ fs::path make_pattern(std::string_view prefix, std::string_view suffix) {
 #else
     std::string_view name = "XXXXXX";
 #endif
+
     fs::path pattern = filesystem::root(prefix) / name;
 
     pattern += suffix;
@@ -80,12 +80,12 @@ fs::path create_file(std::string_view prefix, std::string_view suffix) {
     }
 
 #ifdef WIN32
-    HANDLE file =
+    HANDLE handle =
         CreateFileW(path.c_str(), GENERIC_READ | GENERIC_WRITE,
                     FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
                     nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
 
-    if (file == INVALID_HANDLE_VALUE) {
+    if (handle == INVALID_HANDLE_VALUE) {
         DWORD err = GetLastError();
         if (err == ERROR_ALREADY_EXISTS) {
             return create_file(prefix, suffix);
@@ -93,19 +93,17 @@ fs::path create_file(std::string_view prefix, std::string_view suffix) {
 
         ec = std::error_code(err, std::system_category());
     } else {
-        CloseHandle(file);
+        CloseHandle(handle);
     }
-
 #else
-    const int fileDescriptor =
-        mkstemps(path.data(), static_cast<int>(suffix.size()));
-    if (fileDescriptor == -1) {
+    int handle = mkstemps(path.data(), static_cast<int>(suffix.size()));
+    if (handle == -1) {
         ec = std::error_code(errno, std::system_category());
     } else {
-        close(fileDescriptor);
+        close(handle);
     }
-
 #endif
+
     if (ec) {
         throw fs::filesystem_error("Cannot create temporary file", ec);
     }
@@ -141,6 +139,7 @@ fs::path create_directory(std::string_view prefix) {
         ec = std::error_code(errno, std::system_category());
     }
 #endif
+
     if (ec) {
         throw fs::filesystem_error("Cannot create temporary directory", ec);
     }
@@ -163,12 +162,12 @@ std::ofstream stream(const file& file, bool binary, bool append) noexcept {
 }
 
 /// Deletes the given path recursively, ignoring any errors
-/// @param[in]  path The path to delete
+/// @param path     The path to delete
 void remove(const fs::path& path) noexcept {
     if (!path.empty()) {
         try {
             std::error_code ec;
-            fs::remove_all(path, ec);    // Can still throw std::bad_alloc
+            fs::remove_all(path, ec);    // Throws std::bad_alloc
         } catch (const std::bad_alloc& ex) {
             static_cast<void>(ex);
         }

@@ -39,8 +39,6 @@ public:
     /// Deletes the managed path recursively if it is not empty
     virtual ~path() noexcept;
 
-    path(path&&) noexcept;                   ///< move-constructible
-    path& operator=(path&&) noexcept;        ///< move-assignable
     path(const path&) = delete;              ///< not copy-constructible
     auto operator=(const path&) = delete;    ///< not copy-assignable
 
@@ -48,5 +46,8 @@ protected:
     /// Constructs a tmp::path which owns @p path
     /// @param path A path to manage
     explicit path(std::filesystem::path path);
+
+    path(path&&) noexcept;               ///< move-constructible
+    path& operator=(path&&) noexcept;    ///< move-assignable
 };
 }    // namespace tmp
