@@ -184,9 +184,9 @@ void remove(const fs::path& path) noexcept {
 /// @param file     The file to close
 void close(const file& file) noexcept {
 #ifdef WIN32
-        CloseHandle(file.native_handle());
+    CloseHandle(file.native_handle());
 #else
-        ::close(file.native_handle());
+    ::close(file.native_handle());
 #endif
 }
 
