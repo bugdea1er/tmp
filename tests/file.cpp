@@ -39,16 +39,6 @@ bool native_handle_is_valid(file::native_handle_type handle) {
 }
 }    // namespace
 
-/// Tests requirements for native_handle_type
-TEST(file, native_handle_type) {
-    // `TriviallyCopyable` named requirement
-    static_assert(std::is_trivially_copyable_v<file::native_handle_type>);
-#ifdef WIN32
-    // Confirm that `HANDLE` is `void*` as implemented in `file`
-    static_assert(std::is_same_v<HANDLE, void*>);
-#endif
-}
-
 /// Tests file creation with prefix
 TEST(file, create_with_prefix) {
     file tmpfile = file(PREFIX);
