@@ -51,10 +51,10 @@ TEST(file, create_with_prefix) {
 
     fs::perms permissions = fs::status(tmpfile).permissions();
 #ifdef WIN32
-    // On Windows, GetTempFileNameW creates a file with all permissions
+    // GetTempFileNameW creates a file with all permissions
     EXPECT_EQ(permissions, fs::perms::all);
 #else
-    // In POSIX, mkstemp creates a file that can only be read and written by the owner
+    // mkstemp creates a file that can only be read and written by the owner
     EXPECT_EQ(permissions, fs::perms::owner_read | fs::perms::owner_write);
 #endif
 }

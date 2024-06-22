@@ -30,7 +30,7 @@ TEST(directory, create_with_prefix) {
     // Following the logic with GetTempFileNameW
     EXPECT_EQ(permissions, fs::perms::all);
 #else
-    // In POSIX, mkdtemp creates a directory with full access only for the owner
+    // mkdtemp creates a directory with full access only for the owner
     EXPECT_EQ(permissions, fs::perms::owner_all);
 #endif
 }
