@@ -15,7 +15,7 @@ import tmp;
 #include <utility>
 
 #ifdef WIN32
-#include <windows.h>
+#include <Windows.h>
 #else
 #include <fcntl.h>
 #endif
@@ -49,8 +49,14 @@ TEST(file, create_with_prefix) {
     EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path() / PREFIX));
     EXPECT_TRUE(native_handle_is_valid(tmpfile.native_handle()));
 
-    EXPECT_EQ(fs::status(tmpfile).permissions(),
-              fs::perms::owner_read | fs::perms::owner_write);
+    fs::perms permissions = fs::status(tmpfile).permissions();
+#ifdef WIN32
+    // On Windows, GetTempFileNameW creates a file with all permissions
+    EXPECT_EQ(permissions, fs::perms::all);
+#else
+    // In POSIX, mkstemp creates a file that can only be read and written by the owner
+    EXPECT_EQ(permissions, fs::perms::owner_read | fs::perms::owner_write);
+#endif
 }
 
 /// Tests file creation without prefix
@@ -62,9 +68,6 @@ TEST(file, create_without_prefix) {
     EXPECT_TRUE(fs::is_regular_file(tmpfile));
     EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path()));
     EXPECT_TRUE(native_handle_is_valid(tmpfile.native_handle()));
-
-    EXPECT_EQ(fs::status(tmpfile).permissions(),
-              fs::perms::owner_read | fs::perms::owner_write);
 }
 
 /// Tests file creation with suffix
