@@ -12,6 +12,8 @@
 #include <system_error>
 #include <utility>
 
+#include <iostream>
+
 #ifdef WIN32
 #include <Windows.h>
 #else
@@ -173,7 +175,12 @@ void remove(const fs::path& path) noexcept {
     if (!path.empty()) {
         try {
             std::error_code ec;
-            fs::remove_all(path, ec);    // Throws std::bad_alloc
+            fs::remove_all(path, ec);
+
+            fs::path parent = path.parent_path();
+            if (!fs::equivalent(parent, filesystem::root(), ec)) {
+                fs::remove(parent, ec);
+            }
         } catch (const std::bad_alloc& ex) {
             static_cast<void>(ex);
         }
