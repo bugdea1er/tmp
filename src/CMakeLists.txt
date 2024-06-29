@@ -20,7 +20,7 @@ endif()
 
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
-if(PROJECT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+if(TMP_IS_TOP_LEVEL)
     if(CMAKE_CXX_COMPILER_ID MATCHES GNU|Clang)
         target_compile_options(${PROJECT_NAME} PRIVATE -Werror)
         target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic)

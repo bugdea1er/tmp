@@ -8,10 +8,15 @@ endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
+set(TMP_IS_TOP_LEVEL OFF)
+if(PROJECT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+    set(TMP_IS_TOP_LEVEL ON)
+endif()
+
 include(GNUInstallDirs)
 add_subdirectory(src)
 
-if(PROJECT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+if(TMP_IS_TOP_LEVEL)
     include(CTest)
     if(BUILD_TESTING)
         add_subdirectory(tests)
