@@ -12,8 +12,6 @@
 #include <system_error>
 #include <utility>
 
-#include <iostream>
-
 #ifdef WIN32
 #include <Windows.h>
 #else
