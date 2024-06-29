@@ -13,7 +13,7 @@
 #include <utility>
 
 #ifdef WIN32
-#include <windows.h>
+#include <Windows.h>
 #else
 #include <cerrno>
 #include <unistd.h>
@@ -23,6 +23,14 @@ namespace tmp {
 namespace {
 
 namespace fs = std::filesystem;
+
+// Confirm that native_handle_type matches `TriviallyCopyable` named requirement
+static_assert(std::is_trivially_copyable_v<file::native_handle_type>);
+
+#ifdef WIN32
+// Confirm that `HANDLE` is `void*` as implemented in `file`
+static_assert(std::is_same_v<HANDLE, void*>);
+#endif
 
 /// Options for recursive overwriting copying
 constexpr fs::copy_options copy_options =
@@ -38,9 +46,8 @@ bool create_parent(const fs::path& path, std::error_code& ec) {
 }
 
 /// Creates a temporary path pattern with the given prefix and suffix
-/// @param[in]  prefix   A prefix to be used in the path pattern
-/// @param[in]  suffix   A suffix to be used in the path pattern
-/// @param[out] ec       Parameter for error reporting
+/// @param prefix   A prefix to be used in the path pattern
+/// @param suffix   A suffix to be used in the path pattern
 /// @returns A path pattern for the unique temporary path
 /// @throws std::bad_alloc if memory allocation fails
 fs::path make_pattern(std::string_view prefix, std::string_view suffix) {
@@ -58,6 +65,7 @@ fs::path make_pattern(std::string_view prefix, std::string_view suffix) {
 #else
     std::string_view name = "XXXXXX";
 #endif
+
     fs::path pattern = filesystem::root(prefix) / name;
 
     pattern += suffix;
@@ -65,12 +73,14 @@ fs::path make_pattern(std::string_view prefix, std::string_view suffix) {
 }
 
 /// Creates a temporary file with the given prefix in the system's
-/// temporary directory, and returns its path
+/// temporary directory, and opens it for reading and writing
+///
 /// @param prefix   The prefix to use for the temporary file name
 /// @param suffix   The suffix to use for the temporary file name
-/// @returns A path to the created temporary file
+/// @returns A path to the created temporary file and a handle to it
 /// @throws fs::filesystem_error if cannot create the temporary file
-fs::path create_file(std::string_view prefix, std::string_view suffix) {
+std::pair<fs::path, file::native_handle_type>
+create_file(std::string_view prefix, std::string_view suffix) {
     fs::path::string_type path = make_pattern(prefix, suffix);
 
     std::error_code ec;
@@ -80,12 +90,12 @@ fs::path create_file(std::string_view prefix, std::string_view suffix) {
     }
 
 #ifdef WIN32
-    HANDLE file =
+    HANDLE handle =
         CreateFileW(path.c_str(), GENERIC_READ | GENERIC_WRITE,
                     FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
                     nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
 
-    if (file == INVALID_HANDLE_VALUE) {
+    if (handle == INVALID_HANDLE_VALUE) {
         DWORD err = GetLastError();
         if (err == ERROR_ALREADY_EXISTS) {
             return create_file(prefix, suffix);
@@ -94,15 +104,17 @@ fs::path create_file(std::string_view prefix, std::string_view suffix) {
         ec = std::error_code(err, std::system_category());
     }
 #else
-    if (mkstemps(path.data(), static_cast<int>(suffix.size())) == -1) {
+    int handle = mkstemps(path.data(), static_cast<int>(suffix.size()));
+    if (handle == -1) {
         ec = std::error_code(errno, std::system_category());
     }
 #endif
+
     if (ec) {
         throw fs::filesystem_error("Cannot create temporary file", ec);
     }
 
-    return path;
+    return std::pair(path, handle);
 }
 
 /// Creates a temporary directory with the given prefix in the system's
@@ -133,6 +145,7 @@ fs::path create_directory(std::string_view prefix) {
         ec = std::error_code(errno, std::system_category());
     }
 #endif
+
     if (ec) {
         throw fs::filesystem_error("Cannot create temporary directory", ec);
     }
@@ -155,16 +168,31 @@ std::ofstream stream(const file& file, bool binary, bool append) noexcept {
 }
 
 /// Deletes the given path recursively, ignoring any errors
-/// @param[in]  path The path to delete
+/// @param path     The path to delete
 void remove(const fs::path& path) noexcept {
     if (!path.empty()) {
         try {
             std::error_code ec;
-            fs::remove_all(path, ec);    // Can still throw std::bad_alloc
+            fs::remove_all(path, ec);
+
+            fs::path parent = path.parent_path();
+            if (!fs::equivalent(parent, filesystem::root(), ec)) {
+                fs::remove(parent, ec);
+            }
         } catch (const std::bad_alloc& ex) {
             static_cast<void>(ex);
         }
     }
+}
+
+/// Closes the given file, ignoring any errors
+/// @param file     The file to close
+void close(const file& file) noexcept {
+#ifdef WIN32
+    CloseHandle(file.native_handle());
+#else
+    ::close(file.native_handle());
+#endif
 }
 
 /// Throws a filesystem error indicating that a temporary resource cannot be
@@ -208,6 +236,7 @@ const fs::path* path::operator->() const noexcept {
 fs::path path::release() noexcept {
     fs::path path = std::move(underlying);
     underlying.clear();
+
     return path;
 }
 
@@ -241,9 +270,13 @@ void path::move(const fs::path& to) {
 // tmp::file implementation
 //===----------------------------------------------------------------------===//
 
-file::file(std::string_view prefix, std::string_view suffix, bool binary)
-    : tmp::path(create_file(prefix, suffix)),
+file::file(std::pair<fs::path, native_handle_type> handle, bool binary) noexcept
+    : tmp::path(std::move(handle.first)),
+      handle(handle.second),
       binary(binary) {}
+
+file::file(std::string_view prefix, std::string_view suffix, bool binary)
+    : file(create_file(prefix, suffix), binary) {}
 
 file::file(std::string_view prefix, std::string_view suffix)
     : file(prefix, suffix, /*binary=*/true) {}
@@ -266,6 +299,10 @@ file file::copy(const fs::path& path, std::string_view prefix,
     return tmpfile;
 }
 
+file::native_handle_type file::native_handle() const noexcept {
+    return handle;
+}
+
 const fs::path& file::path() const noexcept {
     return *this;
 }
@@ -285,10 +322,22 @@ void file::append(std::string_view content) const {
     stream(*this, binary, /*append=*/true) << content;
 }
 
-file::~file() noexcept = default;
+file::~file() noexcept {
+    close(*this);
+}
 
 file::file(file&&) noexcept = default;
-file& file::operator=(file&&) noexcept = default;
+
+file& file::operator=(file&& other) noexcept {
+    tmp::path::operator=(std::move(other));
+
+    close(*this);
+
+    this->binary = other.binary;    // NOLINT(bugprone-use-after-move)
+    this->handle = other.handle;    // NOLINT(bugprone-use-after-move)
+
+    return *this;
+}
 
 //===----------------------------------------------------------------------===//
 // tmp::directory implementation

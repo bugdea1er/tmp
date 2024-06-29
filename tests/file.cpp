@@ -14,9 +14,30 @@ import tmp;
 #include <ostream>
 #include <utility>
 
+#ifdef WIN32
+#include <Windows.h>
+#else
+#include <fcntl.h>
+#endif
+
 namespace tmp {
 
 namespace fs = std::filesystem;
+
+namespace {
+
+/// Checks if the given file handle is valid
+/// @param handle handle to check
+/// @returns @c true if the handle is valid, @c false otherwise
+bool native_handle_is_valid(file::native_handle_type handle) {
+#ifdef WIN32
+    BY_HANDLE_FILE_INFORMATION info;
+    return GetFileInformationByHandle(handle, &info);
+#else
+    return fcntl(handle, F_GETFD) != -1;
+#endif
+}
+}    // namespace
 
 /// Tests file creation with prefix
 TEST(file, create_with_prefix) {
@@ -26,6 +47,16 @@ TEST(file, create_with_prefix) {
     EXPECT_TRUE(fs::exists(tmpfile));
     EXPECT_TRUE(fs::is_regular_file(tmpfile));
     EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path() / PREFIX));
+    EXPECT_TRUE(native_handle_is_valid(tmpfile.native_handle()));
+
+    fs::perms permissions = fs::status(tmpfile).permissions();
+#ifdef WIN32
+    // GetTempFileNameW creates a file with all permissions
+    EXPECT_EQ(permissions, fs::perms::all);
+#else
+    // mkstemp creates a file that can only be read and written by the owner
+    EXPECT_EQ(permissions, fs::perms::owner_read | fs::perms::owner_write);
+#endif
 }
 
 /// Tests file creation without prefix
@@ -36,6 +67,7 @@ TEST(file, create_without_prefix) {
     EXPECT_TRUE(fs::exists(tmpfile));
     EXPECT_TRUE(fs::is_regular_file(tmpfile));
     EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path()));
+    EXPECT_TRUE(native_handle_is_valid(tmpfile.native_handle()));
 }
 
 /// Tests file creation with suffix
@@ -45,6 +77,7 @@ TEST(file, create_with_suffix) {
     EXPECT_TRUE(fs::exists(tmpfile));
     EXPECT_TRUE(fs::is_regular_file(tmpfile));
     EXPECT_EQ(tmpfile.path().extension(), ".test");
+    EXPECT_TRUE(native_handle_is_valid(tmpfile.native_handle()));
 }
 
 /// Tests multiple file creation with the same prefix
@@ -185,12 +218,15 @@ TEST(file, append_text) {
 /// Tests that destructor removes a file
 TEST(file, destructor) {
     fs::path path = fs::path();
+    file::native_handle_type handle;
     {
         file tmpfile = file(PREFIX);
         path = tmpfile;
+        handle = tmpfile.native_handle();
     }
 
     EXPECT_FALSE(fs::exists(path));
+    EXPECT_FALSE(native_handle_is_valid(handle));
 }
 
 /// Tests file move constructor
@@ -200,6 +236,7 @@ TEST(file, move_constructor) {
 
     EXPECT_TRUE(fst.path().empty());
     EXPECT_TRUE(fs::exists(snd));
+    EXPECT_TRUE(native_handle_is_valid(snd.native_handle()));
 }
 
 /// Tests file move assignment operator
@@ -210,6 +247,9 @@ TEST(file, move_assignment) {
     fs::path path1 = fst;
     fs::path path2 = snd;
 
+    file::native_handle_type fst_handle = fst.native_handle();
+    file::native_handle_type snd_handle = snd.native_handle();
+
     fst = std::move(snd);
 
     EXPECT_FALSE(fs::exists(path1));
@@ -217,36 +257,48 @@ TEST(file, move_assignment) {
 
     EXPECT_TRUE(fs::exists(fst));
     EXPECT_TRUE(fs::equivalent(fst, path2));
+
+    EXPECT_FALSE(native_handle_is_valid(fst_handle));
+    EXPECT_TRUE(native_handle_is_valid(snd_handle));
 }
 
 /// Tests file releasing
 TEST(file, release) {
     fs::path path = fs::path();
+    file::native_handle_type handle;
     {
         file tmpfile = file(PREFIX);
         fs::path expected = tmpfile;
-        path = tmpfile.release();
+        handle = tmpfile.native_handle();
 
+        path = tmpfile.release();
         EXPECT_TRUE(fs::equivalent(path, expected));
     }
 
     EXPECT_TRUE(fs::exists(path));
+    EXPECT_FALSE(native_handle_is_valid(handle));
+
     fs::remove(path);
 }
 
 /// Tests file moving
 TEST(file, move) {
     fs::path path = fs::path();
+    file::native_handle_type handle;
+
     fs::path to = fs::temp_directory_path() / PREFIX / "non-existing/parent";
     {
         file tmpfile = file(PREFIX);
         path = tmpfile;
+        handle = tmpfile.native_handle();
 
         tmpfile.move(to);
     }
 
     EXPECT_FALSE(fs::exists(path));
     EXPECT_TRUE(fs::exists(to));
+    EXPECT_FALSE(native_handle_is_valid(handle));
+
     fs::remove_all(fs::temp_directory_path() / PREFIX / "non-existing");
 }
 }    // namespace tmp

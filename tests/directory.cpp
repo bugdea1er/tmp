@@ -24,6 +24,15 @@ TEST(directory, create_with_prefix) {
     EXPECT_TRUE(fs::exists(tmpdir));
     EXPECT_TRUE(fs::is_directory(tmpdir));
     EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path() / PREFIX));
+
+    fs::perms permissions = fs::status(tmpdir).permissions();
+#ifdef WIN32
+    // Following the logic with GetTempFileNameW
+    EXPECT_EQ(permissions, fs::perms::all);
+#else
+    // mkdtemp creates a directory with full access only for the owner
+    EXPECT_EQ(permissions, fs::perms::owner_all);
+#endif
 }
 
 /// Tests directory creation without prefix

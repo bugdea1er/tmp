@@ -41,20 +41,25 @@ namespace tmp {
 /// @endcode
 class file final : public path {
 public:
-    /// Creates a unique temporary binary file
-    ///
-    /// The file path consists of the system's temporary directory path, the
-    /// given prefix, suffix, and random characters to ensure path uniqueness
+    /// Implementation-defined handle type to the temporary file
+#if defined(WIN32)
+    using native_handle_type = void*;    // HANDLE
+#elif __has_include(<unistd.h>)
+    using native_handle_type = int;    // POSIX file descriptor
+#else
+#error "Provide a native file handle!"
+#endif
+
+    /// Creates a unique temporary file and opens it for reading and writing
+    /// in binary mode
     ///
     /// @param prefix   A prefix to be used in the temporary file path
     /// @param suffix   A suffix to be used in the temporary file path
     /// @throws std::filesystem::filesystem_error if cannot create a file
     explicit file(std::string_view prefix = "", std::string_view suffix = "");
 
-    /// Creates a unique temporary text file
-    ///
-    /// The file path consists of the system's temporary directory path, the
-    /// given prefix, suffix, and random characters to ensure path uniqueness
+    /// Creates a unique temporary file and opens it for reading and writing
+    /// in text mode
     ///
     /// @param prefix   A prefix to be used in the temporary file path
     /// @param suffix   A suffix to be used in the temporary file path
@@ -65,13 +70,17 @@ public:
     /// Creates a unique temporary copy from the given path
     ///
     /// @param path   A path to make a temporary copy from
-    /// @param prefix A prefix to be used in the temporary directory path
+    /// @param prefix A prefix to be used in the temporary file path
     /// @param suffix A suffix to be used in the temporary file path
     /// @returns The new temporary file
     /// @throws std::filesystem::filesystem_error if @p path is not a file
     static file copy(const std::filesystem::path& path,
                      std::string_view prefix = "",
                      std::string_view suffix = "");
+
+    /// Returns an implementation-defined handle to this file
+    /// @returns The underlying implementation-defined handle
+    [[nodiscard]] native_handle_type native_handle() const noexcept;
 
     /// Returns a path to this file
     /// @returns The full path to this file
@@ -98,19 +107,27 @@ public:
     auto operator=(const file&) = delete;    ///< not copy-assignable
 
 private:
+    /// Implementation-defined handle to the file
+    native_handle_type handle;
+
     /// Whether the managed file is opened in binary write mode
     bool binary;
 
-    /// Creates a unique temporary file
-    ///
-    /// The file path consists of the system's temporary directory path, the
-    /// given prefix, suffix, and random characters to ensure path uniqueness
+    /// Creates a unique temporary file and opens it for reading and writing
+    /// in the specified mode
     ///
     /// @param prefix   A prefix to be used in the temporary file path
     /// @param suffix   A suffix to be used in the temporary file path
     /// @param binary   Whether the managed file is opened in binary write mode
     /// @throws fs::filesystem_error if cannot create a file
-    explicit file(std::string_view prefix, std::string_view suffix,
-                  bool binary);
+    file(std::string_view prefix, std::string_view suffix, bool binary);
+
+    /// Creates a unique temporary file
+    ///
+    /// @param handle   A path to the created temporary file and its
+    ///                 implementation-defined handle
+    /// @param binary   Whether the managed file is opened in binary write mode
+    file(std::pair<std::filesystem::path, native_handle_type> handle,
+         bool binary) noexcept;
 };
 }    // namespace tmp
