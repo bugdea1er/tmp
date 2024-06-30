@@ -228,6 +228,10 @@ entry::operator const fs::path&() const noexcept {
     return underlying;
 }
 
+const fs::path& entry::path() const noexcept {
+    return *this;
+}
+
 const fs::path* entry::operator->() const noexcept {
     return std::addressof(underlying);
 }
@@ -302,10 +306,6 @@ file::native_handle_type file::native_handle() const noexcept {
     return handle;
 }
 
-const fs::path& file::path() const noexcept {
-    return *this;
-}
-
 std::string file::read() const {
     std::ios::openmode mode = binary ? std::ios::binary : std::ios::openmode();
     std::ifstream stream = std::ifstream(path(), mode);
@@ -360,10 +360,6 @@ directory directory::copy(const fs::path& path, std::string_view prefix) {
     }
 
     return tmpdir;
-}
-
-const fs::path& directory::path() const noexcept {
-    return *this;
 }
 
 fs::path directory::operator/(std::string_view source) const {

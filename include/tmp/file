@@ -82,10 +82,6 @@ public:
     /// @returns The underlying implementation-defined handle
     [[nodiscard]] native_handle_type native_handle() const noexcept;
 
-    /// Returns a path to this file
-    /// @returns The full path to this file
-    [[nodiscard]] const std::filesystem::path& path() const noexcept;
-
     /// Reads the entire contents of this file
     /// @returns A string with this file contents
     [[nodiscard]] std::string read() const;

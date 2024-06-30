@@ -23,6 +23,10 @@ public:
     /// @returns A pointer to the path owned by *this
     [[deprecated]] const std::filesystem::path* operator->() const noexcept;
 
+    /// Returns a path to this entry
+    /// @returns The full path to this entry
+    [[nodiscard]] const std::filesystem::path& path() const noexcept;
+
     /// Releases the ownership of the managed path;
     /// the destructor will not delete the managed path after the call
     /// @returns The managed path
