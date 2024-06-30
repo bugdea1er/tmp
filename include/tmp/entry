@@ -12,9 +12,6 @@ namespace tmp {
 /// - the managing tmp::entry object is destroyed
 /// - the managing tmp::entry object is assigned another path via operator=
 class entry {
-    /// The managed path
-    std::filesystem::path underlying;
-
 public:
     /// Returns the managed path
     operator const std::filesystem::path&() const noexcept;
@@ -49,5 +46,9 @@ protected:
 
     entry(entry&&) noexcept;               ///< move-constructible
     entry& operator=(entry&&) noexcept;    ///< move-assignable
+
+private:
+    /// The managed path
+    std::filesystem::path underlying;
 };
 }    // namespace tmp
