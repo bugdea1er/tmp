@@ -1,6 +1,6 @@
 #pragma once
 
-#include <tmp/path>
+#include <tmp/entry>
 
 #include <filesystem>
 #include <string_view>
@@ -34,7 +34,7 @@ namespace tmp {
 ///     // tmp::directory object goes out of scope and is destroyed
 ///   }
 /// @endcode
-class directory final : public path {
+class directory final : public entry {
 public:
     /// Creates a unique temporary directory
     ///

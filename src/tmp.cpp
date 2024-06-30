@@ -1,6 +1,6 @@
 #include <tmp/directory>
+#include <tmp/entry>
 #include <tmp/file>
-#include <tmp/path>
 
 #include <filesystem>
 #include <fstream>
@@ -208,38 +208,38 @@ void close(const file& file) noexcept {
 // tmp::path implementation
 //===----------------------------------------------------------------------===//
 
-path::path(fs::path path)
+entry::entry(fs::path path)
     : underlying(std::move(path)) {}
 
-path::path(path&& other) noexcept
+entry::entry(entry&& other) noexcept
     : underlying(other.release()) {}
 
-path& path::operator=(path&& other) noexcept {
+entry& entry::operator=(entry&& other) noexcept {
     remove(*this);
     underlying = other.release();
     return *this;
 }
 
-path::~path() noexcept {
+entry::~entry() noexcept {
     remove(*this);
 }
 
-path::operator const fs::path&() const noexcept {
+entry::operator const fs::path&() const noexcept {
     return underlying;
 }
 
-const fs::path* path::operator->() const noexcept {
+const fs::path* entry::operator->() const noexcept {
     return std::addressof(underlying);
 }
 
-fs::path path::release() noexcept {
+fs::path entry::release() noexcept {
     fs::path path = std::move(underlying);
     underlying.clear();
 
     return path;
 }
 
-void path::move(const fs::path& to) {
+void entry::move(const fs::path& to) {
     std::error_code ec;
     create_parent(to, ec);
     if (ec) {
@@ -270,7 +270,7 @@ void path::move(const fs::path& to) {
 //===----------------------------------------------------------------------===//
 
 file::file(std::pair<fs::path, native_handle_type> handle, bool binary) noexcept
-    : tmp::path(std::move(handle.first)),
+    : entry(std::move(handle.first)),
       handle(handle.second),
       binary(binary) {}
 
@@ -328,7 +328,7 @@ file::~file() noexcept {
 file::file(file&&) noexcept = default;
 
 file& file::operator=(file&& other) noexcept {
-    tmp::path::operator=(std::move(other));
+    entry::operator=(std::move(other));
 
     close(*this);
 
@@ -343,7 +343,7 @@ file& file::operator=(file&& other) noexcept {
 //===----------------------------------------------------------------------===//
 
 directory::directory(std::string_view prefix)
-    : tmp::path(create_directory(prefix)) {}
+    : entry(create_directory(prefix)) {}
 
 directory directory::copy(const fs::path& path, std::string_view prefix) {
     std::error_code ec;

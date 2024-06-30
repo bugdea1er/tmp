@@ -1,6 +1,6 @@
 #pragma once
 
-#include <tmp/path>
+#include <tmp/entry>
 
 #include <filesystem>
 #include <fstream>
@@ -39,7 +39,7 @@ namespace tmp {
 ///     // tmp::file object goes out of scope and is destroyed
 ///   }
 /// @endcode
-class file final : public path {
+class file final : public entry {
 public:
     /// Implementation-defined handle type to the temporary file
 #if defined(WIN32)
