@@ -43,8 +43,8 @@ public:
     /// Deletes the managed path recursively if it is not empty
     virtual ~entry() noexcept;
 
-    entry(const entry&) = delete;              ///< not copy-constructible
-    auto operator=(const entry&) = delete;     ///< not copy-assignable
+    entry(const entry&) = delete;             ///< not copy-constructible
+    auto operator=(const entry&) = delete;    ///< not copy-assignable
 
 protected:
     /// Constructs a tmp::path which owns @p path
