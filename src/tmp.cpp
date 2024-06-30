@@ -208,14 +208,14 @@ void close(const file& file) noexcept {
 //===----------------------------------------------------------------------===//
 
 entry::entry(fs::path path)
-    : underlying(std::move(path)) {}
+    : pathobject(std::move(path)) {}
 
 entry::entry(entry&& other) noexcept
-    : underlying(other.release()) {}
+    : pathobject(other.release()) {}
 
 entry& entry::operator=(entry&& other) noexcept {
     remove(*this);
-    underlying = other.release();
+    pathobject = other.release();
     return *this;
 }
 
@@ -224,7 +224,7 @@ entry::~entry() noexcept {
 }
 
 entry::operator const fs::path&() const noexcept {
-    return underlying;
+    return pathobject;
 }
 
 const fs::path& entry::path() const noexcept {
@@ -232,8 +232,8 @@ const fs::path& entry::path() const noexcept {
 }
 
 fs::path entry::release() noexcept {
-    fs::path path = std::move(underlying);
-    underlying.clear();
+    fs::path path = std::move(pathobject);
+    pathobject.clear();
 
     return path;
 }

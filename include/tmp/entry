@@ -49,6 +49,6 @@ protected:
 
 private:
     /// The managed path
-    std::filesystem::path underlying;
+    std::filesystem::path pathobject;
 };
 }    // namespace tmp
