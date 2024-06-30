@@ -19,10 +19,6 @@ public:
     /// Returns the managed path
     operator const std::filesystem::path&() const noexcept;
 
-    /// Dereferences the managed path
-    /// @returns A pointer to the path owned by *this
-    [[deprecated]] const std::filesystem::path* operator->() const noexcept;
-
     /// Returns a path to this entry
     /// @returns The full path to this entry
     [[nodiscard]] const std::filesystem::path& path() const noexcept;

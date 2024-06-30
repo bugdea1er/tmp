@@ -6,7 +6,6 @@
 #include <fstream>
 #include <ios>
 #include <iterator>
-#include <memory>
 #include <string_view>
 #include <system_error>
 #include <utility>
@@ -230,10 +229,6 @@ entry::operator const fs::path&() const noexcept {
 
 const fs::path& entry::path() const noexcept {
     return *this;
-}
-
-const fs::path* entry::operator->() const noexcept {
-    return std::addressof(underlying);
 }
 
 fs::path entry::release() noexcept {
