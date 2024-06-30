@@ -106,7 +106,7 @@ TEST(file, copy_file) {
 /// Tests creation of a temporary copy of a directory
 TEST(file, copy_directory) {
     directory tmpdir = directory(PREFIX);
-    EXPECT_THROW(file::copy(tmpdir, PREFIX), fs::filesystem_error);
+    EXPECT_THROW(void(file::copy(tmpdir, PREFIX)), fs::filesystem_error);
 }
 
 /// Tests binary file reading

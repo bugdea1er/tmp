@@ -34,7 +34,7 @@ namespace tmp {
 ///     // tmp::directory object goes out of scope and is destroyed
 ///   }
 /// @endcode
-class directory final : public entry {
+class [[nodiscard]] directory final : public entry {
 public:
     /// Creates a unique temporary directory
     ///

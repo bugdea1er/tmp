@@ -73,7 +73,7 @@ TEST(directory, copy_directory) {
 /// Tests creation of a temporary copy of a file
 TEST(directory, copy_file) {
     file tmpfile = file(PREFIX);
-    EXPECT_THROW(directory::copy(tmpfile, PREFIX), fs::filesystem_error);
+    EXPECT_THROW(void(directory::copy(tmpfile, PREFIX)), fs::filesystem_error);
 }
 
 /// Tests `operator/` of directory
