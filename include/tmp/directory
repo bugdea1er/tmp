@@ -51,8 +51,7 @@ public:
   /// @param prefix A prefix to be used in the temporary directory path
   /// @returns The new temporary directory
   /// @throws std::filesystem::filesystem_error if @p path is not a directory
-  static directory copy(const std::filesystem::path& path,
-                        std::string_view prefix = "");
+  static directory copy(const std::filesystem::path& path, std::string_view prefix = "");
 
   /// Concatenates this directory path with a given @p source
   /// @param source   A string which represents a path name

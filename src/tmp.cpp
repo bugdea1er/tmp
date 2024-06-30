@@ -55,11 +55,9 @@ fs::path make_pattern(std::string_view prefix, std::string_view suffix) {
   CoCreateGuid(&guid);
 
   wchar_t name[CHARS_IN_GUID];
-  swprintf(name, CHARS_IN_GUID,
-           L"%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X", guid.Data1,
-           guid.Data2, guid.Data3, guid.Data4[0], guid.Data4[1], guid.Data4[2],
-           guid.Data4[3], guid.Data4[4], guid.Data4[5], guid.Data4[6],
-           guid.Data4[7]);
+  swprintf(name, CHARS_IN_GUID, L"%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X", guid.Data1,
+           guid.Data2, guid.Data3, guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3],
+           guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]);
 #else
   std::string_view name = "XXXXXX";
 #endif
@@ -77,8 +75,8 @@ fs::path make_pattern(std::string_view prefix, std::string_view suffix) {
 /// @param suffix   The suffix to use for the temporary file name
 /// @returns A path to the created temporary file and a handle to it
 /// @throws fs::filesystem_error if cannot create the temporary file
-std::pair<fs::path, file::native_handle_type>
-create_file(std::string_view prefix, std::string_view suffix) {
+std::pair<fs::path, file::native_handle_type> create_file(std::string_view prefix,
+                                                          std::string_view suffix) {
   fs::path::string_type path = make_pattern(prefix, suffix);
 
   std::error_code ec;
@@ -88,10 +86,9 @@ create_file(std::string_view prefix, std::string_view suffix) {
   }
 
 #ifdef WIN32
-  HANDLE handle =
-      CreateFileW(path.c_str(), GENERIC_READ | GENERIC_WRITE,
-                  FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                  nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
+  HANDLE handle = CreateFileW(path.c_str(), GENERIC_READ | GENERIC_WRITE,
+                              FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
+                              CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
 
   if (handle == INVALID_HANDLE_VALUE) {
     DWORD err = GetLastError();
@@ -283,8 +280,7 @@ file file::text(std::string_view prefix, std::string_view suffix) {
   return file(prefix, suffix, /*binary=*/false);
 }
 
-file file::copy(const fs::path& path, std::string_view prefix,
-                std::string_view suffix) {
+file file::copy(const fs::path& path, std::string_view prefix, std::string_view suffix) {
   std::error_code ec;
   file tmpfile = file(prefix, suffix);
 
