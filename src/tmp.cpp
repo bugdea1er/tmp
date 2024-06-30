@@ -6,7 +6,6 @@
 #include <fstream>
 #include <ios>
 #include <iterator>
-#include <memory>
 #include <string_view>
 #include <system_error>
 #include <utility>
