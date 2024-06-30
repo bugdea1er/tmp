@@ -232,10 +232,6 @@ const fs::path& entry::path() const noexcept {
     return *this;
 }
 
-const fs::path* entry::operator->() const noexcept {
-    return std::addressof(underlying);
-}
-
 fs::path entry::release() noexcept {
     fs::path path = std::move(underlying);
     underlying.clear();
