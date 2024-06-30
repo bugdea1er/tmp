@@ -5,13 +5,13 @@
 
 namespace tmp {
 
-/// tmp::path is a smart handle that owns and manages a temporary path and
+/// tmp::entry is a smart handle that owns and manages a temporary path and
 /// deletes it recursively when this handle goes out of scope
 ///
 /// The managed path is deleted of when either of the following happens:
-/// - the managing tmp::path object is destroyed
-/// - the managing tmp::path object is assigned another path via operator=
-class path {
+/// - the managing tmp::entry object is destroyed
+/// - the managing tmp::entry object is assigned another path via operator=
+class entry {
     /// The managed path
     std::filesystem::path underlying;
 
@@ -22,6 +22,10 @@ public:
     /// Dereferences the managed path
     /// @returns A pointer to the path owned by *this
     [[deprecated]] const std::filesystem::path* operator->() const noexcept;
+
+    /// Returns a path to this entry
+    /// @returns The full path to this entry
+    [[nodiscard]] const std::filesystem::path& path() const noexcept;
 
     /// Releases the ownership of the managed path;
     /// the destructor will not delete the managed path after the call
@@ -37,17 +41,17 @@ public:
     void move(const std::filesystem::path& to);
 
     /// Deletes the managed path recursively if it is not empty
-    virtual ~path() noexcept;
+    virtual ~entry() noexcept;
 
-    path(const path&) = delete;              ///< not copy-constructible
-    auto operator=(const path&) = delete;    ///< not copy-assignable
+    entry(const entry&) = delete;             ///< not copy-constructible
+    auto operator=(const entry&) = delete;    ///< not copy-assignable
 
 protected:
     /// Constructs a tmp::path which owns @p path
     /// @param path A path to manage
-    explicit path(std::filesystem::path path);
+    explicit entry(std::filesystem::path path);
 
-    path(path&&) noexcept;               ///< move-constructible
-    path& operator=(path&&) noexcept;    ///< move-assignable
+    entry(entry&&) noexcept;               ///< move-constructible
+    entry& operator=(entry&&) noexcept;    ///< move-assignable
 };
 }    // namespace tmp

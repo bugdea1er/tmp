@@ -1,6 +1,6 @@
 #pragma once
 
-#include <tmp/path>
+#include <tmp/entry>
 
 #include <filesystem>
 #include <string_view>
@@ -34,7 +34,7 @@ namespace tmp {
 ///     // tmp::directory object goes out of scope and is destroyed
 ///   }
 /// @endcode
-class directory final : public path {
+class directory final : public entry {
 public:
     /// Creates a unique temporary directory
     ///
@@ -53,10 +53,6 @@ public:
     /// @throws std::filesystem::filesystem_error if @p path is not a directory
     static directory copy(const std::filesystem::path& path,
                           std::string_view prefix = "");
-
-    /// Returns a path to this directory
-    /// @returns The full path to this directory
-    [[nodiscard]] const std::filesystem::path& path() const noexcept;
 
     /// Concatenates this directory path with a given @p source
     /// @param source   A string which represents a path name
