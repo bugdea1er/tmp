@@ -1,6 +1,5 @@
 #include <tmp/directory>
 #include <tmp/file>
-#include <tmp/filesystem>
 #include <tmp/path>
 
 #include <filesystem>
@@ -66,7 +65,7 @@ fs::path make_pattern(std::string_view prefix, std::string_view suffix) {
     std::string_view name = "XXXXXX";
 #endif
 
-    fs::path pattern = filesystem::root(prefix) / name;
+    fs::path pattern = fs::temp_directory_path() / prefix / name;
 
     pattern += suffix;
     return pattern;
@@ -176,7 +175,7 @@ void remove(const fs::path& path) noexcept {
             fs::remove_all(path, ec);
 
             fs::path parent = path.parent_path();
-            if (!fs::equivalent(parent, filesystem::root(), ec)) {
+            if (!fs::equivalent(parent, fs::temp_directory_path(), ec)) {
                 fs::remove(parent, ec);
             }
         } catch (const std::bad_alloc& ex) {
@@ -375,16 +374,4 @@ directory::~directory() noexcept = default;
 
 directory::directory(directory&&) noexcept = default;
 directory& directory::operator=(directory&&) noexcept = default;
-
-//===----------------------------------------------------------------------===//
-// tmp::fs implementation
-//===----------------------------------------------------------------------===//
-
-fs::path filesystem::root(std::string_view prefix) {
-    return fs::temp_directory_path() / prefix;
-}
-
-fs::space_info filesystem::space() {
-    return fs::space(root());
-}
 }    // namespace tmp

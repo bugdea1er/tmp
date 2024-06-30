@@ -2,7 +2,7 @@ project(${PROJECT_NAME}.test)
 
 find_package(GTest)
 
-add_executable(${PROJECT_NAME} directory.cpp file.cpp filesystem.cpp)
+add_executable(${PROJECT_NAME} directory.cpp file.cpp)
 target_link_libraries(${PROJECT_NAME} tmp::tmp GTest::gtest_main)
 target_compile_definitions(
     ${PROJECT_NAME}
