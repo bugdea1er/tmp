@@ -11,7 +11,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 include(GNUInstallDirs)
 find_package(Filesystem REQUIRED)
 
-add_library(${PROJECT_NAME} STATIC src/tmp.cpp)
+add_library(${PROJECT_NAME} SHARED src/tmp.cpp)
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 
 if(TMP_USE_MODULES)
