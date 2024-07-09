@@ -20,7 +20,8 @@ target_include_directories(
 
 set_target_properties(
     ${PROJECT_NAME}
-    PROPERTIES CXX_VISIBILITY_PRESET hidden
+    PROPERTIES CXX_EXTENSIONS OFF
+               CXX_VISIBILITY_PRESET hidden
                VISIBILITY_INLINES_HIDDEN 1)
 
 generate_export_header(
