@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TMP_FILE_H
+#define TMP_FILE_H
 
 #include <tmp/entry>
 
@@ -127,3 +128,5 @@ private:
          bool binary) noexcept;
 };
 }    // namespace tmp
+
+#endif    // TMP_FILE_H

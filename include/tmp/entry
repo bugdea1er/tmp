@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TMP_ENTRY_H
+#define TMP_ENTRY_H
 
 #include <filesystem>
 #include <string_view>
@@ -53,3 +54,5 @@ private:
     std::filesystem::path pathobject;
 };
 }    // namespace tmp
+
+#endif    // TMP_ENTRY_H
