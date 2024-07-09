@@ -1,11 +1,6 @@
 cmake_minimum_required(VERSION 3.14)
 project(tmp VERSION 0.9)
 
-option(TMP_USE_MODULES "Build C++20 modules" OFF)
-if(TMP_USE_MODULES)
-    cmake_minimum_required(VERSION 3.28)
-endif()
-
 include(GenerateExportHeader)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
@@ -15,15 +10,6 @@ find_package(Filesystem REQUIRED)
 
 add_library(${PROJECT_NAME} STATIC src/tmp.cpp)
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
-
-if(TMP_USE_MODULES)
-    target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
-    target_sources(
-        ${PROJECT_NAME}
-        PUBLIC FILE_SET CXX_MODULES
-               FILES src/tmp.cppm
-               BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/src)
-endif()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC std::filesystem)
 set_target_properties(${PROJECT_NAME} PROPERTIES EXPORT_NAME tmp)
@@ -72,9 +58,7 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 
     install(
         TARGETS ${PROJECT_NAME}
-        EXPORT tmp-targets
-        FILE_SET CXX_MODULES
-        DESTINATION ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME})
+        EXPORT tmp-targets)
     install(
         EXPORT tmp-targets
         FILE tmp-targets.cmake
