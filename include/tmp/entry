@@ -1,6 +1,8 @@
 #ifndef TMP_ENTRY_H
 #define TMP_ENTRY_H
 
+#include <tmp/export>
+
 #include <filesystem>
 #include <string_view>
 
@@ -12,7 +14,7 @@ namespace tmp {
 /// The managed path is deleted of when either of the following happens:
 /// - the managing tmp::entry object is destroyed
 /// - the managing tmp::entry object is assigned another path via operator=
-class entry {
+class TMP_EXPORT entry {
 public:
     /// Returns the managed path
     /// @returns The full path this entry manages

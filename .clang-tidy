@@ -1,6 +1,6 @@
 ---
-WarningsAsErrors: "*"
-HeaderFilterRegex: '.*'
+WarningsAsErrors: '*'
+HeaderFilterRegex: 'tmp/include/tmp/'
 Checks: >
   bugprone-*,
   cert-*,

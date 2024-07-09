@@ -4,6 +4,7 @@ project(tmp VERSION 0.9)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
 include(GNUInstallDirs)
+include(GenerateExportHeader)
 find_package(Filesystem REQUIRED)
 
 add_library(${PROJECT_NAME} STATIC src/tmp.cpp)
@@ -14,7 +15,16 @@ set_target_properties(${PROJECT_NAME} PROPERTIES EXPORT_NAME tmp)
 target_include_directories(
     ${PROJECT_NAME}
     PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+           "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>"
            "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
+
+set_target_properties(
+    ${PROJECT_NAME}
+    PROPERTIES CXX_VISIBILITY_PRESET hidden
+               VISIBILITY_INLINES_HIDDEN 1)
+
+generate_export_header(
+    ${PROJECT_NAME} EXPORT_FILE_NAME "${PROJECT_BINARY_DIR}/include/tmp/export")
 
 add_library(tmp::tmp ALIAS ${PROJECT_NAME})
 
@@ -55,6 +65,7 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
         DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/tmp")
     install(
         DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/"
+                  "${CMAKE_CURRENT_BINARY_DIR}/include/"
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
     include(CPack)
 endif()
