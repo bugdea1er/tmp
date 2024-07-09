@@ -2,41 +2,12 @@ cmake_minimum_required(VERSION 3.14)
 project(tmp VERSION 0.9)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
+string(COMPARE EQUAL ${PROJECT_SOURCE_DIR} ${CMAKE_SOURCE_DIR} TMP_IS_TOP_LEVEL)
 
 include(GNUInstallDirs)
-include(GenerateExportHeader)
-find_package(Filesystem REQUIRED)
+add_subdirectory(src)
 
-add_library(${PROJECT_NAME} STATIC src/tmp.cpp)
-target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
-
-target_link_libraries(${PROJECT_NAME} PUBLIC std::filesystem)
-set_target_properties(${PROJECT_NAME} PROPERTIES EXPORT_NAME tmp)
-target_include_directories(
-    ${PROJECT_NAME}
-    PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-           "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>"
-           "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
-
-set_target_properties(
-    ${PROJECT_NAME}
-    PROPERTIES CXX_EXTENSIONS OFF
-               CXX_VISIBILITY_PRESET hidden
-               VISIBILITY_INLINES_HIDDEN 1)
-
-generate_export_header(
-    ${PROJECT_NAME} EXPORT_FILE_NAME "${PROJECT_BINARY_DIR}/include/tmp/export")
-
-add_library(tmp::tmp ALIAS ${PROJECT_NAME})
-
-if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
-    if(CMAKE_CXX_COMPILER_ID MATCHES GNU|Clang)
-        target_compile_options(${PROJECT_NAME} PRIVATE -Werror)
-        target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic)
-    elseif(MSVC)
-        target_compile_options(${PROJECT_NAME} PRIVATE /WX /W3)
-    endif()
-
+if(TMP_IS_TOP_LEVEL)
     include(CTest)
     if(BUILD_TESTING)
         add_subdirectory(tests)
@@ -56,9 +27,7 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
               "${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindFilesystem.cmake"
         DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/tmp")
 
-    install(
-        TARGETS ${PROJECT_NAME}
-        EXPORT tmp-targets)
+    install(TARGETS ${PROJECT_NAME} EXPORT tmp-targets)
     install(
         EXPORT tmp-targets
         FILE tmp-targets.cmake
