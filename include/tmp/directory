@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TMP_DIRECTORY_H
+#define TMP_DIRECTORY_H
 
 #include <tmp/entry>
 
@@ -68,3 +69,5 @@ public:
     auto operator=(const directory&) = delete;     ///< not copy-assignable
 };
 }    // namespace tmp
+
+#endif    // TMP_DIRECTORY_H
