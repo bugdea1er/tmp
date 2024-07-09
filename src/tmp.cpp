@@ -1,13 +1,11 @@
 #include <tmp/directory>
+#include <tmp/entry>
 #include <tmp/file>
-#include <tmp/filesystem>
-#include <tmp/path>
 
 #include <filesystem>
 #include <fstream>
 #include <ios>
 #include <iterator>
-#include <memory>
 #include <string_view>
 #include <system_error>
 #include <utility>
@@ -66,7 +64,7 @@ fs::path make_pattern(std::string_view prefix, std::string_view suffix) {
     std::string_view name = "XXXXXX";
 #endif
 
-    fs::path pattern = filesystem::root(prefix) / name;
+    fs::path pattern = fs::temp_directory_path() / prefix / name;
 
     pattern += suffix;
     return pattern;
@@ -176,7 +174,7 @@ void remove(const fs::path& path) noexcept {
             fs::remove_all(path, ec);
 
             fs::path parent = path.parent_path();
-            if (!fs::equivalent(parent, filesystem::root(), ec)) {
+            if (!fs::equivalent(parent, fs::temp_directory_path(), ec)) {
                 fs::remove(parent, ec);
             }
         } catch (const std::bad_alloc& ex) {
@@ -209,38 +207,38 @@ void close(const file& file) noexcept {
 // tmp::path implementation
 //===----------------------------------------------------------------------===//
 
-path::path(fs::path path)
-    : underlying(std::move(path)) {}
+entry::entry(fs::path path)
+    : pathobject(std::move(path)) {}
 
-path::path(path&& other) noexcept
-    : underlying(other.release()) {}
+entry::entry(entry&& other) noexcept
+    : pathobject(other.release()) {}
 
-path& path::operator=(path&& other) noexcept {
+entry& entry::operator=(entry&& other) noexcept {
     remove(*this);
-    underlying = other.release();
+    pathobject = other.release();
     return *this;
 }
 
-path::~path() noexcept {
+entry::~entry() noexcept {
     remove(*this);
 }
 
-path::operator const fs::path&() const noexcept {
-    return underlying;
+entry::operator const fs::path&() const noexcept {
+    return pathobject;
 }
 
-const fs::path* path::operator->() const noexcept {
-    return std::addressof(underlying);
+const fs::path& entry::path() const noexcept {
+    return *this;
 }
 
-fs::path path::release() noexcept {
-    fs::path path = std::move(underlying);
-    underlying.clear();
+fs::path entry::release() noexcept {
+    fs::path path = std::move(pathobject);
+    pathobject.clear();
 
     return path;
 }
 
-void path::move(const fs::path& to) {
+void entry::move(const fs::path& to) {
     std::error_code ec;
     create_parent(to, ec);
     if (ec) {
@@ -271,7 +269,7 @@ void path::move(const fs::path& to) {
 //===----------------------------------------------------------------------===//
 
 file::file(std::pair<fs::path, native_handle_type> handle, bool binary) noexcept
-    : tmp::path(std::move(handle.first)),
+    : entry(std::move(handle.first)),
       handle(handle.second),
       binary(binary) {}
 
@@ -303,10 +301,6 @@ file::native_handle_type file::native_handle() const noexcept {
     return handle;
 }
 
-const fs::path& file::path() const noexcept {
-    return *this;
-}
-
 std::string file::read() const {
     std::ios::openmode mode = binary ? std::ios::binary : std::ios::openmode();
     std::ifstream stream = std::ifstream(path(), mode);
@@ -329,7 +323,7 @@ file::~file() noexcept {
 file::file(file&&) noexcept = default;
 
 file& file::operator=(file&& other) noexcept {
-    tmp::path::operator=(std::move(other));
+    entry::operator=(std::move(other));
 
     close(*this);
 
@@ -344,7 +338,7 @@ file& file::operator=(file&& other) noexcept {
 //===----------------------------------------------------------------------===//
 
 directory::directory(std::string_view prefix)
-    : tmp::path(create_directory(prefix)) {}
+    : entry(create_directory(prefix)) {}
 
 directory directory::copy(const fs::path& path, std::string_view prefix) {
     std::error_code ec;
@@ -363,10 +357,6 @@ directory directory::copy(const fs::path& path, std::string_view prefix) {
     return tmpdir;
 }
 
-const fs::path& directory::path() const noexcept {
-    return *this;
-}
-
 fs::path directory::operator/(std::string_view source) const {
     return path() / source;
 }
@@ -375,16 +365,4 @@ directory::~directory() noexcept = default;
 
 directory::directory(directory&&) noexcept = default;
 directory& directory::operator=(directory&&) noexcept = default;
-
-//===----------------------------------------------------------------------===//
-// tmp::fs implementation
-//===----------------------------------------------------------------------===//
-
-fs::path filesystem::root(std::string_view prefix) {
-    return fs::temp_directory_path() / prefix;
-}
-
-fs::space_info filesystem::space() {
-    return fs::space(root());
-}
 }    // namespace tmp

@@ -1,10 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(tmp HOMEPAGE_URL "https://github.com/bugdea1er/tmp")
-
-option(TMP_USE_MODULES "Build C++20 modules" OFF)
-if(TMP_USE_MODULES)
-    cmake_minimum_required(VERSION 3.28)
-endif()
+project(tmp VERSION 0.9)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
@@ -27,16 +22,16 @@ if(TMP_IS_TOP_LEVEL)
         "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Config.cmake.in"
         "${CMAKE_CURRENT_BINARY_DIR}/tmp-config.cmake"
         INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/tmp")
+    write_basic_package_version_file(
+        "${CMAKE_CURRENT_BINARY_DIR}/tmp-config-version.cmake"
+        COMPATIBILITY AnyNewerVersion)
     install(
         FILES "${CMAKE_CURRENT_BINARY_DIR}/tmp-config.cmake"
+              "${CMAKE_CURRENT_BINARY_DIR}/tmp-config-version.cmake"
               "${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindFilesystem.cmake"
         DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/tmp")
 
-    install(
-        TARGETS ${PROJECT_NAME}
-        EXPORT tmp-targets
-        FILE_SET CXX_MODULES
-        DESTINATION ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME})
+    install(TARGETS ${PROJECT_NAME} EXPORT tmp-targets)
     install(
         EXPORT tmp-targets
         FILE tmp-targets.cmake
@@ -44,6 +39,7 @@ if(TMP_IS_TOP_LEVEL)
         DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/tmp")
     install(
         DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/"
+                  "${CMAKE_CURRENT_BINARY_DIR}/include/"
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
     include(CPack)
 endif()
