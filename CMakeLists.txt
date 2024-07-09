@@ -1,11 +1,10 @@
 cmake_minimum_required(VERSION 3.14)
 project(tmp VERSION 0.9)
 
-include(GenerateExportHeader)
-
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
 include(GNUInstallDirs)
+include(GenerateExportHeader)
 find_package(Filesystem REQUIRED)
 
 add_library(${PROJECT_NAME} STATIC src/tmp.cpp)
