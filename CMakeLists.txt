@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(tmp HOMEPAGE_URL "https://github.com/bugdea1er/tmp")
+project(tmp VERSION 0.9)
 
 option(TMP_USE_MODULES "Build C++20 modules" OFF)
 if(TMP_USE_MODULES)
@@ -50,8 +50,12 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
         "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Config.cmake.in"
         "${CMAKE_CURRENT_BINARY_DIR}/tmp-config.cmake"
         INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/tmp")
+    write_basic_package_version_file(
+        "${CMAKE_CURRENT_BINARY_DIR}/tmp-config-version.cmake"
+        COMPATIBILITY AnyNewerVersion)
     install(
         FILES "${CMAKE_CURRENT_BINARY_DIR}/tmp-config.cmake"
+              "${CMAKE_CURRENT_BINARY_DIR}/tmp-config-version.cmake"
               "${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindFilesystem.cmake"
         DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/tmp")
 
