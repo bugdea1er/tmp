@@ -2,11 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 project(tmp VERSION 0.9)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
-
-set(TMP_IS_TOP_LEVEL OFF)
-if(PROJECT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
-    set(TMP_IS_TOP_LEVEL ON)
-endif()
+string(COMPARE EQUAL ${PROJECT_SOURCE_DIR} ${CMAKE_SOURCE_DIR} TMP_IS_TOP_LEVEL)
 
 include(GNUInstallDirs)
 add_subdirectory(src)
