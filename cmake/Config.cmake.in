@@ -1,9 +1,8 @@
 @PACKAGE_INIT@
 
-include("${CMAKE_CURRENT_LIST_DIR}/tmp-targets.cmake" OPTIONAL
-        RESULT_VARIABLE TARGETS_FOUND)
-
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
+
+include("tmp-targets" OPTIONAL RESULT_VARIABLE TARGETS_FOUND)
 find_package(Filesystem QUIET)
 
 set(tmp_FOUND FALSE)
