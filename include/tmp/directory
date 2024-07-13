@@ -61,6 +61,11 @@ public:
   /// @returns The result of path concatenation
   std::filesystem::path operator/(std::string_view source) const;
 
+  /// Returns an iterator over the contents of this directory
+  /// @note The special pathnames `.` and `..` are skipped
+  /// @returns The iterator over this directory
+  std::filesystem::directory_iterator list() const;
+
   /// Deletes the managed directory recursively if its path is not empty
   ~directory() noexcept override;
 

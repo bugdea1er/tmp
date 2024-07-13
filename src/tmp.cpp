@@ -361,6 +361,10 @@ fs::path directory::operator/(std::string_view source) const {
   return path() / source;
 }
 
+fs::directory_iterator directory::list() const {
+  return fs::directory_iterator(path());
+}
+
 directory::~directory() noexcept = default;
 
 directory::directory(directory&&) noexcept = default;
