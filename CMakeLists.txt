@@ -28,14 +28,17 @@ if(TMP_IS_TOP_LEVEL)
   install(FILES "cmake/modules/FindFilesystem.cmake"
             "${CMAKE_CURRENT_BINARY_DIR}/tmp-config.cmake"
             "${CMAKE_CURRENT_BINARY_DIR}/tmp-config-version.cmake"
-          DESTINATION "${CMAKE_INSTALL_CMAKEDIR}")
+          DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
+          COMPONENT tmp-dev)
 
-      install(TARGETS ${PROJECT_NAME} EXPORT tmp-targets 
+  install(TARGETS ${PROJECT_NAME} EXPORT tmp-targets
           COMPONENT tmp)
   install(EXPORT tmp-targets DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
-      NAMESPACE tmp:: FILE tmp-targets.cmake COMPONENT tmp-dev)
+    NAMESPACE tmp:: FILE tmp-targets.cmake
+    COMPONENT tmp-dev)
   install(DIRECTORY "include/" "${PROJECT_BINARY_DIR}/include/"
-      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" COMPONENT tmp-dev)
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+    COMPONENT tmp-dev)
 
   include(TmpCPack)
 endif()
