@@ -80,11 +80,11 @@ public:
 
   /// Returns an implementation-defined handle to this file
   /// @returns The underlying implementation-defined handle
-  [[nodiscard]] native_handle_type native_handle() const noexcept;
+  native_handle_type native_handle() const noexcept;
 
   /// Reads the entire contents of this file
   /// @returns A string with this file contents
-  [[nodiscard]] std::string read() const;
+  std::string read() const;
 
   /// Writes the given content to this file discarding any previous content
   /// @param content  A string to write to this file

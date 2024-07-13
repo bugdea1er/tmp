@@ -18,11 +18,11 @@ class TMP_EXPORT entry {
 public:
   /// Returns the managed path
   /// @returns The full path this entry manages
-  [[nodiscard]] operator const std::filesystem::path&() const noexcept;
+  operator const std::filesystem::path&() const noexcept;
 
   /// Returns the managed path
   /// @returns The full path this entry manages
-  [[nodiscard]] const std::filesystem::path& path() const noexcept;
+  const std::filesystem::path& path() const noexcept;
 
   /// Moves the managed path recursively to a given target, releasing
   /// ownership of the managed path
