@@ -5,7 +5,7 @@ project(tmp
   HOMEPAGE_URL "https://github.com/bugdea1er/tmp"
   LANGUAGES CXX)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules")
 string(COMPARE EQUAL ${PROJECT_SOURCE_DIR} ${CMAKE_SOURCE_DIR} TMP_IS_TOP_LEVEL)
 
 include(GNUInstallDirs)
@@ -26,8 +26,8 @@ if(TMP_IS_TOP_LEVEL)
   write_basic_package_version_file("tmp-config-version.cmake"
     COMPATIBILITY AnyNewerVersion)
   install(FILES "cmake/modules/FindFilesystem.cmake"
-            "${CMAKE_CURRENT_BINARY_DIR}/tmp-config.cmake"
-            "${CMAKE_CURRENT_BINARY_DIR}/tmp-config-version.cmake"
+            "${PROJECT_BINARY_DIR}/tmp-config.cmake"
+            "${PROJECT_BINARY_DIR}/tmp-config-version.cmake"
           DESTINATION "${CMAKE_INSTALL_CMAKEDIR}")
 
   install(TARGETS ${PROJECT_NAME} EXPORT tmp-targets)
