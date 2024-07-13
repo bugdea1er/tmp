@@ -231,13 +231,6 @@ const fs::path& entry::path() const noexcept {
   return *this;
 }
 
-fs::path entry::release() noexcept {
-  fs::path path = std::move(pathobject);
-  pathobject.clear();
-
-  return path;
-}
-
 void entry::move(const fs::path& to) {
   std::error_code ec;
   create_parent(to, ec);
@@ -262,6 +255,13 @@ void entry::move(const fs::path& to) {
 
   remove(*this);
   release();
+}
+
+fs::path entry::release() noexcept {
+  fs::path path = std::move(pathobject);
+  pathobject.clear();
+
+  return path;
 }
 
 //===----------------------------------------------------------------------===//

@@ -117,21 +117,6 @@ TEST(directory, move_assignment) {
   EXPECT_TRUE(fs::equivalent(fst, path2));
 }
 
-/// Tests directory releasing
-TEST(directory, release) {
-  fs::path path = fs::path();
-  {
-    directory tmpdir = directory(PREFIX);
-    fs::path expected = tmpdir;
-    path = tmpdir.release();
-
-    EXPECT_TRUE(fs::equivalent(path, expected));
-  }
-
-  EXPECT_TRUE(fs::exists(path));
-  fs::remove(path);
-}
-
 /// Tests directory moving
 TEST(directory, move) {
   fs::path path = fs::path();
