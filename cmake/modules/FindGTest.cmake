@@ -40,27 +40,25 @@ This module will set the following variables in your project:
 #]=======================================================================]
 
 if(TARGET GTest::gtest)
-    return()
+  return()
 endif()
 
 find_package(GTest QUIET CONFIG)
 
 if(GTest_FOUND)
-    find_package_handle_standard_args(GTest CONFIG_MODE)
-    return()
+  find_package_handle_standard_args(GTest CONFIG_MODE)
+  return()
 endif()
 
 if(POLICY CMP0135)
-    cmake_policy(SET CMP0135 NEW)
+  cmake_policy(SET CMP0135 NEW)
 endif()
 
 include(FetchContent)
 set(INSTALL_GMOCK OFF)
 set(INSTALL_GTEST OFF)
-FetchContent_Declare(
-    googletest
-    URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.tar.gz)
-set(gtest_force_shared_crt
-    ON
-    CACHE BOOL "" FORCE)
+
+FetchContent_Declare(googletest
+  URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.tar.gz)
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
