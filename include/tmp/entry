@@ -16,44 +16,44 @@ namespace tmp {
 /// - the managing tmp::entry object is assigned another path via operator=
 class TMP_EXPORT entry {
 public:
-    /// Returns the managed path
-    /// @returns The full path this entry manages
-    [[nodiscard]] operator const std::filesystem::path&() const noexcept;
+  /// Returns the managed path
+  /// @returns The full path this entry manages
+  [[nodiscard]] operator const std::filesystem::path&() const noexcept;
 
-    /// Returns the managed path
-    /// @returns The full path this entry manages
-    [[nodiscard]] const std::filesystem::path& path() const noexcept;
+  /// Returns the managed path
+  /// @returns The full path this entry manages
+  [[nodiscard]] const std::filesystem::path& path() const noexcept;
 
-    /// Releases the ownership of the managed path;
-    /// the destructor will not delete the managed path after the call
-    /// @returns The managed path
-    std::filesystem::path release() noexcept;
+  /// Releases the ownership of the managed path;
+  /// the destructor will not delete the managed path after the call
+  /// @returns The managed path
+  std::filesystem::path release() noexcept;
 
-    /// Moves the managed path recursively to a given target, releasing
-    /// ownership of the managed path
-    ///
-    /// The parent of the target path is created when this function is called
-    /// @param to   A path to the target file or directory
-    /// @throws std::filesystem::filesystem_error if cannot move the owned path
-    void move(const std::filesystem::path& to);
+  /// Moves the managed path recursively to a given target, releasing
+  /// ownership of the managed path
+  ///
+  /// The parent of the target path is created when this function is called
+  /// @param to   A path to the target file or directory
+  /// @throws std::filesystem::filesystem_error if cannot move the owned path
+  void move(const std::filesystem::path& to);
 
-    /// Deletes the managed path recursively if it is not empty
-    virtual ~entry() noexcept;
+  /// Deletes the managed path recursively if it is not empty
+  virtual ~entry() noexcept;
 
-    entry(const entry&) = delete;             ///< not copy-constructible
-    auto operator=(const entry&) = delete;    ///< not copy-assignable
+  entry(const entry&) = delete;             ///< not copy-constructible
+  auto operator=(const entry&) = delete;    ///< not copy-assignable
 
 protected:
-    /// Constructs a tmp::path which owns @p path
-    /// @param path A path to manage
-    explicit entry(std::filesystem::path path);
+  /// Constructs a tmp::path which owns @p path
+  /// @param path A path to manage
+  explicit entry(std::filesystem::path path);
 
-    entry(entry&&) noexcept;               ///< move-constructible
-    entry& operator=(entry&&) noexcept;    ///< move-assignable
+  entry(entry&&) noexcept;               ///< move-constructible
+  entry& operator=(entry&&) noexcept;    ///< move-assignable
 
 private:
-    /// The managed path
-    std::filesystem::path pathobject;
+  /// The managed path
+  std::filesystem::path pathobject;
 };
 }    // namespace tmp
 

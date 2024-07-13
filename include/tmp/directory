@@ -38,36 +38,36 @@ namespace tmp {
 /// @endcode
 class TMP_EXPORT directory final : public entry {
 public:
-    /// Creates a unique temporary directory
-    ///
-    /// The directory path consists of the system's temporary directory path,
-    /// the given prefix, and random characters to ensure path uniqueness
-    ///
-    /// @param prefix   A prefix to be used in the temporary directory path
-    /// @throws std::filesystem::filesystem_error if cannot create a directory
-    explicit directory(std::string_view prefix = "");
+  /// Creates a unique temporary directory
+  ///
+  /// The directory path consists of the system's temporary directory path,
+  /// the given prefix, and random characters to ensure path uniqueness
+  ///
+  /// @param prefix   A prefix to be used in the temporary directory path
+  /// @throws std::filesystem::filesystem_error if cannot create a directory
+  explicit directory(std::string_view prefix = "");
 
-    /// Creates a unique temporary copy recursively from the given path
-    ///
-    /// @param path   A path to make a temporary copy from
-    /// @param prefix A prefix to be used in the temporary directory path
-    /// @returns The new temporary directory
-    /// @throws std::filesystem::filesystem_error if @p path is not a directory
-    static directory copy(const std::filesystem::path& path,
-                          std::string_view prefix = "");
+  /// Creates a unique temporary copy recursively from the given path
+  ///
+  /// @param path   A path to make a temporary copy from
+  /// @param prefix A prefix to be used in the temporary directory path
+  /// @returns The new temporary directory
+  /// @throws std::filesystem::filesystem_error if @p path is not a directory
+  static directory copy(const std::filesystem::path& path,
+                        std::string_view prefix = "");
 
-    /// Concatenates this directory path with a given @p source
-    /// @param source   A string which represents a path name
-    /// @returns The result of path concatenation
-    std::filesystem::path operator/(std::string_view source) const;
+  /// Concatenates this directory path with a given @p source
+  /// @param source   A string which represents a path name
+  /// @returns The result of path concatenation
+  std::filesystem::path operator/(std::string_view source) const;
 
-    /// Deletes the managed directory recursively if its path is not empty
-    ~directory() noexcept override;
+  /// Deletes the managed directory recursively if its path is not empty
+  ~directory() noexcept override;
 
-    directory(directory&&) noexcept;               ///< move-constructible
-    directory& operator=(directory&&) noexcept;    ///< move-assignable
-    directory(const directory&) = delete;          ///< not copy-constructible
-    auto operator=(const directory&) = delete;     ///< not copy-assignable
+  directory(directory&&) noexcept;               ///< move-constructible
+  directory& operator=(directory&&) noexcept;    ///< move-assignable
+  directory(const directory&) = delete;          ///< not copy-constructible
+  auto operator=(const directory&) = delete;     ///< not copy-assignable
 };
 }    // namespace tmp
 

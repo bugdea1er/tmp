@@ -1,7 +1,6 @@
 ---
 Language: Cpp
 BasedOnStyle: LLVM
-AccessModifierOffset: -4
 AllowShortFunctionsOnASingleLine: Empty
 
 IncludeBlocks: Regroup
@@ -16,7 +15,6 @@ IncludeCategories:
     CaseSensitive: true
     Priority: 3
 
-IndentWidth: 4
 InsertBraces: true
 KeepEmptyLinesAtTheStartOfBlocks: false
 PackConstructorInitializers: Never
