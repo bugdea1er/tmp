@@ -7,7 +7,6 @@ target_link_libraries(${PROJECT_NAME} PUBLIC std::filesystem)
 
 set_target_properties(${PROJECT_NAME}
   PROPERTIES EXPORT_NAME tmp
-             ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib"
              CXX_EXTENSIONS OFF
              CXX_VISIBILITY_PRESET hidden
              VISIBILITY_INLINES_HIDDEN 1)
