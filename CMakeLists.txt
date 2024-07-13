@@ -21,18 +21,16 @@ if(TMP_IS_TOP_LEVEL)
     INSTALL_DESTINATION "${CMAKE_INSTALL_CMAKEDIR}")
   write_basic_package_version_file("tmp-config-version.cmake"
     COMPATIBILITY AnyNewerVersion)
-  install(
-      FILES "${CMAKE_CURRENT_BINARY_DIR}/tmp-config.cmake"
+  install(FILES "cmake/modules/FindFilesystem.cmake"
+            "${CMAKE_CURRENT_BINARY_DIR}/tmp-config.cmake"
             "${CMAKE_CURRENT_BINARY_DIR}/tmp-config-version.cmake"
-            "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/FindFilesystem.cmake"
-      DESTINATION "${CMAKE_INSTALL_CMAKEDIR}")
+          DESTINATION "${CMAKE_INSTALL_CMAKEDIR}")
 
   install(TARGETS ${PROJECT_NAME} EXPORT tmp-targets)
   install(EXPORT tmp-targets DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
     NAMESPACE tmp:: FILE tmp-targets.cmake)
-  install(
-      DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/"
-                "${CMAKE_CURRENT_BINARY_DIR}/include/"
-      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  install(DIRECTORY "include/" "${PROJECT_BINARY_DIR}/include/"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+
   include(CPack)
 endif()
