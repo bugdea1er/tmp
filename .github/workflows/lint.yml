@@ -12,7 +12,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Run yamllint
-        run: yamllint .github/workflows/ .clang-* .cmake-format -f github
+        run: yamllint .github/workflows/ .clang-* -f github
 
   clang-tidy:
     runs-on: ubuntu-24.04
@@ -32,15 +32,4 @@ jobs:
       - name: Run clang-format
         run: |
           clang-format -i include/tmp/* **/*.cpp
-          git diff --color --exit-code
-
-  cmake-format:
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Run cmake-format
-        run: |
-          sudo apt install cmake-format
-          cmake-format -i **/*.cmake **/CMakeLists.txt
           git diff --color --exit-code
