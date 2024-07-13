@@ -1,0 +1,22 @@
+---
+WarningsAsErrors: '*'
+HeaderFilterRegex: 'tmp/include/tmp/'
+Checks: >
+  bugprone-*,
+  cert-*,
+  cppcoreguidelines-*,
+  misc-*,
+  modernize-*,
+  performance-*,
+  portability-*,
+  readability-*,
+  -bugprone-easily-swappable-parameters,
+  -misc-const-correctness,
+  -misc-include-cleaner,
+  -modernize-return-braced-init-list,
+  -modernize-use-trailing-return-type,
+  -readability-named-parameter
+
+CheckOptions:
+  readability-identifier-length.IgnoredParameterNames: 'ec|to'
+  readability-identifier-length.IgnoredVariableNames: 'ec|to'

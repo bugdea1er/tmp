@@ -1,27 +1,28 @@
-#pragma once
+#ifndef TMP_ENTRY_H
+#define TMP_ENTRY_H
+
+#include <tmp/export>
 
 #include <filesystem>
 #include <string_view>
 
 namespace tmp {
 
-/// tmp::path is a smart handle that owns and manages a temporary path and
+/// tmp::entry is a smart handle that owns and manages a temporary path and
 /// deletes it recursively when this handle goes out of scope
 ///
 /// The managed path is deleted of when either of the following happens:
-/// - the managing tmp::path object is destroyed
-/// - the managing tmp::path object is assigned another path via operator=
-class path {
-    /// The managed path
-    std::filesystem::path underlying;
-
+/// - the managing tmp::entry object is destroyed
+/// - the managing tmp::entry object is assigned another path via operator=
+class TMP_EXPORT entry {
 public:
     /// Returns the managed path
-    operator const std::filesystem::path&() const noexcept;
+    /// @returns The full path this entry manages
+    [[nodiscard]] operator const std::filesystem::path&() const noexcept;
 
-    /// Dereferences the managed path
-    /// @returns A pointer to the path owned by *this
-    const std::filesystem::path* operator->() const noexcept;
+    /// Returns the managed path
+    /// @returns The full path this entry manages
+    [[nodiscard]] const std::filesystem::path& path() const noexcept;
 
     /// Releases the ownership of the managed path;
     /// the destructor will not delete the managed path after the call
@@ -37,16 +38,23 @@ public:
     void move(const std::filesystem::path& to);
 
     /// Deletes the managed path recursively if it is not empty
-    virtual ~path() noexcept;
+    virtual ~entry() noexcept;
 
-    path(path&&) noexcept;                   ///< move-constructible
-    path& operator=(path&&) noexcept;        ///< move-assignable
-    path(const path&) = delete;              ///< not copy-constructible
-    auto operator=(const path&) = delete;    ///< not copy-assignable
+    entry(const entry&) = delete;             ///< not copy-constructible
+    auto operator=(const entry&) = delete;    ///< not copy-assignable
 
 protected:
     /// Constructs a tmp::path which owns @p path
     /// @param path A path to manage
-    explicit path(std::filesystem::path path);
+    explicit entry(std::filesystem::path path);
+
+    entry(entry&&) noexcept;               ///< move-constructible
+    entry& operator=(entry&&) noexcept;    ///< move-assignable
+
+private:
+    /// The managed path
+    std::filesystem::path pathobject;
 };
 }    // namespace tmp
+
+#endif    // TMP_ENTRY_H

@@ -9,9 +9,12 @@ IncludeCategories:
   - Regex: '^(<tmp)'
     CaseSensitive: true
     Priority: 1
-  - Regex: ".*"
+  - Regex: '^(<gtest)'
     CaseSensitive: true
     Priority: 2
+  - Regex: ".*"
+    CaseSensitive: true
+    Priority: 3
 
 IndentWidth: 4
 InsertBraces: true

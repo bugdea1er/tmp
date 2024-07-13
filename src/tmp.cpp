@@ -1,77 +1,118 @@
 #include <tmp/directory>
+#include <tmp/entry>
 #include <tmp/file>
-#include <tmp/path>
 
+#include <filesystem>
 #include <fstream>
+#include <ios>
+#include <iterator>
 #include <string_view>
 #include <system_error>
-#include <unistd.h>
 #include <utility>
+
+#ifdef WIN32
+#include <Windows.h>
+#else
+#include <cerrno>
+#include <unistd.h>
+#endif
 
 namespace tmp {
 namespace {
 
 namespace fs = std::filesystem;
 
+// Confirm that native_handle_type matches `TriviallyCopyable` named requirement
+static_assert(std::is_trivially_copyable_v<file::native_handle_type>);
+
+#ifdef WIN32
+// Confirm that `HANDLE` is `void*` as implemented in `file`
+static_assert(std::is_same_v<HANDLE, void*>);
+#endif
+
 /// Options for recursive overwriting copying
-const fs::copy_options copy_options =
+constexpr fs::copy_options copy_options =
     fs::copy_options::recursive | fs::copy_options::overwrite_existing;
 
 /// Creates the parent directory of the given path if it does not exist
-/// @param path The path for which the parent directory needs to be created
-/// @throws fs::filesystem_error if cannot create the parent of the given path
-void create_parent(const fs::path& path) {
-    fs::create_directories(path.parent_path());
+/// @param[in]  path The path for which the parent directory needs to be created
+/// @param[out] ec   Parameter for error reporting
+/// @returns @c true if a parent directory was newly created, @c false otherwise
+/// @throws std::bad_alloc if memory allocation fails
+bool create_parent(const fs::path& path, std::error_code& ec) {
+    return fs::create_directories(path.parent_path(), ec);
 }
 
-/// Deletes the given path recursively, ignoring any errors
-/// @param path The path to remove recursively
-void remove(const path& path) noexcept {
-    if (!path->empty()) {
-        std::error_code ec;
-        fs::remove_all(path, ec);
-    }
-}
-
-/// Throws a filesystem error indicating that a temporary resource cannot be
-/// moved to the specified path
-/// @param to   The target path where the resource was intended to be moved
-/// @param ec   The error code associated with the failure to move the resource
-/// @throws fs::filesystem_error when called
-[[noreturn]] void throw_move_error(const fs::path& to, std::error_code ec) {
-    throw fs::filesystem_error("Cannot move temporary resource", to, ec);
-}
-
-/// Creates a temporary path pattern with the given prefix
-///
-/// The pattern consists of the system's temporary directory path, the given
-/// prefix, and six 'X' characters that must be replaced by random
-/// characters to ensure uniqueness
-///
-/// The parent of the resulting path is created when this function is called
+/// Creates a temporary path pattern with the given prefix and suffix
 /// @param prefix   A prefix to be used in the path pattern
+/// @param suffix   A suffix to be used in the path pattern
 /// @returns A path pattern for the unique temporary path
-/// @throws fs::filesystem_error if cannot create the parent of the path pattern
-fs::path make_pattern(std::string_view prefix) {
-    fs::path pattern = fs::temp_directory_path() / prefix / "XXXXXX";
-    create_parent(pattern);
+/// @throws std::bad_alloc if memory allocation fails
+fs::path make_pattern(std::string_view prefix, std::string_view suffix) {
+#ifdef WIN32
+    constexpr static std::size_t CHARS_IN_GUID = 39;
+    GUID guid;
+    CoCreateGuid(&guid);
 
+    wchar_t name[CHARS_IN_GUID];
+    swprintf(name, CHARS_IN_GUID,
+             L"%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X", guid.Data1,
+             guid.Data2, guid.Data3, guid.Data4[0], guid.Data4[1],
+             guid.Data4[2], guid.Data4[3], guid.Data4[4], guid.Data4[5],
+             guid.Data4[6], guid.Data4[7]);
+#else
+    std::string_view name = "XXXXXX";
+#endif
+
+    fs::path pattern = fs::temp_directory_path() / prefix / name;
+
+    pattern += suffix;
     return pattern;
 }
 
 /// Creates a temporary file with the given prefix in the system's
-/// temporary directory, and returns its path
+/// temporary directory, and opens it for reading and writing
+///
 /// @param prefix   The prefix to use for the temporary file name
-/// @returns A path to the created temporary file
+/// @param suffix   The suffix to use for the temporary file name
+/// @returns A path to the created temporary file and a handle to it
 /// @throws fs::filesystem_error if cannot create the temporary file
-fs::path create_file(std::string_view prefix) {
-    std::string pattern = make_pattern(prefix);
-    if (mkstemp(pattern.data()) == -1) {
-        std::error_code ec = std::error_code(errno, std::system_category());
+std::pair<fs::path, file::native_handle_type>
+create_file(std::string_view prefix, std::string_view suffix) {
+    fs::path::string_type path = make_pattern(prefix, suffix);
+
+    std::error_code ec;
+    create_parent(path, ec);
+    if (ec) {
         throw fs::filesystem_error("Cannot create temporary file", ec);
     }
 
-    return pattern;
+#ifdef WIN32
+    HANDLE handle =
+        CreateFileW(path.c_str(), GENERIC_READ | GENERIC_WRITE,
+                    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                    nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
+
+    if (handle == INVALID_HANDLE_VALUE) {
+        DWORD err = GetLastError();
+        if (err == ERROR_ALREADY_EXISTS) {
+            return create_file(prefix, suffix);
+        }
+
+        ec = std::error_code(err, std::system_category());
+    }
+#else
+    int handle = mkstemps(path.data(), static_cast<int>(suffix.size()));
+    if (handle == -1) {
+        ec = std::error_code(errno, std::system_category());
+    }
+#endif
+
+    if (ec) {
+        throw fs::filesystem_error("Cannot create temporary file", ec);
+    }
+
+    return std::pair(path, handle);
 }
 
 /// Creates a temporary directory with the given prefix in the system's
@@ -80,13 +121,34 @@ fs::path create_file(std::string_view prefix) {
 /// @returns A path to the created temporary directory
 /// @throws fs::filesystem_error if cannot create the temporary directory
 fs::path create_directory(std::string_view prefix) {
-    std::string pattern = make_pattern(prefix);
-    if (mkdtemp(pattern.data()) == nullptr) {
-        std::error_code ec = std::error_code(errno, std::system_category());
+    fs::path::string_type path = make_pattern(prefix, "");
+
+    std::error_code ec;
+    create_parent(path, ec);
+    if (ec) {
         throw fs::filesystem_error("Cannot create temporary directory", ec);
     }
 
-    return pattern;
+#ifdef WIN32
+    if (!CreateDirectoryW(path.c_str(), nullptr)) {
+        DWORD err = GetLastError();
+        if (err == ERROR_ALREADY_EXISTS) {
+            return create_directory(prefix);
+        }
+
+        ec = std::error_code(err, std::system_category());
+    }
+#else
+    if (mkdtemp(path.data()) == nullptr) {
+        ec = std::error_code(errno, std::system_category());
+    }
+#endif
+
+    if (ec) {
+        throw fs::filesystem_error("Cannot create temporary directory", ec);
+    }
+
+    return path;
 }
 
 /// Opens a temporary file for writing and returns an output file stream
@@ -100,7 +162,44 @@ std::ofstream stream(const file& file, bool binary, bool append) noexcept {
         mode |= std::ios::binary;
     }
 
-    return std::ofstream(static_cast<const fs::path&>(file), mode);
+    return std::ofstream(file.path(), mode);
+}
+
+/// Deletes the given path recursively, ignoring any errors
+/// @param path     The path to delete
+void remove(const fs::path& path) noexcept {
+    if (!path.empty()) {
+        try {
+            std::error_code ec;
+            fs::remove_all(path, ec);
+
+            fs::path parent = path.parent_path();
+            if (!fs::equivalent(parent, fs::temp_directory_path(), ec)) {
+                fs::remove(parent, ec);
+            }
+        } catch (const std::bad_alloc& ex) {
+            static_cast<void>(ex);
+        }
+    }
+}
+
+/// Closes the given file, ignoring any errors
+/// @param file     The file to close
+void close(const file& file) noexcept {
+#ifdef WIN32
+    CloseHandle(file.native_handle());
+#else
+    ::close(file.native_handle());
+#endif
+}
+
+/// Throws a filesystem error indicating that a temporary resource cannot be
+/// moved to the specified path
+/// @param to   The target path where the resource was intended to be moved
+/// @param ec   The error code associated with the failure to move the resource
+/// @throws fs::filesystem_error when called
+[[noreturn]] void throw_move_error(const fs::path& to, std::error_code ec) {
+    throw fs::filesystem_error("Cannot move temporary resource", to, ec);
 }
 }    // namespace
 
@@ -108,40 +207,44 @@ std::ofstream stream(const file& file, bool binary, bool append) noexcept {
 // tmp::path implementation
 //===----------------------------------------------------------------------===//
 
-path::path(fs::path path)
-    : underlying(std::move(path)) {}
+entry::entry(fs::path path)
+    : pathobject(std::move(path)) {}
 
-path::path(path&& other) noexcept
-    : underlying(other.release()) {}
+entry::entry(entry&& other) noexcept
+    : pathobject(other.release()) {}
 
-path& path::operator=(path&& other) noexcept {
+entry& entry::operator=(entry&& other) noexcept {
     remove(*this);
-    underlying = other.release();
+    pathobject = other.release();
     return *this;
 }
 
-path::~path() noexcept {
+entry::~entry() noexcept {
     remove(*this);
 }
 
-path::operator const fs::path&() const noexcept {
-    return underlying;
+entry::operator const fs::path&() const noexcept {
+    return pathobject;
 }
 
-const fs::path* path::operator->() const noexcept {
-    return std::addressof(underlying);
+const fs::path& entry::path() const noexcept {
+    return *this;
 }
 
-fs::path path::release() noexcept {
-    fs::path path = std::move(underlying);
-    underlying.clear();
+fs::path entry::release() noexcept {
+    fs::path path = std::move(pathobject);
+    pathobject.clear();
+
     return path;
 }
 
-void path::move(const fs::path& to) {
-    create_parent(to);
-
+void entry::move(const fs::path& to) {
     std::error_code ec;
+    create_parent(to, ec);
+    if (ec) {
+        throw_move_error(to, ec);
+    }
+
     fs::rename(*this, to, ec);
     if (ec == std::errc::cross_device_link) {
         if (fs::is_regular_file(*this) && fs::is_directory(to)) {
@@ -165,30 +268,43 @@ void path::move(const fs::path& to) {
 // tmp::file implementation
 //===----------------------------------------------------------------------===//
 
-file::file(std::string_view prefix)
-    : file(prefix, /*binary=*/true) {}
-
-file::file(std::string_view prefix, bool binary)
-    : path(create_file(prefix)),
+file::file(std::pair<fs::path, native_handle_type> handle, bool binary) noexcept
+    : entry(std::move(handle.first)),
+      handle(handle.second),
       binary(binary) {}
 
-file file::text(std::string_view prefix) {
-    return file(prefix, /*binary=*/false);
+file::file(std::string_view prefix, std::string_view suffix, bool binary)
+    : file(create_file(prefix, suffix), binary) {}
+
+file::file(std::string_view prefix, std::string_view suffix)
+    : file(prefix, suffix, /*binary=*/true) {}
+
+file file::text(std::string_view prefix, std::string_view suffix) {
+    return file(prefix, suffix, /*binary=*/false);
 }
 
-file file::copy(const fs::path& path, std::string_view prefix) {
-    file tmpfile = file(prefix);
-    fs::copy(path, tmpfile, copy_options);
+file file::copy(const fs::path& path, std::string_view prefix,
+                std::string_view suffix) {
+    std::error_code ec;
+    file tmpfile = file(prefix, suffix);
+
+    fs::copy_file(path, tmpfile, copy_options, ec);
+
+    if (ec) {
+        throw fs::filesystem_error("Cannot create a temporary copy", path, ec);
+    }
+
     return tmpfile;
 }
 
-std::ifstream file::read() const {
-    const fs::path& file = *this;
-    return binary ? std::ifstream(file, std::ios::binary) : std::ifstream(file);
+file::native_handle_type file::native_handle() const noexcept {
+    return handle;
 }
 
-std::string file::slurp() const {
-    std::ifstream stream = read();
+std::string file::read() const {
+    std::ios::openmode mode = binary ? std::ios::binary : std::ios::openmode();
+    std::ifstream stream = std::ifstream(path(), mode);
+
     return std::string(std::istreambuf_iterator<char>(stream), {});
 }
 
@@ -200,31 +316,49 @@ void file::append(std::string_view content) const {
     stream(*this, binary, /*append=*/true) << content;
 }
 
-file::~file() noexcept = default;
+file::~file() noexcept {
+    close(*this);
+}
 
 file::file(file&&) noexcept = default;
-file& file::operator=(file&&) noexcept = default;
+
+file& file::operator=(file&& other) noexcept {
+    entry::operator=(std::move(other));
+
+    close(*this);
+
+    this->binary = other.binary;    // NOLINT(bugprone-use-after-move)
+    this->handle = other.handle;    // NOLINT(bugprone-use-after-move)
+
+    return *this;
+}
 
 //===----------------------------------------------------------------------===//
 // tmp::directory implementation
 //===----------------------------------------------------------------------===//
 
 directory::directory(std::string_view prefix)
-    : path(create_directory(prefix)) {}
+    : entry(create_directory(prefix)) {}
 
 directory directory::copy(const fs::path& path, std::string_view prefix) {
-    if (fs::is_regular_file(path)) {
-        std::error_code ec = std::make_error_code(std::errc::is_a_directory);
-        throw fs::filesystem_error("Cannot copy temporary directory", ec);
+    std::error_code ec;
+    directory tmpdir = directory(prefix);
+
+    if (fs::is_directory(path)) {
+        fs::copy(path, tmpdir, copy_options, ec);
+    } else {
+        ec = std::make_error_code(std::errc::not_a_directory);
     }
 
-    directory tmpdir = directory(prefix);
-    fs::copy(path, tmpdir, copy_options);
+    if (ec) {
+        throw fs::filesystem_error("Cannot create a temporary copy", path, ec);
+    }
+
     return tmpdir;
 }
 
 fs::path directory::operator/(std::string_view source) const {
-    return static_cast<const fs::path&>(*this) / source;
+    return path() / source;
 }
 
 directory::~directory() noexcept = default;

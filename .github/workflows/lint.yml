@@ -1,0 +1,35 @@
+---
+name: lint
+"on":
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  yamllint:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Run yamllint
+        run: yamllint -f github .github/workflows/ .clang-*
+
+  clang-tidy:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Run clang-tidy
+        run: |
+          cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -B build
+          clang-tidy -p build --use-color src/*.cpp
+
+  clang-format:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Run clang-format
+        run: |
+          clang-format -i include/tmp/* src/*.cpp tests/*.cpp
+          git diff --color --exit-code

@@ -1,63 +1,41 @@
-cmake_minimum_required(VERSION 3.12)
-project(
-    tmp
-    VERSION 0.6.1
-    LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.14)
+project(tmp
+  VERSION 0.9
+  DESCRIPTION "RAII-wrappers for unique temporary files and directories for modern C++"
+  HOMEPAGE_URL "https://github.com/bugdea1er/tmp"
+  LANGUAGES CXX)
 
-option(TMP_TEST "Generate test target for tmp" ON)
-
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
+string(COMPARE EQUAL ${PROJECT_SOURCE_DIR} ${CMAKE_SOURCE_DIR} TMP_IS_TOP_LEVEL)
 
 include(GNUInstallDirs)
-find_package(Filesystem REQUIRED)
+add_subdirectory(src)
 
-add_library(${PROJECT_NAME} STATIC src/tmp.cpp)
-target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
-target_link_libraries(${PROJECT_NAME} PUBLIC std::filesystem)
-set_target_properties(${PROJECT_NAME} PROPERTIES EXPORT_NAME tmp)
-target_include_directories(
-    ${PROJECT_NAME}
-    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-           $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
-
-add_library(tmp::tmp ALIAS ${PROJECT_NAME})
-
-if(TMP_TEST)
-    enable_testing()
+if(TMP_IS_TOP_LEVEL)
+  include(CTest)
+  if(BUILD_TESTING)
     add_subdirectory(tests)
+  endif()
 
-    if(CMAKE_CXX_COMPILER_ID MATCHES GNU|Clang)
-        target_compile_options(${PROJECT_NAME} PRIVATE -Werror)
-        target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic)
-    endif()
-endif()
+  # Destination for cmake configuration files
+  set(CMAKE_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}/")
 
-if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
-    include(CMakePackageConfigHelpers)
-    configure_package_config_file(
-        ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Config.cmake.in
-        ${CMAKE_CURRENT_BINARY_DIR}/tmp-config.cmake
-        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/tmp)
-    install(
-        FILES ${CMAKE_CURRENT_BINARY_DIR}/tmp-config.cmake
-              ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindFilesystem.cmake
-        COMPONENT tmp-dev
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/tmp)
+  include(CMakePackageConfigHelpers)
+  configure_package_config_file("cmake/Config.cmake.in" "tmp-config.cmake"
+    INSTALL_DESTINATION "${CMAKE_INSTALL_CMAKEDIR}")
+  write_basic_package_version_file("tmp-config-version.cmake"
+    COMPATIBILITY AnyNewerVersion)
+  install(FILES "cmake/modules/FindFilesystem.cmake"
+            "${CMAKE_CURRENT_BINARY_DIR}/tmp-config.cmake"
+            "${CMAKE_CURRENT_BINARY_DIR}/tmp-config-version.cmake"
+          DESTINATION "${CMAKE_INSTALL_CMAKEDIR}")
 
-    install(
-        TARGETS ${PROJECT_NAME}
-        EXPORT tmp-targets
-        COMPONENT tmp)
-    install(
-        EXPORT tmp-targets
-        FILE TmpTargets.cmake
-        NAMESPACE tmp::
-        COMPONENT tmp-dev
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/tmp)
-    install(
-        DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
-        COMPONENT tmp-dev
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+      install(TARGETS ${PROJECT_NAME} EXPORT tmp-targets 
+          COMPONENT tmp)
+  install(EXPORT tmp-targets DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
+      NAMESPACE tmp:: FILE tmp-targets.cmake COMPONENT tmp-dev)
+  install(DIRECTORY "include/" "${PROJECT_BINARY_DIR}/include/"
+      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" COMPONENT tmp-dev)
 
-    include(TmpCPack)
+  include(TmpCPack)
 endif()
