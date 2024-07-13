@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.14)
-project(tmp VERSION 0.9)
+project(tmp
+  VERSION 0.9
+  DESCRIPTION "RAII-wrappers for unique temporary files and directories for modern C++"
+  HOMEPAGE_URL "https://github.com/bugdea1er/tmp"
+  LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
 string(COMPARE EQUAL ${PROJECT_SOURCE_DIR} ${CMAKE_SOURCE_DIR} TMP_IS_TOP_LEVEL)
