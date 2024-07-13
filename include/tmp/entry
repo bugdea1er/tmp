@@ -24,11 +24,6 @@ public:
   /// @returns The full path this entry manages
   [[nodiscard]] const std::filesystem::path& path() const noexcept;
 
-  /// Releases the ownership of the managed path;
-  /// the destructor will not delete the managed path after the call
-  /// @returns The managed path
-  std::filesystem::path release() noexcept;
-
   /// Moves the managed path recursively to a given target, releasing
   /// ownership of the managed path
   ///
@@ -47,6 +42,11 @@ protected:
   /// Constructs a tmp::path which owns @p path
   /// @param path A path to manage
   explicit entry(std::filesystem::path path);
+
+  /// Releases the ownership of the managed path;
+  /// the destructor will not delete the managed path after the call
+  /// @returns The managed path
+  std::filesystem::path release() noexcept;
 
   entry(entry&&) noexcept;               ///< move-constructible
   entry& operator=(entry&&) noexcept;    ///< move-assignable

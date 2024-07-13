@@ -258,25 +258,6 @@ TEST(file, move_assignment) {
   EXPECT_TRUE(native_handle_is_valid(snd_handle));
 }
 
-/// Tests file releasing
-TEST(file, release) {
-  fs::path path = fs::path();
-  file::native_handle_type handle;
-  {
-    file tmpfile = file(PREFIX);
-    fs::path expected = tmpfile;
-    handle = tmpfile.native_handle();
-
-    path = tmpfile.release();
-    EXPECT_TRUE(fs::equivalent(path, expected));
-  }
-
-  EXPECT_TRUE(fs::exists(path));
-  EXPECT_FALSE(native_handle_is_valid(handle));
-
-  fs::remove(path);
-}
-
 /// Tests file moving
 TEST(file, move) {
   fs::path path = fs::path();
