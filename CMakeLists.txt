@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
 project(tmp VERSION 0.9)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
 string(COMPARE EQUAL ${PROJECT_SOURCE_DIR} ${CMAKE_SOURCE_DIR} TMP_IS_TOP_LEVEL)
 
 include(GNUInstallDirs)
@@ -24,7 +24,7 @@ if(TMP_IS_TOP_LEVEL)
   install(
       FILES "${CMAKE_CURRENT_BINARY_DIR}/tmp-config.cmake"
             "${CMAKE_CURRENT_BINARY_DIR}/tmp-config-version.cmake"
-            "${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindFilesystem.cmake"
+            "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/FindFilesystem.cmake"
       DESTINATION "${CMAKE_INSTALL_CMAKEDIR}")
 
   install(TARGETS ${PROJECT_NAME} EXPORT tmp-targets)
