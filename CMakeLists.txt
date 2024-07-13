@@ -29,16 +29,16 @@ if(TMP_IS_TOP_LEVEL)
             "${CMAKE_CURRENT_BINARY_DIR}/tmp-config.cmake"
             "${CMAKE_CURRENT_BINARY_DIR}/tmp-config-version.cmake"
           DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
-          COMPONENT tmp-dev)
+          COMPONENT Development)
 
   install(TARGETS ${PROJECT_NAME} EXPORT tmp-targets
-          COMPONENT tmp)
+      COMPONENT Runtime)
   install(EXPORT tmp-targets DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
     NAMESPACE tmp:: FILE tmp-targets.cmake
-    COMPONENT tmp-dev)
+    COMPONENT Development)
   install(DIRECTORY "include/" "${PROJECT_BINARY_DIR}/include/"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
-    COMPONENT tmp-dev)
+    COMPONENT Development)
 
   include(TmpCPack)
 endif()
