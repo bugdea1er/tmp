@@ -16,8 +16,6 @@
 namespace tmp {
 namespace {
 
-namespace fs = std::filesystem;
-
 /// Creates a temporary directory with the given prefix in the system's
 /// temporary directory, and returns its path
 /// @param prefix   The prefix to use for the temporary directory name

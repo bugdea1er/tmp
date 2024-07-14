@@ -9,8 +9,6 @@
 namespace tmp {
 namespace {
 
-namespace fs = std::filesystem;
-
 /// Deletes the given path recursively, ignoring any errors
 /// @param path     The path to delete
 void remove(const fs::path& path) noexcept {

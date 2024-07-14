@@ -21,8 +21,6 @@
 namespace tmp {
 namespace {
 
-namespace fs = std::filesystem;
-
 // Confirm that native_handle_type matches `TriviallyCopyable` named requirement
 static_assert(std::is_trivially_copyable_v<file::native_handle_type>);
 

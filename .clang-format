@@ -6,14 +6,13 @@ AllowShortFunctionsOnASingleLine: Empty
 IncludeBlocks: Regroup
 IncludeCategories:
   - Regex: '^(<tmp)'
-    CaseSensitive: true
     Priority: 1
-  - Regex: '^(<gtest)'
-    CaseSensitive: true
+  - Regex: '^(")'
     Priority: 2
-  - Regex: ".*"
-    CaseSensitive: true
+  - Regex: '^(<gtest)'
     Priority: 3
+  - Regex: ".*"
+    Priority: 4
 
 InsertBraces: true
 KeepEmptyLinesAtTheStartOfBlocks: false
