@@ -31,7 +31,7 @@ if(TMP_IS_TOP_LEVEL)
           DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
           COMPONENT Development)
 
-  install(TARGETS ${PROJECT_NAME} EXPORT tmp-targets
+  install(TARGETS ${PROJECT_NAME}-shared EXPORT tmp-targets
       COMPONENT Runtime)
   install(EXPORT tmp-targets DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
     NAMESPACE tmp:: FILE tmp-targets.cmake
