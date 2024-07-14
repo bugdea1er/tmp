@@ -4,6 +4,11 @@
 #include <string_view>
 #include <system_error>
 
+#ifdef WIN32
+#include <Windows.h>
+#include <cwchar>
+#endif
+
 namespace tmp {
 
 bool create_parent(const fs::path& path, std::error_code& ec) {
