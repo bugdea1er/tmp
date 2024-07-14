@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.16)
 project(tmp
   VERSION 0.9
   DESCRIPTION "RAII-wrappers for unique temporary files and directories for modern C++"

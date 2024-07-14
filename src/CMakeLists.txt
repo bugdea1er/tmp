@@ -7,6 +7,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC std::filesystem)
 
 set_target_properties(${PROJECT_NAME}
   PROPERTIES EXPORT_NAME tmp
+             UNITY_BUILD ON
              CXX_EXTENSIONS OFF
              CXX_VISIBILITY_PRESET hidden
              VISIBILITY_INLINES_HIDDEN 1)
