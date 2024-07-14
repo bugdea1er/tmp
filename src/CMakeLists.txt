@@ -12,6 +12,7 @@ set_target_properties(${PROJECT_NAME}-static
              CXX_VISIBILITY_PRESET hidden
              VISIBILITY_INLINES_HIDDEN 1
              COMPILE_FLAGS -D${UPPER_PROJECT_NAME}_STATIC_DEFINE
+             OUTPUT_NAME tmp
              VERSION ${PROJECT_VERSION}
              SOVERSION ${PROJECT_VERSION_MAJOR})
 
@@ -45,6 +46,7 @@ if(TMP_IS_TOP_LEVEL)
                  CXX_EXTENSIONS OFF
                  CXX_VISIBILITY_PRESET hidden
                  VISIBILITY_INLINES_HIDDEN 1
+                 OUTPUT_NAME tmp
                  VERSION ${PROJECT_VERSION}
                  SOVERSION ${PROJECT_VERSION_MAJOR})
 

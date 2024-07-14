@@ -15,10 +15,10 @@ set(CPACK_DEBIAN_DEVELOPMENT_PACKAGE_DEPENDS
     "libstdc++-dev, libtmp (= ${CPACK_PACKAGE_VERSION})")
 
 set(CPACK_DEBIAN_RUNTIME_DESCRIPTION
-    "${PROJECT_DESCRIPTION}. Runtime package"
+    "Runtime package"
 )
 set(CPACK_DEBIAN_DEVELOPMENT_DESCRIPTION
-    "${PROJECT_DESCRIPTION}. Development package"
+    "Development package"
 )
 
 include(CPack)
