@@ -33,23 +33,23 @@ endif()
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME}-static)
 
 if(TMP_IS_TOP_LEVEL)
-    add_library(${PROJECT_NAME}-shared SHARED tmp.cpp)
-    target_compile_features(${PROJECT_NAME}-shared PUBLIC cxx_std_17)
-    target_link_libraries(${PROJECT_NAME}-shared PUBLIC std::filesystem)
+  add_library(${PROJECT_NAME}-shared SHARED tmp.cpp)
+  target_compile_features(${PROJECT_NAME}-shared PUBLIC cxx_std_17)
+  target_link_libraries(${PROJECT_NAME}-shared PUBLIC std::filesystem)
 
-    set_target_properties(${PROJECT_NAME}-shared
-      PROPERTIES EXPORT_NAME tmp
-                 CXX_EXTENSIONS OFF
-                 CXX_VISIBILITY_PRESET hidden
-                 VISIBILITY_INLINES_HIDDEN 1
-                 OUTPUT_NAME tmp
-                 VERSION ${PROJECT_VERSION}
-                 SOVERSION ${PROJECT_VERSION_MAJOR})
+  set_target_properties(${PROJECT_NAME}-shared
+    PROPERTIES EXPORT_NAME tmp
+               CXX_EXTENSIONS OFF
+               CXX_VISIBILITY_PRESET hidden
+               VISIBILITY_INLINES_HIDDEN 1
+               OUTPUT_NAME tmp
+               VERSION ${PROJECT_VERSION}
+               SOVERSION ${PROJECT_VERSION_MAJOR})
 
-    target_include_directories(${PROJECT_NAME}-shared
-      PUBLIC "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
-             "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>"
-             "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
+  target_include_directories(${PROJECT_NAME}-shared
+    PUBLIC "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+           "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>"
+           "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
 
   if(CMAKE_CXX_COMPILER_ID MATCHES GNU|Clang)
     target_compile_options(${PROJECT_NAME}-shared PRIVATE -Werror)
