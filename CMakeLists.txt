@@ -14,7 +14,7 @@ add_subdirectory(src)
 if(TMP_IS_TOP_LEVEL)
   include(CTest)
   if(BUILD_TESTING)
-    add_subdirectory(tests)
+    add_subdirectory(tests EXCLUDE_FROM_ALL)
   endif()
 
   # Destination for cmake configuration files
