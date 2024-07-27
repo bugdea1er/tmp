@@ -6,7 +6,7 @@ target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 target_link_libraries(${PROJECT_NAME} PUBLIC std::filesystem)
 
 set_target_properties(${PROJECT_NAME}
-  PROPERTIES EXPORT_NAME tmp
+  PROPERTIES EXPORT_NAME ${PROJECT_NAME}
              UNITY_BUILD ON
              CXX_EXTENSIONS OFF
              CXX_VISIBILITY_PRESET hidden
@@ -27,6 +27,6 @@ if(TMP_IS_TOP_LEVEL)
 endif()
 
 generate_export_header(${PROJECT_NAME}
-  EXPORT_FILE_NAME "${PROJECT_BINARY_DIR}/include/tmp/export")
+  EXPORT_FILE_NAME "${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/export")
 
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
