@@ -1,22 +1,19 @@
 ---
 Language: Cpp
 BasedOnStyle: LLVM
-AccessModifierOffset: -4
 AllowShortFunctionsOnASingleLine: Empty
 
 IncludeBlocks: Regroup
 IncludeCategories:
   - Regex: '^(<tmp)'
-    CaseSensitive: true
     Priority: 1
-  - Regex: '^(<gtest)'
-    CaseSensitive: true
+  - Regex: '^(")'
     Priority: 2
-  - Regex: ".*"
-    CaseSensitive: true
+  - Regex: '^(<gtest)'
     Priority: 3
+  - Regex: ".*"
+    Priority: 4
 
-IndentWidth: 4
 InsertBraces: true
 KeepEmptyLinesAtTheStartOfBlocks: false
 PackConstructorInitializers: Never

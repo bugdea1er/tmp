@@ -1,18 +1,20 @@
 find_package(Filesystem REQUIRED)
 include(GenerateExportHeader)
 
-add_library(${PROJECT_NAME}-static STATIC tmp.cpp)
+set(SOURCES entry.cpp file.cpp directory.cpp utils.cpp)
+add_library(${PROJECT_NAME}-static STATIC ${SOURCES})
 target_compile_features(${PROJECT_NAME}-static PUBLIC cxx_std_17)
 target_link_libraries(${PROJECT_NAME}-static PUBLIC std::filesystem)
 
 string(TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME)
 set_target_properties(${PROJECT_NAME}-static
-  PROPERTIES EXPORT_NAME tmp
+  PROPERTIES EXPORT_NAME ${PROJECT_NAME}
+             UNITY_BUILD ON
              CXX_EXTENSIONS OFF
              CXX_VISIBILITY_PRESET hidden
-             VISIBILITY_INLINES_HIDDEN 1
+             VISIBILITY_INLINES_HIDDEN ON
              COMPILE_FLAGS -D${UPPER_PROJECT_NAME}_STATIC_DEFINE
-             OUTPUT_NAME tmp
+             OUTPUT_NAME ${PROJECT_NAME}
              VERSION ${PROJECT_VERSION}
              SOVERSION ${PROJECT_VERSION_MAJOR})
 
@@ -33,16 +35,17 @@ endif()
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME}-static)
 
 if(TMP_IS_TOP_LEVEL)
-  add_library(${PROJECT_NAME}-shared SHARED tmp.cpp)
+    add_library(${PROJECT_NAME}-shared SHARED ${SOURCES})
   target_compile_features(${PROJECT_NAME}-shared PUBLIC cxx_std_17)
   target_link_libraries(${PROJECT_NAME}-shared PUBLIC std::filesystem)
 
   set_target_properties(${PROJECT_NAME}-shared
-    PROPERTIES EXPORT_NAME tmp
+    PROPERTIES EXPORT_NAME ${PROJECT_NAME}
+               UNITY_BUILD ON
                CXX_EXTENSIONS OFF
                CXX_VISIBILITY_PRESET hidden
-               VISIBILITY_INLINES_HIDDEN 1
-               OUTPUT_NAME tmp
+               VISIBILITY_INLINES_HIDDEN ON
+               OUTPUT_NAME ${PROJECT_NAME}
                VERSION ${PROJECT_VERSION}
                SOVERSION ${PROJECT_VERSION_MAJOR})
 
@@ -60,4 +63,4 @@ if(TMP_IS_TOP_LEVEL)
 endif()
 generate_export_header(${PROJECT_NAME}-shared
   BASE_NAME ${PROJECT_NAME}
-  EXPORT_FILE_NAME "${PROJECT_BINARY_DIR}/include/tmp/export")
+  EXPORT_FILE_NAME "${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/export")
