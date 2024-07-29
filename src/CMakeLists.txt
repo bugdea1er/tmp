@@ -60,7 +60,11 @@ if(TMP_IS_TOP_LEVEL)
   elseif(MSVC)
     target_compile_options(${PROJECT_NAME}-shared PRIVATE /WX /W3)
   endif()
+  generate_export_header(${PROJECT_NAME}-shared
+    BASE_NAME ${PROJECT_NAME}
+    EXPORT_FILE_NAME "${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/export")
+else()
+  generate_export_header(${PROJECT_NAME}-static
+    BASE_NAME ${PROJECT_NAME}
+    EXPORT_FILE_NAME "${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/export")
 endif()
-generate_export_header(${PROJECT_NAME}-shared
-  BASE_NAME ${PROJECT_NAME}
-  EXPORT_FILE_NAME "${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/export")
