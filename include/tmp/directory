@@ -36,7 +36,7 @@ namespace tmp {
 ///     // tmp::directory object goes out of scope and is destroyed
 ///   }
 /// @endcode
-class TMP_EXPORT directory final : public entry {
+class directory final : public entry {
 public:
   /// Creates a unique temporary directory
   ///
@@ -45,7 +45,7 @@ public:
   ///
   /// @param prefix   A prefix to be used in the temporary directory path
   /// @throws std::filesystem::filesystem_error if cannot create a directory
-  explicit directory(std::string_view prefix = "");
+  TMP_EXPORT explicit directory(std::string_view prefix = "");
 
   /// Creates a unique temporary copy recursively from the given path
   ///
@@ -53,26 +53,28 @@ public:
   /// @param prefix A prefix to be used in the temporary directory path
   /// @returns The new temporary directory
   /// @throws std::filesystem::filesystem_error if @p path is not a directory
-  static directory copy(const std::filesystem::path& path,
-                        std::string_view prefix = "");
+  TMP_EXPORT static directory copy(const std::filesystem::path& path,
+                                   std::string_view prefix = "");
 
   /// Concatenates this directory path with a given @p source
   /// @param source   A string which represents a path name
   /// @returns The result of path concatenation
-  std::filesystem::path operator/(std::string_view source) const;
+  TMP_EXPORT std::filesystem::path operator/(std::string_view source) const;
 
   /// Returns an iterator over the contents of this directory
   /// @note The special pathnames `.` and `..` are skipped
   /// @returns The iterator over this directory
-  std::filesystem::directory_iterator list() const;
+  TMP_EXPORT std::filesystem::directory_iterator list() const;
 
   /// Deletes the managed directory recursively if its path is not empty
-  ~directory() noexcept override;
+  TMP_EXPORT ~directory() noexcept override;
 
-  directory(directory&&) noexcept;               ///< move-constructible
-  directory& operator=(directory&&) noexcept;    ///< move-assignable
-  directory(const directory&) = delete;          ///< not copy-constructible
-  auto operator=(const directory&) = delete;     ///< not copy-assignable
+  TMP_EXPORT directory(directory&&) noexcept;    ///< move-constructible
+  TMP_EXPORT directory& operator=(directory&&) noexcept;    ///< move-assignable
+  TMP_EXPORT
+  directory(const directory&) = delete;    ///< not copy-constructible
+  TMP_EXPORT auto
+  operator=(const directory&) = delete;    ///< not copy-assignable
 };
 }    // namespace tmp
 
