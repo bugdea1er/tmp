@@ -35,7 +35,7 @@ endif()
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME}-static)
 
 if(TMP_IS_TOP_LEVEL)
-    add_library(${PROJECT_NAME}-shared SHARED ${SOURCES})
+  add_library(${PROJECT_NAME}-shared SHARED ${SOURCES})
   target_compile_features(${PROJECT_NAME}-shared PUBLIC cxx_std_17)
   target_link_libraries(${PROJECT_NAME}-shared PUBLIC std::filesystem)
 

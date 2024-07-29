@@ -53,7 +53,7 @@ protected:
 
 private:
   /// The managed path
-  std::filesystem::path pathobject;
+  TMP_NO_EXPORT std::filesystem::path pathobject;
 };
 }    // namespace tmp
 
