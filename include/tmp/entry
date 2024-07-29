@@ -35,7 +35,7 @@ public:
   /// Deletes the managed path recursively if it is not empty
   TMP_EXPORT virtual ~entry() noexcept;
 
-  TMP_EXPORT entry(const entry&) = delete;             ///< not copy-constructible
+  TMP_EXPORT entry(const entry&) = delete;    ///< not copy-constructible
   TMP_EXPORT auto operator=(const entry&) = delete;    ///< not copy-assignable
 
 protected:
