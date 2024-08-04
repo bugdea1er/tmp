@@ -86,10 +86,10 @@ TEST(file, create_multiple) {
 
 /// Tests creation of a temporary copy of a file
 TEST(file, copy_file) {
-  file tmpfile = file(PREFIX);
+  file tmpfile = file();
   tmpfile.write("Hello, world!");
 
-  file tmpcopy = file::copy(tmpfile, PREFIX);
+  file tmpcopy = file::copy(tmpfile);
   EXPECT_TRUE(fs::exists(tmpfile));
   EXPECT_TRUE(fs::exists(tmpcopy));
   EXPECT_FALSE(fs::equivalent(tmpfile, tmpcopy));
@@ -101,13 +101,13 @@ TEST(file, copy_file) {
 
 /// Tests creation of a temporary copy of a directory
 TEST(file, copy_directory) {
-  directory tmpdir = directory(PREFIX);
-  EXPECT_THROW(file::copy(tmpdir, PREFIX), fs::filesystem_error);
+  directory tmpdir = directory();
+  EXPECT_THROW(file::copy(tmpdir), fs::filesystem_error);
 }
 
 /// Tests binary file reading
 TEST(file, read_binary) {
-  file tmpfile = file(PREFIX);
+  file tmpfile = file();
   std::ofstream stream = std::ofstream(tmpfile.path(), std::ios::binary);
 
   stream << "Hello," << std::endl;
@@ -118,7 +118,7 @@ TEST(file, read_binary) {
 
 /// Tests text file reading
 TEST(file, read_text) {
-  file tmpfile = file::text(PREFIX);
+  file tmpfile = file::text();
   std::ofstream stream = std::ofstream(tmpfile.path());
 
   stream << "Hello," << std::endl;
@@ -129,7 +129,7 @@ TEST(file, read_text) {
 
 /// Tests binary file writing
 TEST(file, write_binary) {
-  file tmpfile = file(PREFIX);
+  file tmpfile = file();
   tmpfile.write("Hello\n");
 
   {
@@ -149,7 +149,7 @@ TEST(file, write_binary) {
 
 /// Tests text file writing
 TEST(file, write_text) {
-  file tmpfile = file::text(PREFIX);
+  file tmpfile = file::text();
   tmpfile.write("Hello\n");
 
   {
@@ -169,7 +169,7 @@ TEST(file, write_text) {
 
 /// Tests binary file appending
 TEST(file, append_binary) {
-  file tmpfile = file(PREFIX);
+  file tmpfile = file();
   std::ofstream(tmpfile.path(), std::ios::binary) << "Hello, ";
 
   tmpfile.append("world");
@@ -191,7 +191,7 @@ TEST(file, append_binary) {
 
 /// Tests text file appending
 TEST(file, append_text) {
-  file tmpfile = file::text(PREFIX);
+  file tmpfile = file::text();
   std::ofstream(tmpfile.path()) << "Hello,\n ";
 
   tmpfile.append("world");
@@ -216,7 +216,7 @@ TEST(file, destructor) {
   fs::path path = fs::path();
   file::native_handle_type handle;
   {
-    file tmpfile = file(PREFIX);
+    file tmpfile = file();
     path = tmpfile;
     handle = tmpfile.native_handle();
   }
@@ -227,7 +227,7 @@ TEST(file, destructor) {
 
 /// Tests file move constructor
 TEST(file, move_constructor) {
-  file fst = file(PREFIX);
+  file fst = file();
   file snd = std::move(fst);
 
   EXPECT_TRUE(fst.path().empty());
@@ -237,8 +237,8 @@ TEST(file, move_constructor) {
 
 /// Tests file move assignment operator
 TEST(file, move_assignment) {
-  file fst = file(PREFIX);
-  file snd = file(PREFIX);
+  file fst = file();
+  file snd = file();
 
   fs::path path1 = fst;
   fs::path path2 = snd;
@@ -263,9 +263,9 @@ TEST(file, move) {
   fs::path path = fs::path();
   file::native_handle_type handle;
 
-  fs::path to = fs::temp_directory_path() / PREFIX / "non-existing/parent";
+  fs::path to = fs::temp_directory_path() / "non-existing" / "parent";
   {
-    file tmpfile = file(PREFIX);
+    file tmpfile = file();
     path = tmpfile;
     handle = tmpfile.native_handle();
 
@@ -276,6 +276,6 @@ TEST(file, move) {
   EXPECT_TRUE(fs::exists(to));
   EXPECT_FALSE(native_handle_is_valid(handle));
 
-  fs::remove_all(fs::temp_directory_path() / PREFIX / "non-existing");
+  fs::remove_all(fs::temp_directory_path() / "non-existing");
 }
 }    // namespace tmp
