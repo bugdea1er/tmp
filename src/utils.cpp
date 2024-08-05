@@ -4,7 +4,7 @@
 #include <string_view>
 #include <system_error>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <Windows.h>
 #include <cwchar>
 #endif
