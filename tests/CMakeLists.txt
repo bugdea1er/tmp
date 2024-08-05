@@ -8,7 +8,7 @@ target_compile_definitions(${PROJECT_NAME}
   PRIVATE PREFIX="com.github.bugdea1er.tmp")
 
 set_target_properties(${PROJECT_NAME}
-  PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
+  PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${tmp_BINARY_DIR})
 
 include(GoogleTest)
 gtest_discover_tests(${PROJECT_NAME} EXTRA_ARGS --gtest_color=yes)
