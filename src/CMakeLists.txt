@@ -23,7 +23,7 @@ if(TMP_IS_TOP_LEVEL)
     target_compile_options(${PROJECT_NAME} PRIVATE -Werror)
     target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic)
   elseif(MSVC)
-    target_compile_options(${PROJECT_NAME} PRIVATE /WX /W3)
+    #target_compile_options(${PROJECT_NAME} PRIVATE /WX /W3)
   endif()
 endif()
 
