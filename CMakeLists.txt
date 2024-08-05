@@ -8,8 +8,6 @@ project(tmp
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules")
 string(COMPARE EQUAL ${PROJECT_SOURCE_DIR} ${CMAKE_SOURCE_DIR} TMP_IS_TOP_LEVEL)
 
-# set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
-
 include(GNUInstallDirs)
 add_subdirectory(src)
 
