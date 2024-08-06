@@ -41,7 +41,7 @@ namespace tmp {
 ///     // tmp::file object goes out of scope and is destroyed
 ///   }
 /// @endcode
-class file final : public entry {
+class TMP_EXPORT file final : public entry {
 public:
   /// Implementation-defined handle type to the temporary file
 #if defined(WIN32)
@@ -58,8 +58,7 @@ public:
   /// @param prefix   A prefix to be used in the temporary file path
   /// @param suffix   A suffix to be used in the temporary file path
   /// @throws std::filesystem::filesystem_error if cannot create a file
-  TMP_EXPORT explicit file(std::string_view prefix = "",
-                           std::string_view suffix = "");
+  explicit file(std::string_view prefix = "", std::string_view suffix = "");
 
   /// Creates a unique temporary file and opens it for reading and writing
   /// in text mode
@@ -67,8 +66,7 @@ public:
   /// @param prefix   A prefix to be used in the temporary file path
   /// @param suffix   A suffix to be used in the temporary file path
   /// @throws std::filesystem::filesystem_error if cannot create a file
-  TMP_EXPORT static file text(std::string_view prefix = "",
-                              std::string_view suffix = "");
+  static file text(std::string_view prefix = "", std::string_view suffix = "");
 
   /// Creates a unique temporary copy from the given path
   ///
@@ -77,33 +75,32 @@ public:
   /// @param suffix A suffix to be used in the temporary file path
   /// @returns The new temporary file
   /// @throws std::filesystem::filesystem_error if @p path is not a file
-  TMP_EXPORT static file copy(const std::filesystem::path& path,
-                              std::string_view prefix = "",
-                              std::string_view suffix = "");
+  static file copy(const std::filesystem::path& path,
+                   std::string_view prefix = "", std::string_view suffix = "");
 
   /// Returns an implementation-defined handle to this file
   /// @returns The underlying implementation-defined handle
-  TMP_EXPORT native_handle_type native_handle() const noexcept;
+  native_handle_type native_handle() const noexcept;
 
   /// Reads the entire contents of this file
   /// @returns A string with this file contents
-  TMP_EXPORT std::string read() const;
+  std::string read() const;
 
   /// Writes the given content to this file discarding any previous content
   /// @param content  A string to write to this file
-  TMP_EXPORT void write(std::string_view content) const;
+  void write(std::string_view content) const;
 
   /// Appends the given content to the end of this file
   /// @param content  A string to append to this file
-  TMP_EXPORT void append(std::string_view content) const;
+  void append(std::string_view content) const;
 
   /// Deletes the managed file if its path is not empty
-  TMP_EXPORT ~file() noexcept override;
+  ~file() noexcept override;
 
-  TMP_EXPORT file(file&&) noexcept;               ///< move-constructible
-  TMP_EXPORT file& operator=(file&&) noexcept;    ///< move-assignable
-  TMP_EXPORT file(const file&) = delete;          ///< not copy-constructible
-  TMP_EXPORT auto operator=(const file&) = delete;    ///< not copy-assignable
+  file(file&&) noexcept;                   ///< move-constructible
+  file& operator=(file&&) noexcept;        ///< move-assignable
+  file(const file&) = delete;              ///< not copy-constructible
+  auto operator=(const file&) = delete;    ///< not copy-assignable
 
 private:
   /// Implementation-defined handle to the file

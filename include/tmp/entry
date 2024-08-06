@@ -14,15 +14,15 @@ namespace tmp {
 /// The managed path is deleted of when either of the following happens:
 /// - the managing tmp::entry object is destroyed
 /// - the managing tmp::entry object is assigned another path via operator=
-class entry {
+class TMP_EXPORT entry {
 public:
   /// Returns the managed path
   /// @returns The full path this entry manages
-  TMP_EXPORT operator const std::filesystem::path&() const noexcept;
+  operator const std::filesystem::path&() const noexcept;
 
   /// Returns the managed path
   /// @returns The full path this entry manages
-  TMP_EXPORT const std::filesystem::path& path() const noexcept;
+  const std::filesystem::path& path() const noexcept;
 
   /// Moves the managed path recursively to a given target, releasing
   /// ownership of the managed path
@@ -30,26 +30,26 @@ public:
   /// The parent of the target path is created when this function is called
   /// @param to   A path to the target file or directory
   /// @throws std::filesystem::filesystem_error if cannot move the owned path
-  TMP_EXPORT void move(const std::filesystem::path& to);
+  void move(const std::filesystem::path& to);
 
   /// Deletes the managed path recursively if it is not empty
-  TMP_EXPORT virtual ~entry() noexcept;
+  virtual ~entry() noexcept;
 
-  TMP_EXPORT entry(const entry&) = delete;    ///< not copy-constructible
-  TMP_EXPORT auto operator=(const entry&) = delete;    ///< not copy-assignable
+  entry(const entry&) = delete;             ///< not copy-constructible
+  auto operator=(const entry&) = delete;    ///< not copy-assignable
 
 protected:
   /// Constructs a tmp::path which owns @p path
   /// @param path A path to manage
-  TMP_EXPORT explicit entry(std::filesystem::path path);
+  explicit entry(std::filesystem::path path);
 
   /// Releases the ownership of the managed path;
   /// the destructor will not delete the managed path after the call
   /// @returns The managed path
-  TMP_EXPORT std::filesystem::path release() noexcept;
+  std::filesystem::path release() noexcept;
 
-  TMP_EXPORT entry(entry&&) noexcept;               ///< move-constructible
-  TMP_EXPORT entry& operator=(entry&&) noexcept;    ///< move-assignable
+  entry(entry&&) noexcept;               ///< move-constructible
+  entry& operator=(entry&&) noexcept;    ///< move-assignable
 
 private:
   /// The managed path
