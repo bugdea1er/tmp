@@ -10,8 +10,7 @@ set_target_properties(${PROJECT_NAME}
              UNITY_BUILD ON
              CXX_EXTENSIONS OFF
              CXX_VISIBILITY_PRESET hidden
-             VISIBILITY_INLINES_HIDDEN ON
-             RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
+             VISIBILITY_INLINES_HIDDEN ON)
 
 target_include_directories(${PROJECT_NAME}
   PUBLIC "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
@@ -23,7 +22,9 @@ if(TMP_IS_TOP_LEVEL)
     target_compile_options(${PROJECT_NAME} PRIVATE -Werror)
     target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic)
   elseif(MSVC)
-    # target_compile_options(${PROJECT_NAME} PRIVATE /WX /W3)
+    # FIXME: warning C4251 for 'tmp::entry::pathobject'
+    # target_compile_options(${PROJECT_NAME} PRIVATE /W3)
+    target_compile_options(${PROJECT_NAME} PRIVATE /W3)
   endif()
 endif()
 
