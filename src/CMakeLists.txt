@@ -10,7 +10,9 @@ set_target_properties(${PROJECT_NAME}
              UNITY_BUILD ON
              CXX_EXTENSIONS OFF
              CXX_VISIBILITY_PRESET hidden
-             VISIBILITY_INLINES_HIDDEN ON)
+             VISIBILITY_INLINES_HIDDEN ON
+             VERSION ${PROJECT_VERSION}
+             SOVERSION ${PROJECT_VERSION_MAJOR})
 
 target_include_directories(${PROJECT_NAME}
   PUBLIC "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
