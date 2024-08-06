@@ -1,10 +1,9 @@
 find_package(Filesystem REQUIRED)
 include(GenerateExportHeader)
 
-set(SOURCES entry.cpp file.cpp directory.cpp utils.cpp)
-add_library(${PROJECT_NAME}-static STATIC ${SOURCES})
-target_compile_features(${PROJECT_NAME}-static PUBLIC cxx_std_17)
-target_link_libraries(${PROJECT_NAME}-static PUBLIC std::filesystem)
+add_library(${PROJECT_NAME} SHARED entry.cpp file.cpp directory.cpp utils.cpp)
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
+target_link_libraries(${PROJECT_NAME} PUBLIC std::filesystem)
 
 string(TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME)
 set_target_properties(${PROJECT_NAME}-static
@@ -28,7 +27,9 @@ if(TMP_IS_TOP_LEVEL)
     target_compile_options(${PROJECT_NAME}-static PRIVATE -Werror)
     target_compile_options(${PROJECT_NAME}-static PRIVATE -Wall -Wextra -pedantic)
   elseif(MSVC)
-    target_compile_options(${PROJECT_NAME}-static PRIVATE /WX /W3)
+    # FIXME: warning C4251 for 'tmp::entry::pathobject'
+    # target_compile_options(${PROJECT_NAME} PRIVATE /WX)
+    target_compile_options(${PROJECT_NAME} PRIVATE /W3)
   endif()
 endif()
 

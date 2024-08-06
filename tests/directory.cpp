@@ -51,10 +51,10 @@ TEST(directory, create_multiple) {
 
 /// Tests creation of a temporary copy of a directory
 TEST(directory, copy_directory) {
-  directory tmpdir = directory(PREFIX);
+  directory tmpdir = directory();
   std::ofstream(tmpdir / "file") << "Hello, world!";
 
-  directory tmpcopy = directory::copy(tmpdir, PREFIX);
+  directory tmpcopy = directory::copy(tmpdir);
   EXPECT_TRUE(fs::exists(tmpdir));
   EXPECT_TRUE(fs::exists(tmpcopy));
   EXPECT_FALSE(fs::equivalent(tmpdir, tmpcopy));
@@ -68,13 +68,13 @@ TEST(directory, copy_directory) {
 
 /// Tests creation of a temporary copy of a file
 TEST(directory, copy_file) {
-  file tmpfile = file(PREFIX);
-  EXPECT_THROW(directory::copy(tmpfile, PREFIX), fs::filesystem_error);
+  file tmpfile = file();
+  EXPECT_THROW(directory::copy(tmpfile), fs::filesystem_error);
 }
 
 /// Tests `operator/` of directory
 TEST(directory, subpath) {
-  directory tmpdir = directory(PREFIX);
+  directory tmpdir = directory();
   fs::path child = tmpdir / "child";
 
   EXPECT_TRUE(fs::equivalent(tmpdir, child.parent_path()));
@@ -82,7 +82,7 @@ TEST(directory, subpath) {
 
 /// Tests directory listing
 TEST(directory, list) {
-  directory tmpdir = directory(PREFIX);
+  directory tmpdir = directory();
   std::ofstream(tmpdir / "file1") << "Hello, world!";
   std::ofstream(tmpdir / "file2") << "Hello, world!";
 
@@ -101,7 +101,7 @@ TEST(directory, list) {
 TEST(directory, destructor) {
   fs::path path = fs::path();
   {
-    directory tmpdir = directory(PREFIX);
+    directory tmpdir = directory();
     path = tmpdir;
   }
 
@@ -110,7 +110,7 @@ TEST(directory, destructor) {
 
 /// Tests directory move constructor
 TEST(directory, move_constructor) {
-  directory fst = directory(PREFIX);
+  directory fst = directory();
   directory snd = std::move(fst);
 
   EXPECT_TRUE(fst.path().empty());
@@ -119,8 +119,8 @@ TEST(directory, move_constructor) {
 
 /// Tests directory move assignment operator
 TEST(directory, move_assignment) {
-  directory fst = directory(PREFIX);
-  directory snd = directory(PREFIX);
+  directory fst = directory();
+  directory snd = directory();
 
   fs::path path1 = fst;
   fs::path path2 = snd;
@@ -137,9 +137,9 @@ TEST(directory, move_assignment) {
 /// Tests directory moving
 TEST(directory, move) {
   fs::path path = fs::path();
-  fs::path to = fs::temp_directory_path() / PREFIX / "non-existing/parent";
+  fs::path to = fs::temp_directory_path() / "non-existing" / "parent";
   {
-    directory tmpdir = directory(PREFIX);
+    directory tmpdir = directory();
     path = tmpdir;
 
     tmpdir.move(to);
@@ -147,6 +147,6 @@ TEST(directory, move) {
 
   EXPECT_FALSE(fs::exists(path));
   EXPECT_TRUE(fs::exists(to));
-  fs::remove_all(fs::temp_directory_path() / PREFIX / "non-existing");
+  fs::remove_all(fs::temp_directory_path() / "non-existing");
 }
 }    // namespace tmp
