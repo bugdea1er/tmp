@@ -44,7 +44,7 @@ namespace tmp {
 class TMP_EXPORT file final : public entry {
 public:
   /// Implementation-defined handle type to the temporary file
-#if defined(WIN32)
+#if defined(_WIN32)
   using native_handle_type = void*;    // HANDLE
 #elif __has_include(<unistd.h>)
   using native_handle_type = int;    // POSIX file descriptor
