@@ -15,9 +15,7 @@ namespace tmp {
 /// deletes it when this handle goes out of scope
 ///
 /// When a tmp::file object is created, it creates a unique temporary file using
-/// the system's default location for temporary files; the path consists of the
-/// system's temporary directory path, the given prefix, and random characters
-/// to ensure path uniqueness
+/// the system's default location for temporary files
 ///
 /// The managed file is deleted of when either of the following happens:
 /// - the managing tmp::file object is destroyed
@@ -28,7 +26,7 @@ namespace tmp {
 ///
 /// The following example uses a tmp::file object to create a temporary file
 /// and write a string to it; when the function returns, the tmp::file object
-/// goes out of scope and the temporary file:
+/// goes out of scope and the temporary file is deleted:
 ///
 /// @code{.cpp}
 ///   #include <tmp/file>
@@ -55,28 +53,28 @@ public:
   /// Creates a unique temporary file and opens it for reading and writing
   /// in binary mode
   ///
-  /// @param prefix   A prefix to be used in the temporary file path
+  /// @param label    A label to attach to the temporary file path
   /// @param suffix   A suffix to be used in the temporary file path
   /// @throws std::filesystem::filesystem_error if cannot create a file
-  explicit file(std::string_view prefix = "", std::string_view suffix = "");
+  explicit file(std::string_view label = "", std::string_view suffix = "");
 
   /// Creates a unique temporary file and opens it for reading and writing
   /// in text mode
   ///
-  /// @param prefix   A prefix to be used in the temporary file path
+  /// @param label    A label to attach to the temporary file path
   /// @param suffix   A suffix to be used in the temporary file path
   /// @throws std::filesystem::filesystem_error if cannot create a file
-  static file text(std::string_view prefix = "", std::string_view suffix = "");
+  static file text(std::string_view label = "", std::string_view suffix = "");
 
   /// Creates a unique temporary copy from the given path
   ///
   /// @param path   A path to make a temporary copy from
-  /// @param prefix A prefix to be used in the temporary file path
+  /// @param label  A label to attach to the temporary file path
   /// @param suffix A suffix to be used in the temporary file path
   /// @returns The new temporary file
   /// @throws std::filesystem::filesystem_error if @p path is not a file
   static file copy(const std::filesystem::path& path,
-                   std::string_view prefix = "", std::string_view suffix = "");
+                   std::string_view label = "", std::string_view suffix = "");
 
   /// Returns an implementation-defined handle to this file
   /// @returns The underlying implementation-defined handle
@@ -112,11 +110,11 @@ private:
   /// Creates a unique temporary file and opens it for reading and writing
   /// in the specified mode
   ///
-  /// @param prefix   A prefix to be used in the temporary file path
+  /// @param label    A label to attach to the temporary file path
   /// @param suffix   A suffix to be used in the temporary file path
   /// @param binary   Whether the managed file is opened in binary write mode
   /// @throws fs::filesystem_error if cannot create a file
-  file(std::string_view prefix, std::string_view suffix, bool binary);
+  file(std::string_view label, std::string_view suffix, bool binary);
 
   /// Creates a unique temporary file
   ///

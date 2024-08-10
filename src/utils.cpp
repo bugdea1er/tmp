@@ -15,7 +15,7 @@ bool create_parent(const fs::path& path, std::error_code& ec) {
   return fs::create_directories(path.parent_path(), ec);
 }
 
-fs::path make_pattern(std::string_view prefix, std::string_view suffix) {
+fs::path make_pattern(std::string_view label, std::string_view suffix) {
 #ifdef WIN32
   constexpr static std::size_t CHARS_IN_GUID = 39;
   GUID guid;
@@ -31,7 +31,7 @@ fs::path make_pattern(std::string_view prefix, std::string_view suffix) {
   std::string_view name = "XXXXXX";
 #endif
 
-  fs::path pattern = fs::temp_directory_path() / prefix / name;
+  fs::path pattern = fs::temp_directory_path() / label / name;
 
   pattern += suffix;
   return pattern;
