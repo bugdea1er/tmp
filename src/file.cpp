@@ -32,13 +32,13 @@ static_assert(std::is_same_v<HANDLE, void*>);
 /// Creates a temporary file with the given prefix in the system's
 /// temporary directory, and opens it for reading and writing
 ///
-/// @param label    The prefix to use for the temporary file name
-/// @param suffix   The suffix to use for the temporary file name
+/// @param label     A label to attach to the temporary file path
+/// @param extension An extension of the temporary file path
 /// @returns A path to the created temporary file and a handle to it
 /// @throws fs::filesystem_error if cannot create the temporary file
 std::pair<fs::path, file::native_handle_type>
-create_file(std::string_view label, std::string_view suffix) {
-  fs::path::string_type path = make_pattern(label, suffix);
+create_file(std::string_view label, std::string_view extension) {
+  fs::path::string_type path = make_pattern(label, extension);
 
   std::error_code ec;
   create_parent(path, ec);
@@ -55,13 +55,13 @@ create_file(std::string_view label, std::string_view suffix) {
   if (handle == INVALID_HANDLE_VALUE) {
     DWORD err = GetLastError();
     if (err == ERROR_ALREADY_EXISTS) {
-      return create_file(label, suffix);
+      return create_file(label, extension);
     }
 
     ec = std::error_code(err, std::system_category());
   }
 #else
-  int handle = mkstemps(path.data(), static_cast<int>(suffix.size()));
+  int handle = mkstemps(path.data(), static_cast<int>(extension.size()));
   if (handle == -1) {
     ec = std::error_code(errno, std::system_category());
   }
@@ -104,20 +104,20 @@ file::file(std::pair<fs::path, native_handle_type> handle, bool binary) noexcept
       handle(handle.second),
       binary(binary) {}
 
-file::file(std::string_view label, std::string_view suffix, bool binary)
-    : file(create_file(label, suffix), binary) {}
+file::file(std::string_view label, std::string_view extension, bool binary)
+    : file(create_file(label, extension), binary) {}
 
-file::file(std::string_view label, std::string_view suffix)
-    : file(label, suffix, /*binary=*/true) {}
+file::file(std::string_view label, std::string_view extension)
+    : file(label, extension, /*binary=*/true) {}
 
-file file::text(std::string_view label, std::string_view suffix) {
-  return file(label, suffix, /*binary=*/false);
+file file::text(std::string_view label, std::string_view extension) {
+  return file(label, extension, /*binary=*/false);
 }
 
 file file::copy(const fs::path& path, std::string_view label,
-                std::string_view suffix) {
+                std::string_view extension) {
   std::error_code ec;
-  file tmpfile = file(label, suffix);
+  file tmpfile = file(label, extension);
 
   fs::copy_file(path, tmpfile, copy_options, ec);
 
