@@ -49,6 +49,20 @@ TEST(directory, create_multiple) {
   EXPECT_FALSE(fs::equivalent(fst, snd));
 }
 
+/// Tests error handling with invalid labels
+TEST(directory, create_invalid_label) {
+  EXPECT_THROW(directory("multi/segment"), std::invalid_argument);
+  EXPECT_THROW(directory("/root"), std::invalid_argument);
+  EXPECT_THROW(directory(".."), std::invalid_argument);
+  EXPECT_THROW(directory("."), std::invalid_argument);
+
+  fs::path root = fs::temp_directory_path().root_name();
+  if (!root.empty()) {
+    EXPECT_THROW(directory(root.string() + "relative"), std::invalid_argument);
+    EXPECT_THROW(directory(root.string() + "/root"), std::invalid_argument);
+  }
+}
+
 /// Tests creation of a temporary copy of a directory
 TEST(directory, copy_directory) {
   directory tmpdir = directory();

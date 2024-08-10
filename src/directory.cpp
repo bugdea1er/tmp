@@ -20,7 +20,8 @@ namespace {
 /// temporary directory, and returns its path
 /// @param label    A label to attach to the temporary directory path
 /// @returns A path to the created temporary directory
-/// @throws fs::filesystem_error if cannot create the temporary directory
+/// @throws fs::filesystem_error  if cannot create a temporary directory
+/// @throws std::invalid_argument if the label is ill-formatted
 fs::path create_directory(std::string_view label) {
   fs::path::string_type path = make_pattern(label, "");
 

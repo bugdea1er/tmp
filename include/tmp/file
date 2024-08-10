@@ -56,6 +56,7 @@ public:
   /// @param label     A label to attach to the temporary file path
   /// @param extension An extension of the temporary file path
   /// @throws std::filesystem::filesystem_error if cannot create a file
+  /// @throws std::invalid_argument             if arguments are ill-formatted
   explicit file(std::string_view label = "", std::string_view extension = "");
 
   /// Creates a unique temporary file and opens it for reading and writing
@@ -64,6 +65,7 @@ public:
   /// @param label     A label to attach to the temporary file path
   /// @param extension An extension of the temporary file path
   /// @throws std::filesystem::filesystem_error if cannot create a file
+  /// @throws std::invalid_argument             if arguments are ill-formatted
   static file text(std::string_view label = "",
                    std::string_view extension = "");
 
@@ -73,7 +75,8 @@ public:
   /// @param label     A label to attach to the temporary file path
   /// @param extension An extension of the temporary file path
   /// @returns The new temporary file
-  /// @throws std::filesystem::filesystem_error if @p path is not a file
+  /// @throws std::filesystem::filesystem_error if path is not a file
+  /// @throws std::invalid_argument             if arguments are ill-formatted
   static file copy(const std::filesystem::path& path,
                    std::string_view label = "",
                    std::string_view extension = "");
@@ -115,7 +118,8 @@ private:
   /// @param label     A label to attach to the temporary file path
   /// @param extension An extension of the temporary file path
   /// @param binary    Whether the managed file is opened in binary write mode
-  /// @throws fs::filesystem_error if cannot create a file
+  /// @throws std::filesystem::filesystem_error if cannot create a file
+  /// @throws std::invalid_argument             if arguments are ill-formatted
   file(std::string_view label, std::string_view extension, bool binary);
 
   /// Creates a unique temporary file

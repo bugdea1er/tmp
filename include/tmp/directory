@@ -43,6 +43,7 @@ public:
   ///
   /// @param label   A label to attach to the temporary directory path
   /// @throws std::filesystem::filesystem_error if cannot create a directory
+  /// @throws std::invalid_argument             if the label is ill-formatted
   explicit directory(std::string_view label = "");
 
   /// Creates a unique temporary copy recursively from the given path
@@ -51,6 +52,7 @@ public:
   /// @param label  A label to attach to the temporary directory path
   /// @returns The new temporary directory
   /// @throws std::filesystem::filesystem_error if @p path is not a directory
+  /// @throws std::invalid_argument             if the label is ill-formatted
   static directory copy(const std::filesystem::path& path,
                         std::string_view label = "");
 
