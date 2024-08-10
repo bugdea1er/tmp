@@ -54,6 +54,7 @@ TEST(directory, create_invalid_label) {
   EXPECT_THROW(directory("multi/segment"), std::logic_error);
   EXPECT_THROW(directory("/root"), std::logic_error);
   EXPECT_THROW(directory(".."), std::logic_error);
+  EXPECT_THROW(directory("."), std::logic_error);
 
   fs::path root = fs::temp_directory_path().root_name();
   if (!root.empty()) {
