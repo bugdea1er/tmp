@@ -22,7 +22,7 @@ TEST(directory, create_with_label) {
   EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path() / LABEL));
 
   fs::perms permissions = fs::status(tmpdir).permissions();
-#ifdef WIN32
+#ifdef _WIN32
   // Following the logic with GetTempFileNameW
   EXPECT_EQ(permissions, fs::perms::all);
 #else

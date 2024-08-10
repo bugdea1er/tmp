@@ -16,7 +16,7 @@ bool create_parent(const fs::path& path, std::error_code& ec) {
 }
 
 fs::path make_pattern(std::string_view label, std::string_view extension) {
-#ifdef WIN32
+#ifdef _WIN32
   constexpr static std::size_t CHARS_IN_GUID = 39;
   GUID guid;
   CoCreateGuid(&guid);

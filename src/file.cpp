@@ -24,7 +24,7 @@ namespace {
 // Confirm that native_handle_type matches `TriviallyCopyable` named requirement
 static_assert(std::is_trivially_copyable_v<file::native_handle_type>);
 
-#ifdef WIN32
+#ifdef _WIN32
 // Confirm that `HANDLE` is `void*` as implemented in `file`
 static_assert(std::is_same_v<HANDLE, void*>);
 #endif
@@ -46,7 +46,7 @@ create_file(std::string_view label, std::string_view extension) {
     throw fs::filesystem_error("Cannot create temporary file", ec);
   }
 
-#ifdef WIN32
+#ifdef _WIN32
   HANDLE handle =
       CreateFileW(path.c_str(), GENERIC_READ | GENERIC_WRITE,
                   FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
@@ -91,7 +91,7 @@ std::ofstream stream(const file& file, bool binary, bool append) noexcept {
 /// Closes the given file, ignoring any errors
 /// @param file     The file to close
 void close(const file& file) noexcept {
-#ifdef WIN32
+#ifdef _WIN32
   CloseHandle(file.native_handle());
 #else
   ::close(file.native_handle());

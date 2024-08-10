@@ -30,7 +30,7 @@ fs::path create_directory(std::string_view label) {
     throw fs::filesystem_error("Cannot create temporary directory", ec);
   }
 
-#ifdef WIN32
+#ifdef _WIN32
   if (!CreateDirectoryW(path.c_str(), nullptr)) {
     DWORD err = GetLastError();
     if (err == ERROR_ALREADY_EXISTS) {

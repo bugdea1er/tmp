@@ -26,7 +26,7 @@ namespace {
 /// @param handle handle to check
 /// @returns @c true if the handle is valid, @c false otherwise
 bool native_handle_is_valid(file::native_handle_type handle) {
-#ifdef WIN32
+#ifdef _WIN32
   BY_HANDLE_FILE_INFORMATION info;
   return GetFileInformationByHandle(handle, &info);
 #else
@@ -46,7 +46,7 @@ TEST(file, create_with_label) {
   EXPECT_TRUE(native_handle_is_valid(tmpfile.native_handle()));
 
   fs::perms permissions = fs::status(tmpfile).permissions();
-#ifdef WIN32
+#ifdef _WIN32
   // GetTempFileNameW creates a file with all permissions
   EXPECT_EQ(permissions, fs::perms::all);
 #else
