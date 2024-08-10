@@ -32,13 +32,13 @@ static_assert(std::is_same_v<HANDLE, void*>);
 /// Creates a temporary file with the given prefix in the system's
 /// temporary directory, and opens it for reading and writing
 ///
-/// @param prefix   The prefix to use for the temporary file name
+/// @param label    The prefix to use for the temporary file name
 /// @param suffix   The suffix to use for the temporary file name
 /// @returns A path to the created temporary file and a handle to it
 /// @throws fs::filesystem_error if cannot create the temporary file
 std::pair<fs::path, file::native_handle_type>
-create_file(std::string_view prefix, std::string_view suffix) {
-  fs::path::string_type path = make_pattern(prefix, suffix);
+create_file(std::string_view label, std::string_view suffix) {
+  fs::path::string_type path = make_pattern(label, suffix);
 
   std::error_code ec;
   create_parent(path, ec);
@@ -55,7 +55,7 @@ create_file(std::string_view prefix, std::string_view suffix) {
   if (handle == INVALID_HANDLE_VALUE) {
     DWORD err = GetLastError();
     if (err == ERROR_ALREADY_EXISTS) {
-      return create_file(prefix, suffix);
+      return create_file(label, suffix);
     }
 
     ec = std::error_code(err, std::system_category());
@@ -104,20 +104,20 @@ file::file(std::pair<fs::path, native_handle_type> handle, bool binary) noexcept
       handle(handle.second),
       binary(binary) {}
 
-file::file(std::string_view prefix, std::string_view suffix, bool binary)
-    : file(create_file(prefix, suffix), binary) {}
+file::file(std::string_view label, std::string_view suffix, bool binary)
+    : file(create_file(label, suffix), binary) {}
 
-file::file(std::string_view prefix, std::string_view suffix)
-    : file(prefix, suffix, /*binary=*/true) {}
+file::file(std::string_view label, std::string_view suffix)
+    : file(label, suffix, /*binary=*/true) {}
 
-file file::text(std::string_view prefix, std::string_view suffix) {
-  return file(prefix, suffix, /*binary=*/false);
+file file::text(std::string_view label, std::string_view suffix) {
+  return file(label, suffix, /*binary=*/false);
 }
 
-file file::copy(const fs::path& path, std::string_view prefix,
+file file::copy(const fs::path& path, std::string_view label,
                 std::string_view suffix) {
   std::error_code ec;
-  file tmpfile = file(prefix, suffix);
+  file tmpfile = file(label, suffix);
 
   fs::copy_file(path, tmpfile, copy_options, ec);
 

@@ -35,14 +35,14 @@ bool native_handle_is_valid(file::native_handle_type handle) {
 }
 }    // namespace
 
-/// Tests file creation with prefix
-TEST(file, create_with_prefix) {
-  file tmpfile = file(PREFIX);
+/// Tests file creation with label
+TEST(file, create_with_label) {
+  file tmpfile = file(LABEL);
   fs::path parent = tmpfile.path().parent_path();
 
   EXPECT_TRUE(fs::exists(tmpfile));
   EXPECT_TRUE(fs::is_regular_file(tmpfile));
-  EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path() / PREFIX));
+  EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path() / LABEL));
   EXPECT_TRUE(native_handle_is_valid(tmpfile.native_handle()));
 
   fs::perms permissions = fs::status(tmpfile).permissions();
@@ -55,8 +55,8 @@ TEST(file, create_with_prefix) {
 #endif
 }
 
-/// Tests file creation without prefix
-TEST(file, create_without_prefix) {
+/// Tests file creation without label
+TEST(file, create_without_label) {
   file tmpfile = file();
   fs::path parent = tmpfile.path().parent_path();
 
@@ -76,10 +76,10 @@ TEST(file, create_with_suffix) {
   EXPECT_TRUE(native_handle_is_valid(tmpfile.native_handle()));
 }
 
-/// Tests multiple file creation with the same prefix
+/// Tests multiple file creation with the same label
 TEST(file, create_multiple) {
-  file fst = file(PREFIX);
-  file snd = file(PREFIX);
+  file fst = file(LABEL);
+  file snd = file(LABEL);
 
   EXPECT_FALSE(fs::equivalent(fst, snd));
 }
