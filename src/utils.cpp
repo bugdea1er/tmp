@@ -24,7 +24,9 @@ void validate_label(const fs::path& label) {
   if (++label.begin() != label.end() || label.is_absolute() ||
       label.has_root_path() || label.filename() == "." ||
       label.filename() == "..") {
-    throw std::invalid_argument("");
+    throw std::invalid_argument(
+        "Cannot create a temporary entry: label must be empty or a valid "
+        "single-segmented relative pathname");
   }
 }
 
@@ -38,7 +40,9 @@ void validate_extension(std::string_view extension) {
 
   fs::path path = extension;
   if (++path.begin() != path.end()) {
-    throw std::invalid_argument("");
+    throw std::invalid_argument(
+        "Cannot create a temporary file: extension must be empty or a valid "
+        "single-segmented pathname");
   }
 }
 }    // namespace
