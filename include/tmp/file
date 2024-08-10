@@ -15,7 +15,8 @@ namespace tmp {
 /// deletes it when this handle goes out of scope
 ///
 /// When a tmp::file object is created, it creates a unique temporary file using
-/// the system's default location for temporary files
+/// the system's default location for temporary files and opens it for reading
+/// and writing
 ///
 /// The managed file is deleted of when either of the following happens:
 /// - the managing tmp::file object is destroyed
@@ -32,7 +33,7 @@ namespace tmp {
 ///   #include <tmp/file>
 ///
 ///   auto func(std::string_view content) {
-///     auto tmpfile = tmp::file("org.example.product");
+///     auto tmpfile = tmp::file("org.example.product", ".txt");
 ///     tmpfile.write(content);
 ///
 ///     // the temporary file is deleted recursively when the
@@ -52,7 +53,6 @@ public:
 
   /// Creates a unique temporary file and opens it for reading and writing
   /// in binary mode
-  ///
   /// @param label     A label to attach to the temporary file path
   /// @param extension An extension of the temporary file path
   /// @throws std::filesystem::filesystem_error if cannot create a file
@@ -61,7 +61,6 @@ public:
 
   /// Creates a unique temporary file and opens it for reading and writing
   /// in text mode
-  ///
   /// @param label     A label to attach to the temporary file path
   /// @param extension An extension of the temporary file path
   /// @throws std::filesystem::filesystem_error if cannot create a file
@@ -70,12 +69,11 @@ public:
                    std::string_view extension = "");
 
   /// Creates a unique temporary copy from the given path
-  ///
   /// @param path      A path to make a temporary copy from
   /// @param label     A label to attach to the temporary file path
   /// @param extension An extension of the temporary file path
   /// @returns The new temporary file
-  /// @throws std::filesystem::filesystem_error if path is not a file
+  /// @throws std::filesystem::filesystem_error if given path is not a file
   /// @throws std::invalid_argument             if arguments are ill-formatted
   static file copy(const std::filesystem::path& path,
                    std::string_view label = "",
@@ -90,11 +88,11 @@ public:
   std::string read() const;
 
   /// Writes the given content to this file discarding any previous content
-  /// @param content  A string to write to this file
+  /// @param content   A string to write to this file
   void write(std::string_view content) const;
 
   /// Appends the given content to the end of this file
-  /// @param content  A string to append to this file
+  /// @param content   A string to append to this file
   void append(std::string_view content) const;
 
   /// Deletes the managed file if its path is not empty
@@ -114,7 +112,6 @@ private:
 
   /// Creates a unique temporary file and opens it for reading and writing
   /// in the specified mode
-  ///
   /// @param label     A label to attach to the temporary file path
   /// @param extension An extension of the temporary file path
   /// @param binary    Whether the managed file is opened in binary write mode
@@ -123,10 +120,8 @@ private:
   file(std::string_view label, std::string_view extension, bool binary);
 
   /// Creates a unique temporary file
-  ///
-  /// @param handle   A path to the created temporary file and its
-  ///                 implementation-defined handle
-  /// @param binary   Whether the managed file is opened in binary write mode
+  /// @param handle    A path to the created temporary file and its handle
+  /// @param binary    Whether the managed file is opened in binary write mode
   file(std::pair<std::filesystem::path, native_handle_type> handle,
        bool binary) noexcept;
 };

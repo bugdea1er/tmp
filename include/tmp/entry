@@ -26,9 +26,8 @@ public:
 
   /// Moves the managed path recursively to a given target, releasing
   /// ownership of the managed path
-  ///
-  /// The parent of the target path is created when this function is called
-  /// @param to   A path to the target file or directory
+  /// @note The target path parent is created when this function is called
+  /// @param to        A path to the target file or directory
   /// @throws std::filesystem::filesystem_error if cannot move the owned path
   void move(const std::filesystem::path& to);
 
@@ -39,14 +38,9 @@ public:
   auto operator=(const entry&) = delete;    ///< not copy-assignable
 
 protected:
-  /// Constructs a tmp::path which owns @p path
-  /// @param path A path to manage
+  /// Creates a temporary entry which owns the given path
+  /// @param path      A path to manage
   explicit entry(std::filesystem::path path);
-
-  /// Releases the ownership of the managed path;
-  /// the destructor will not delete the managed path after the call
-  /// @returns The managed path
-  std::filesystem::path release() noexcept;
 
   entry(entry&&) noexcept;               ///< move-constructible
   entry& operator=(entry&&) noexcept;    ///< move-assignable
@@ -54,6 +48,11 @@ protected:
 private:
   /// The managed path
   std::filesystem::path pathobject;
+
+  /// Releases the ownership of the managed path
+  /// @note the destructor will not delete the managed path after the call
+  /// @returns The full path this entry manages
+  std::filesystem::path release() noexcept;
 };
 }    // namespace tmp
 
