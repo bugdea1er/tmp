@@ -29,7 +29,8 @@ void validate_extension(std::string_view extension) {
     return;
   }
 
-  if (extension.find(fs::path::preferred_separator) != std::string_view::npos) {
+  fs::path path = extension;
+  if (++path.begin() != path.end()) {
     throw std::logic_error("");
   }
 }
