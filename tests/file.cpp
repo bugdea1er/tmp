@@ -66,8 +66,8 @@ TEST(file, create_without_label) {
   EXPECT_TRUE(native_handle_is_valid(tmpfile.native_handle()));
 }
 
-/// Tests file creation with suffix
-TEST(file, create_with_suffix) {
+/// Tests file creation with extension
+TEST(file, create_with_extension) {
   file tmpfile = file("", ".test");
 
   EXPECT_TRUE(fs::exists(tmpfile));

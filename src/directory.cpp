@@ -18,7 +18,7 @@ namespace {
 
 /// Creates a temporary directory with the given prefix in the system's
 /// temporary directory, and returns its path
-/// @param label    The prefix to use for the temporary directory name
+/// @param label    A label to attach to the temporary directory path
 /// @returns A path to the created temporary directory
 /// @throws fs::filesystem_error if cannot create the temporary directory
 fs::path create_directory(std::string_view label) {
