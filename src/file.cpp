@@ -35,7 +35,8 @@ static_assert(std::is_same_v<HANDLE, void*>);
 /// @param label     A label to attach to the temporary file path
 /// @param extension An extension of the temporary file path
 /// @returns A path to the created temporary file and a handle to it
-/// @throws fs::filesystem_error if cannot create the temporary file
+/// @throws fs::filesystem_error  if cannot create a temporary file
+/// @throws std::invalid_argument if the label or extension is ill-formatted
 std::pair<fs::path, file::native_handle_type>
 create_file(std::string_view label, std::string_view extension) {
   fs::path::string_type path = make_pattern(label, extension);

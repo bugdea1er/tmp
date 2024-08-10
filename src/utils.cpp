@@ -12,6 +12,10 @@
 namespace tmp {
 
 namespace {
+
+/// Checks that the given label is valid to attach to a temporary entry path
+/// @param label The label to check validity for
+/// @throws std::invalid_argument if the label cannot be attached to a path
 void validate_label(const fs::path& label) {
   if (label.empty()) {
     return;
@@ -20,10 +24,13 @@ void validate_label(const fs::path& label) {
   if (++label.begin() != label.end() || label.is_absolute() ||
       label.has_root_path() || label.filename() == "." ||
       label.filename() == "..") {
-    throw std::logic_error("");
+    throw std::invalid_argument("");
   }
 }
 
+/// Checks that the given extension is valid to be an extension of a file path
+/// @param extension The extension to check validity for
+/// @throws std::invalid_argument if the extension cannot be used in a file path
 void validate_extension(std::string_view extension) {
   if (extension.empty()) {
     return;
@@ -31,7 +38,7 @@ void validate_extension(std::string_view extension) {
 
   fs::path path = extension;
   if (++path.begin() != path.end()) {
-    throw std::logic_error("");
+    throw std::invalid_argument("");
   }
 }
 }    // namespace

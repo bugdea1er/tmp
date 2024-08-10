@@ -86,24 +86,24 @@ TEST(file, create_multiple) {
 
 /// Tests error handling with invalid labels
 TEST(file, create_invalid_label) {
-  EXPECT_THROW(file("multi/segment"), std::logic_error);
-  EXPECT_THROW(file("/root"), std::logic_error);
-  EXPECT_THROW(file(".."), std::logic_error);
-  EXPECT_THROW(file("."), std::logic_error);
+  EXPECT_THROW(file("multi/segment"), std::invalid_argument);
+  EXPECT_THROW(file("/root"), std::invalid_argument);
+  EXPECT_THROW(file(".."), std::invalid_argument);
+  EXPECT_THROW(file("."), std::invalid_argument);
 
   fs::path root = fs::temp_directory_path().root_name();
   if (!root.empty()) {
-    EXPECT_THROW(file(root.string() + "relative"), std::logic_error);
-    EXPECT_THROW(file(root.string() + "/root"), std::logic_error);
+    EXPECT_THROW(file(root.string() + "relative"), std::invalid_argument);
+    EXPECT_THROW(file(root.string() + "/root"), std::invalid_argument);
   }
 }
 
 /// Tests error handling with invalid extensions
 TEST(file, create_invalid_extension) {
-  EXPECT_THROW(file("", "multi/segment"), std::logic_error);
-  EXPECT_THROW(file("", "/root"), std::logic_error);
-  EXPECT_THROW(file("", "/.."), std::logic_error);
-  EXPECT_THROW(file("", "/."), std::logic_error);
+  EXPECT_THROW(file("", "multi/segment"), std::invalid_argument);
+  EXPECT_THROW(file("", "/root"), std::invalid_argument);
+  EXPECT_THROW(file("", "/.."), std::invalid_argument);
+  EXPECT_THROW(file("", "/."), std::invalid_argument);
 }
 
 /// Tests creation of a temporary copy of a file

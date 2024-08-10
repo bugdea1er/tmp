@@ -23,6 +23,7 @@ bool create_parent(const fs::path& path, std::error_code& ec);
 /// @param label     A label to attach to the path pattern
 /// @param extension An extension of the temporary file path
 /// @returns A path pattern for the unique temporary path
-/// @throws std::bad_alloc if memory allocation fails
+/// @throws std::invalid_argument if the label or extension is ill-formatted
+/// @throws std::bad_alloc        if memory allocation fails
 fs::path make_pattern(std::string_view label, std::string_view extension);
 }    // namespace tmp
