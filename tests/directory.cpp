@@ -12,17 +12,17 @@ namespace tmp {
 
 namespace fs = std::filesystem;
 
-/// Tests directory creation with prefix
-TEST(directory, create_with_prefix) {
-  directory tmpdir = directory(PREFIX);
+/// Tests directory creation with label
+TEST(directory, create_with_label) {
+  directory tmpdir = directory(LABEL);
   fs::path parent = tmpdir.path().parent_path();
 
   EXPECT_TRUE(fs::exists(tmpdir));
   EXPECT_TRUE(fs::is_directory(tmpdir));
-  EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path() / PREFIX));
+  EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path() / LABEL));
 
   fs::perms permissions = fs::status(tmpdir).permissions();
-#ifdef WIN32
+#ifdef _WIN32
   // Following the logic with GetTempFileNameW
   EXPECT_EQ(permissions, fs::perms::all);
 #else
@@ -31,8 +31,8 @@ TEST(directory, create_with_prefix) {
 #endif
 }
 
-/// Tests directory creation without prefix
-TEST(directory, create_without_prefix) {
+/// Tests directory creation without label
+TEST(directory, create_without_label) {
   directory tmpdir = directory();
   fs::path parent = tmpdir.path().parent_path();
 
@@ -41,12 +41,26 @@ TEST(directory, create_without_prefix) {
   EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path()));
 }
 
-/// Tests multiple directories creation with the same prefix
+/// Tests multiple directories creation with the same label
 TEST(directory, create_multiple) {
-  directory fst = directory(PREFIX);
-  directory snd = directory(PREFIX);
+  directory fst = directory(LABEL);
+  directory snd = directory(LABEL);
 
   EXPECT_FALSE(fs::equivalent(fst, snd));
+}
+
+/// Tests error handling with invalid labels
+TEST(directory, create_invalid_label) {
+  EXPECT_THROW(directory("multi/segment"), std::invalid_argument);
+  EXPECT_THROW(directory("/root"), std::invalid_argument);
+  EXPECT_THROW(directory(".."), std::invalid_argument);
+  EXPECT_THROW(directory("."), std::invalid_argument);
+
+  fs::path root = fs::temp_directory_path().root_name();
+  if (!root.empty()) {
+    EXPECT_THROW(directory(root.string() + "relative"), std::invalid_argument);
+    EXPECT_THROW(directory(root.string() + "/root"), std::invalid_argument);
+  }
 }
 
 /// Tests creation of a temporary copy of a directory

@@ -13,18 +13,15 @@ namespace tmp {
 /// and deletes it recursively when this handle goes out of scope
 ///
 /// When a tmp::directory object is created, it creates a unique temporary
-/// directory using the system's default location for temporary files; the path
-/// consists of the system's temporary directory path, the given prefix, and
-/// random characters to ensure path uniqueness
+/// directory using the system's default location for temporary files
 ///
 /// The managed directory is deleted of when either of the following happens:
 /// - the managing tmp::directory object is destroyed
 /// - the managing tmp::directory object is assigned another path via operator=
 ///
 /// The following example uses a tmp::directory object to create a temporary
-/// directory with the product identifier prefix; when the function returns,
-/// the tmp::directory object goes out of scope and the temporary directory is
-/// deleted along with all of its contents:
+/// directory; when the function returns, the tmp::directory object goes out of
+/// scope and the temporary directory is deleted along with all of its contents:
 ///
 /// @code{.cpp}
 ///   #include <tmp/directory>
@@ -39,25 +36,22 @@ namespace tmp {
 class TMP_EXPORT directory final : public entry {
 public:
   /// Creates a unique temporary directory
-  ///
-  /// The directory path consists of the system's temporary directory path,
-  /// the given prefix, and random characters to ensure path uniqueness
-  ///
-  /// @param prefix   A prefix to be used in the temporary directory path
+  /// @param label     A label to attach to the temporary directory path
   /// @throws std::filesystem::filesystem_error if cannot create a directory
-  explicit directory(std::string_view prefix = "");
+  /// @throws std::invalid_argument             if the label is ill-formatted
+  explicit directory(std::string_view label = "");
 
   /// Creates a unique temporary copy recursively from the given path
-  ///
-  /// @param path   A path to make a temporary copy from
-  /// @param prefix A prefix to be used in the temporary directory path
+  /// @param path      A path to make a temporary copy from
+  /// @param label     A label to attach to the temporary directory path
   /// @returns The new temporary directory
-  /// @throws std::filesystem::filesystem_error if @p path is not a directory
+  /// @throws std::filesystem::filesystem_error if given path is not a directory
+  /// @throws std::invalid_argument             if the label is ill-formatted
   static directory copy(const std::filesystem::path& path,
-                        std::string_view prefix = "");
+                        std::string_view label = "");
 
-  /// Concatenates this directory path with a given @p source
-  /// @param source   A string which represents a path name
+  /// Concatenates this directory path with a given source
+  /// @param source    A string which represents a path name
   /// @returns The result of path concatenation
   std::filesystem::path operator/(std::string_view source) const;
 

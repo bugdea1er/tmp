@@ -19,10 +19,11 @@ constexpr fs::copy_options copy_options =
 /// @throws std::bad_alloc if memory allocation fails
 bool create_parent(const fs::path& path, std::error_code& ec);
 
-/// Creates a temporary path pattern with the given prefix and suffix
-/// @param prefix   A prefix to be used in the path pattern
-/// @param suffix   A suffix to be used in the path pattern
+/// Creates a temporary path pattern with the given label and extension
+/// @param label     A label to attach to the path pattern
+/// @param extension An extension of the temporary file path
 /// @returns A path pattern for the unique temporary path
-/// @throws std::bad_alloc if memory allocation fails
-fs::path make_pattern(std::string_view prefix, std::string_view suffix);
+/// @throws std::invalid_argument if the label or extension is ill-formatted
+/// @throws std::bad_alloc        if memory allocation fails
+fs::path make_pattern(std::string_view label, std::string_view extension);
 }    // namespace tmp

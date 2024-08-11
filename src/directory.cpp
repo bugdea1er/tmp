@@ -18,11 +18,12 @@ namespace {
 
 /// Creates a temporary directory with the given prefix in the system's
 /// temporary directory, and returns its path
-/// @param prefix   The prefix to use for the temporary directory name
+/// @param label    A label to attach to the temporary directory path
 /// @returns A path to the created temporary directory
-/// @throws fs::filesystem_error if cannot create the temporary directory
-fs::path create_directory(std::string_view prefix) {
-  fs::path::string_type path = make_pattern(prefix, "");
+/// @throws fs::filesystem_error  if cannot create a temporary directory
+/// @throws std::invalid_argument if the label is ill-formatted
+fs::path create_directory(std::string_view label) {
+  fs::path::string_type path = make_pattern(label, "");
 
   std::error_code ec;
   create_parent(path, ec);
@@ -30,11 +31,11 @@ fs::path create_directory(std::string_view prefix) {
     throw fs::filesystem_error("Cannot create temporary directory", ec);
   }
 
-#ifdef WIN32
+#ifdef _WIN32
   if (!CreateDirectoryW(path.c_str(), nullptr)) {
     DWORD err = GetLastError();
     if (err == ERROR_ALREADY_EXISTS) {
-      return create_directory(prefix);
+      return create_directory(label);
     }
 
     ec = std::error_code(err, std::system_category());
@@ -53,12 +54,12 @@ fs::path create_directory(std::string_view prefix) {
 }
 }    // namespace
 
-directory::directory(std::string_view prefix)
-    : entry(create_directory(prefix)) {}
+directory::directory(std::string_view label)
+    : entry(create_directory(label)) {}
 
-directory directory::copy(const fs::path& path, std::string_view prefix) {
+directory directory::copy(const fs::path& path, std::string_view label) {
   std::error_code ec;
-  directory tmpdir = directory(prefix);
+  directory tmpdir = directory(label);
 
   if (fs::is_directory(path)) {
     fs::copy(path, tmpdir, copy_options, ec);

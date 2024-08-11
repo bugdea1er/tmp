@@ -24,7 +24,7 @@ namespace {
 // Confirm that native_handle_type matches `TriviallyCopyable` named requirement
 static_assert(std::is_trivially_copyable_v<file::native_handle_type>);
 
-#ifdef WIN32
+#ifdef _WIN32
 // Confirm that `HANDLE` is `void*` as implemented in `file`
 static_assert(std::is_same_v<HANDLE, void*>);
 #endif
@@ -32,13 +32,14 @@ static_assert(std::is_same_v<HANDLE, void*>);
 /// Creates a temporary file with the given prefix in the system's
 /// temporary directory, and opens it for reading and writing
 ///
-/// @param prefix   The prefix to use for the temporary file name
-/// @param suffix   The suffix to use for the temporary file name
+/// @param label     A label to attach to the temporary file path
+/// @param extension An extension of the temporary file path
 /// @returns A path to the created temporary file and a handle to it
-/// @throws fs::filesystem_error if cannot create the temporary file
+/// @throws fs::filesystem_error  if cannot create a temporary file
+/// @throws std::invalid_argument if the label or extension is ill-formatted
 std::pair<fs::path, file::native_handle_type>
-create_file(std::string_view prefix, std::string_view suffix) {
-  fs::path::string_type path = make_pattern(prefix, suffix);
+create_file(std::string_view label, std::string_view extension) {
+  fs::path::string_type path = make_pattern(label, extension);
 
   std::error_code ec;
   create_parent(path, ec);
@@ -46,7 +47,7 @@ create_file(std::string_view prefix, std::string_view suffix) {
     throw fs::filesystem_error("Cannot create temporary file", ec);
   }
 
-#ifdef WIN32
+#ifdef _WIN32
   HANDLE handle =
       CreateFileW(path.c_str(), GENERIC_READ | GENERIC_WRITE,
                   FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
@@ -55,13 +56,13 @@ create_file(std::string_view prefix, std::string_view suffix) {
   if (handle == INVALID_HANDLE_VALUE) {
     DWORD err = GetLastError();
     if (err == ERROR_ALREADY_EXISTS) {
-      return create_file(prefix, suffix);
+      return create_file(label, extension);
     }
 
     ec = std::error_code(err, std::system_category());
   }
 #else
-  int handle = mkstemps(path.data(), static_cast<int>(suffix.size()));
+  int handle = mkstemps(path.data(), static_cast<int>(extension.size()));
   if (handle == -1) {
     ec = std::error_code(errno, std::system_category());
   }
@@ -91,7 +92,7 @@ std::ofstream stream(const file& file, bool binary, bool append) noexcept {
 /// Closes the given file, ignoring any errors
 /// @param file     The file to close
 void close(const file& file) noexcept {
-#ifdef WIN32
+#ifdef _WIN32
   CloseHandle(file.native_handle());
 #else
   ::close(file.native_handle());
@@ -104,20 +105,20 @@ file::file(std::pair<fs::path, native_handle_type> handle, bool binary) noexcept
       handle(handle.second),
       binary(binary) {}
 
-file::file(std::string_view prefix, std::string_view suffix, bool binary)
-    : file(create_file(prefix, suffix), binary) {}
+file::file(std::string_view label, std::string_view extension, bool binary)
+    : file(create_file(label, extension), binary) {}
 
-file::file(std::string_view prefix, std::string_view suffix)
-    : file(prefix, suffix, /*binary=*/true) {}
+file::file(std::string_view label, std::string_view extension)
+    : file(label, extension, /*binary=*/true) {}
 
-file file::text(std::string_view prefix, std::string_view suffix) {
-  return file(prefix, suffix, /*binary=*/false);
+file file::text(std::string_view label, std::string_view extension) {
+  return file(label, extension, /*binary=*/false);
 }
 
-file file::copy(const fs::path& path, std::string_view prefix,
-                std::string_view suffix) {
+file file::copy(const fs::path& path, std::string_view label,
+                std::string_view extension) {
   std::error_code ec;
-  file tmpfile = file(prefix, suffix);
+  file tmpfile = file(label, extension);
 
   fs::copy_file(path, tmpfile, copy_options, ec);
 

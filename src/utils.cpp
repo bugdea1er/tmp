@@ -11,12 +11,51 @@
 
 namespace tmp {
 
+namespace {
+
+/// Checks that the given label is valid to attach to a temporary entry path
+/// @param label The label to check validity for
+/// @throws std::invalid_argument if the label cannot be attached to a path
+void validate_label(const fs::path& label) {
+  if (label.empty()) {
+    return;
+  }
+
+  if (++label.begin() != label.end() || label.is_absolute() ||
+      label.has_root_path() || label.filename() == "." ||
+      label.filename() == "..") {
+    throw std::invalid_argument(
+        "Cannot create a temporary entry: label must be empty or a valid "
+        "single-segmented relative pathname");
+  }
+}
+
+/// Checks that the given extension is valid to be an extension of a file path
+/// @param extension The extension to check validity for
+/// @throws std::invalid_argument if the extension cannot be used in a file path
+void validate_extension(std::string_view extension) {
+  if (extension.empty()) {
+    return;
+  }
+
+  fs::path path = extension;
+  if (++path.begin() != path.end()) {
+    throw std::invalid_argument(
+        "Cannot create a temporary file: extension must be empty or a valid "
+        "single-segmented pathname");
+  }
+}
+}    // namespace
+
 bool create_parent(const fs::path& path, std::error_code& ec) {
   return fs::create_directories(path.parent_path(), ec);
 }
 
-fs::path make_pattern(std::string_view prefix, std::string_view suffix) {
-#ifdef WIN32
+fs::path make_pattern(std::string_view label, std::string_view extension) {
+  validate_label(label);
+  validate_extension(extension);
+
+#ifdef _WIN32
   constexpr static std::size_t CHARS_IN_GUID = 39;
   GUID guid;
   CoCreateGuid(&guid);
@@ -31,9 +70,9 @@ fs::path make_pattern(std::string_view prefix, std::string_view suffix) {
   std::string_view name = "XXXXXX";
 #endif
 
-  fs::path pattern = fs::temp_directory_path() / prefix / name;
+  fs::path pattern = fs::temp_directory_path() / label / name;
+  pattern += extension;
 
-  pattern += suffix;
   return pattern;
 }
 }    // namespace tmp
