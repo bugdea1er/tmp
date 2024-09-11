@@ -127,10 +127,9 @@ private:
 };
 }    // namespace tmp
 
-template<>
-struct std::hash<tmp::file> {
-  constexpr std::size_t operator()(const tmp::file& tmpfile) const {
-    return std::hash<tmp::entry>()(tmpfile);
+template <> struct std::hash<tmp::file> {
+  std::size_t operator()(const tmp::file& file) const noexcept {
+    return std::hash<tmp::entry>()(file);
   }
 };
 

@@ -70,10 +70,9 @@ public:
 };
 }    // namespace tmp
 
-template<>
-struct std::hash<tmp::directory> {
-  constexpr std::size_t operator()(const tmp::directory& tmpdir) const {
-    return std::hash<tmp::entry>()(tmpdir);
+template <> struct std::hash<tmp::directory> {
+  std::size_t operator()(const tmp::directory& directory) const noexcept {
+    return std::hash<tmp::entry>()(directory);
   }
 };
 
