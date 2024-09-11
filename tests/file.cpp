@@ -300,4 +300,10 @@ TEST(file, move) {
 
   fs::remove_all(fs::temp_directory_path() / "non-existing");
 }
+
+/// Tests file's standard type traits
+TEST(file, type_traits) {
+  static_assert(std::is_swappable_v<file>);
+  static_assert(std::is_constructible_v<std::hash<file>>);
+}
 }    // namespace tmp

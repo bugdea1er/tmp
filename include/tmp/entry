@@ -56,4 +56,11 @@ private:
 };
 }    // namespace tmp
 
+template<>
+struct std::hash<tmp::entry> {
+  constexpr std::size_t operator()(const tmp::entry& tmpentry) const {
+    return std::hash<std::filesystem::path>()(tmpentry);
+  }
+};
+
 #endif    // TMP_ENTRY_H

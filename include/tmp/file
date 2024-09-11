@@ -127,4 +127,11 @@ private:
 };
 }    // namespace tmp
 
+template<>
+struct std::hash<tmp::file> {
+  constexpr std::size_t operator()(const tmp::file& tmpfile) const {
+    return std::hash<tmp::entry>()(tmpfile);
+  }
+};
+
 #endif    // TMP_FILE_H

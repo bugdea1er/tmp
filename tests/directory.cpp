@@ -163,4 +163,10 @@ TEST(directory, move) {
   EXPECT_TRUE(fs::exists(to));
   fs::remove_all(fs::temp_directory_path() / "non-existing");
 }
+
+/// Tests directory's standard type traits
+TEST(directory, type_traits) {
+  static_assert(std::is_swappable_v<directory>);
+  static_assert(std::is_constructible_v<std::hash<directory>>);
+}
 }    // namespace tmp

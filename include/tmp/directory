@@ -70,4 +70,11 @@ public:
 };
 }    // namespace tmp
 
+template<>
+struct std::hash<tmp::directory> {
+  constexpr std::size_t operator()(const tmp::directory& tmpdir) const {
+    return std::hash<tmp::entry>()(tmpdir);
+  }
+};
+
 #endif    // TMP_DIRECTORY_H
