@@ -60,7 +60,7 @@ public:
   /// @returns The iterator over this directory
   std::filesystem::directory_iterator list() const;
 
-  /// Deletes the managed directory recursively if its path is not empty
+  /// Deletes the managed directory recursively
   ~directory() noexcept override;
 
   directory(directory&&) noexcept;               ///< move-constructible

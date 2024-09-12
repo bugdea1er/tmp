@@ -13,6 +13,9 @@ namespace tmp {
 /// The managed path is deleted of when either of the following happens:
 /// - the managing tmp::entry object is destroyed
 /// - the managing tmp::entry object is assigned another path via operator=
+///
+/// Subclasses should provide a path to manage for this class;
+/// any opening or closing operations should be managed by subclasses
 class TMP_EXPORT entry {
 public:
   /// Returns the managed path
@@ -30,7 +33,7 @@ public:
   /// @throws std::filesystem::filesystem_error if cannot move the owned path
   void move(const std::filesystem::path& to);
 
-  /// Deletes the managed path recursively if it is not empty
+  /// Deletes the managed path recursively
   virtual ~entry() noexcept;
 
   entry(const entry&) = delete;             ///< not copy-constructible

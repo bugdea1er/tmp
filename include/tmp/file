@@ -94,7 +94,7 @@ public:
   /// @param content   A string to append to this file
   void append(std::string_view content) const;
 
-  /// Deletes the managed file if its path is not empty
+  /// Deletes (and closes) the managed file
   ~file() noexcept override;
 
   file(file&&) noexcept;                   ///< move-constructible
