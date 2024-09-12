@@ -1,4 +1,5 @@
 #include <tmp/directory>
+#include <tmp/entry>
 
 #include "utils.hpp"
 
