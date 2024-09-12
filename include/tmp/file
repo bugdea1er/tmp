@@ -47,7 +47,7 @@ public:
 #elif __has_include(<unistd.h>)
   using native_handle_type = int;    // POSIX file descriptor
 #else
-#error "Target platfrom not supported"
+#error "Target platform not supported"
 #endif
 
   /// Creates a unique temporary file and opens it for reading and writing
