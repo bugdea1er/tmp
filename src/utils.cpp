@@ -1,6 +1,7 @@
 #include "utils.hpp"
 
 #include <filesystem>
+#include <stdexcept>
 #include <string_view>
 #include <system_error>
 

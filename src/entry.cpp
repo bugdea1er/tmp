@@ -3,6 +3,7 @@
 #include "utils.hpp"
 
 #include <filesystem>
+#include <new>
 #include <system_error>
 #include <utility>
 
