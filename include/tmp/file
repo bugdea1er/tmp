@@ -116,13 +116,14 @@ private:
   /// @param binary    Whether the managed file is opened in binary write mode
   /// @throws std::filesystem::filesystem_error if cannot create a file
   /// @throws std::invalid_argument             if arguments are ill-formatted
-  file(std::string_view label, std::string_view extension, bool binary);
+  file(std::string_view label, std::string_view extension,
+       bool binary) TMP_NO_EXPORT;
 
   /// Creates a unique temporary file
   /// @param handle    A path to the created temporary file and its handle
   /// @param binary    Whether the managed file is opened in binary write mode
   file(std::pair<std::filesystem::path, native_handle_type> handle,
-       bool binary) noexcept;
+       bool binary) noexcept TMP_NO_EXPORT;
 };
 }    // namespace tmp
 
