@@ -166,7 +166,11 @@ TEST(directory, move) {
 
 /// Tests directory's standard type traits
 TEST(directory, type_traits) {
-  static_assert(std::is_swappable_v<directory>);
-  static_assert(std::is_constructible_v<std::hash<directory>>);
+  static_assert(std::is_swappable_v<directory>);                   // Swappable
+  static_assert(std::is_constructible_v<std::hash<directory>>);    // Hashable
+
+  directory tmpdir;
+  EXPECT_TRUE(tmpdir == tmpdir);    // EqualityComparable
+  EXPECT_FALSE(tmpdir < tmpdir);    // LessThanComparable
 }
 }    // namespace tmp

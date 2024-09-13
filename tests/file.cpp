@@ -303,7 +303,11 @@ TEST(file, move) {
 
 /// Tests file's standard type traits
 TEST(file, type_traits) {
-  static_assert(std::is_swappable_v<file>);
-  static_assert(std::is_constructible_v<std::hash<file>>);
+  static_assert(std::is_swappable_v<file>);                   // Swappable
+  static_assert(std::is_constructible_v<std::hash<file>>);    // Hashable
+
+  file tmpfile;
+  EXPECT_TRUE(tmpfile == tmpfile);    // EqualityComparable
+  EXPECT_FALSE(tmpfile < tmpfile);    // LessThanComparable
 }
 }    // namespace tmp

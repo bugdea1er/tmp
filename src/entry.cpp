@@ -93,6 +93,30 @@ fs::path entry::release() noexcept {
 
   return path;
 }
+
+bool operator==(const entry& lhs, const entry& rhs) noexcept {
+  return lhs.path() == rhs.path();
+}
+
+bool operator!=(const entry& lhs, const entry& rhs) noexcept {
+  return lhs.path() != rhs.path();
+}
+
+bool operator<(const entry& lhs, const entry& rhs) noexcept {
+  return lhs.path() < rhs.path();
+}
+
+bool operator<=(const entry& lhs, const entry& rhs) noexcept {
+  return lhs.path() <= rhs.path();
+}
+
+bool operator>(const entry& lhs, const entry& rhs) noexcept {
+  return lhs.path() > rhs.path();
+}
+
+bool operator>=(const entry& lhs, const entry& rhs) noexcept {
+  return lhs.path() >= rhs.path();
+}
 }    // namespace tmp
 
 std::size_t
