@@ -121,5 +121,5 @@ bool operator>=(const entry& lhs, const entry& rhs) noexcept {
 
 std::size_t
 std::hash<tmp::entry>::operator()(const tmp::entry& entry) const noexcept {
-  return std::hash<std::filesystem::path>()(entry);
+  return tmp::fs::hash_value(entry);
 }
