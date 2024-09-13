@@ -76,7 +76,6 @@ void entry::move(const fs::path& to) {
       throw_move_error(to, ec);
     }
 
-    fs::remove_all(to);
     fs::copy(*this, to, copy_options, ec);
   }
 
