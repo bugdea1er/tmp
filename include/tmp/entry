@@ -56,10 +56,9 @@ private:
 };
 }    // namespace tmp
 
+/// The template specialization of `std::hash` for `tmp::entry`
 template <> struct std::hash<tmp::entry> {
-  std::size_t operator()(const tmp::entry& entry) const noexcept {
-    return std::hash<std::filesystem::path>()(entry);
-  }
+  std::size_t operator()(const tmp::entry& entry) const noexcept;
 };
 
 #endif    // TMP_ENTRY_H

@@ -70,10 +70,9 @@ public:
 };
 }    // namespace tmp
 
+/// The template specialization of `std::hash` for `tmp::directory`
 template <> struct std::hash<tmp::directory> {
-  std::size_t operator()(const tmp::directory& directory) const noexcept {
-    return std::hash<tmp::entry>()(directory);
-  }
+  std::size_t operator()(const tmp::directory& directory) const noexcept;
 };
 
 #endif    // TMP_DIRECTORY_H

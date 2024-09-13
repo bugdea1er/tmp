@@ -94,3 +94,8 @@ fs::path entry::release() noexcept {
   return path;
 }
 }    // namespace tmp
+
+std::size_t
+std::hash<tmp::entry>::operator()(const tmp::entry& entry) const noexcept {
+  return std::hash<std::filesystem::path>()(entry);
+}

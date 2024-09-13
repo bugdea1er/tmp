@@ -127,10 +127,9 @@ private:
 };
 }    // namespace tmp
 
+/// The template specialization of `std::hash` for `tmp::file`
 template <> struct std::hash<tmp::file> {
-  std::size_t operator()(const tmp::file& file) const noexcept {
-    return std::hash<tmp::entry>()(file);
-  }
+  std::size_t operator()(const tmp::file& file) const noexcept;
 };
 
 #endif    // TMP_FILE_H
