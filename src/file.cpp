@@ -122,7 +122,7 @@ file::native_handle_type file::native_handle() const noexcept {
 }
 
 std::string file::read() const {
-  std::ifstream stream = this->input_stream();
+  std::ifstream stream = input_stream();
   return std::string(std::istreambuf_iterator<char>(stream), {});
 }
 
@@ -159,8 +159,8 @@ file& file::operator=(file&& other) noexcept {
 
   close(*this);
 
-  this->binary = other.binary;    // NOLINT(bugprone-use-after-move)
-  this->handle = other.handle;    // NOLINT(bugprone-use-after-move)
+  binary = other.binary;    // NOLINT(bugprone-use-after-move)
+  handle = other.handle;    // NOLINT(bugprone-use-after-move)
 
   return *this;
 }
