@@ -8,7 +8,6 @@
 #include <iterator>
 #include <set>
 #include <stdexcept>
-#include <unordered_set>
 #include <utility>
 
 namespace tmp {
@@ -183,19 +182,9 @@ TEST(directory, swap) {
 
 /// Tests directory hashing
 TEST(directory, hash) {
-  const std::size_t MagicNumber = 10000;
-  const double Eps = 0.05;
-
+  directory tmpdir = directory();
   std::hash hash = std::hash<directory>();
 
-  std::unordered_set hashes = std::unordered_set<std::size_t>();
-  hashes.reserve(MagicNumber);
-
-  for (std::size_t i = 0; i != MagicNumber; i++) {
-    hashes.emplace(hash(directory()));
-  }
-
-  std::size_t collisions = MagicNumber - hashes.size();
-  EXPECT_LE(collisions, hashes.size() * Eps);
+  EXPECT_EQ(hash(tmpdir), fs::hash_value(tmpdir.path()));
 }
 }    // namespace tmp

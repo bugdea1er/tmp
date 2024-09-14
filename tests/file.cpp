@@ -10,7 +10,6 @@
 #include <iterator>
 #include <ostream>
 #include <stdexcept>
-#include <unordered_set>
 #include <utility>
 
 #ifdef _WIN32
@@ -324,19 +323,9 @@ TEST(file, swap) {
 
 /// Tests file hashing
 TEST(file, hash) {
-  const std::size_t MagicNumber = 10000;
-  const double Eps = 0.05;
-
+  file tmpfile = file();
   std::hash hash = std::hash<file>();
 
-  std::unordered_set hashes = std::unordered_set<std::size_t>();
-  hashes.reserve(MagicNumber);
-
-  for (std::size_t i = 0; i != MagicNumber; i++) {
-    hashes.emplace(hash(file()));
-  }
-
-  std::size_t collisions = MagicNumber - hashes.size();
-  EXPECT_LE(collisions, hashes.size() * Eps);
+  EXPECT_EQ(hash(tmpfile), fs::hash_value(tmpfile.path()));
 }
 }    // namespace tmp
