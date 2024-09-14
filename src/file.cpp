@@ -76,20 +76,6 @@ create_file(std::string_view label, std::string_view extension) {
   return std::pair(path, handle);
 }
 
-/// Opens a temporary file for writing and returns an output file stream
-/// @param file     The file to open
-/// @param binary   Whether to open the file in binary mode
-/// @param append   Whether to append to the end of the file
-/// @returns An output file stream
-std::ofstream stream(const file& file, bool binary, bool append) noexcept {
-  std::ios::openmode mode = append ? std::ios::app : std::ios::trunc;
-  if (binary) {
-    mode |= std::ios::binary;
-  }
-
-  return std::ofstream(file.path(), mode);
-}
-
 /// Closes the given file, ignoring any errors
 /// @param file     The file to close
 void close(const file& file) noexcept {
@@ -135,18 +121,16 @@ file::native_handle_type file::native_handle() const noexcept {
 }
 
 std::string file::read() const {
-  std::ios::openmode mode = binary ? std::ios::binary : std::ios::openmode();
-  std::ifstream stream = std::ifstream(path(), mode);
-
+  std::ifstream stream = this->input_stream();
   return std::string(std::istreambuf_iterator<char>(stream), {});
 }
 
 void file::write(std::string_view content) const {
-  stream(*this, binary, /*append=*/false) << content;
+  output_stream(/*append=*/false) << content;
 }
 
 void file::append(std::string_view content) const {
-  stream(*this, binary, /*append=*/true) << content;
+  output_stream(/*append=*/true) << content;
 }
 
 std::ifstream file::input_stream() const {
@@ -155,7 +139,12 @@ std::ifstream file::input_stream() const {
 }
 
 std::ofstream file::output_stream(bool append) const {
-  return stream(*this, binary, append);
+  std::ios::openmode mode = append ? std::ios::app : std::ios::trunc;
+  if (binary) {
+    mode |= std::ios::binary;
+  }
+
+  return std::ofstream(path(), mode);
 }
 
 file::~file() noexcept {
