@@ -94,4 +94,33 @@ fs::path entry::release() noexcept {
 
   return path;
 }
+
+bool operator==(const entry& lhs, const entry& rhs) noexcept {
+  return lhs.path() == rhs.path();
+}
+
+bool operator!=(const entry& lhs, const entry& rhs) noexcept {
+  return lhs.path() != rhs.path();
+}
+
+bool operator<(const entry& lhs, const entry& rhs) noexcept {
+  return lhs.path() < rhs.path();
+}
+
+bool operator<=(const entry& lhs, const entry& rhs) noexcept {
+  return lhs.path() <= rhs.path();
+}
+
+bool operator>(const entry& lhs, const entry& rhs) noexcept {
+  return lhs.path() > rhs.path();
+}
+
+bool operator>=(const entry& lhs, const entry& rhs) noexcept {
+  return lhs.path() >= rhs.path();
+}
 }    // namespace tmp
+
+std::size_t
+std::hash<tmp::entry>::operator()(const tmp::entry& entry) const noexcept {
+  return tmp::fs::hash_value(entry);
+}

@@ -39,6 +39,24 @@ public:
   entry(const entry&) = delete;             ///< not copy-constructible
   auto operator=(const entry&) = delete;    ///< not copy-assignable
 
+  /// Checks whether lhs and rhs are equal
+  friend bool operator==(const entry&, const entry&) noexcept TMP_EXPORT;
+
+  /// Checks whether lhs and rhs are not equal
+  friend bool operator!=(const entry&, const entry&) noexcept TMP_EXPORT;
+
+  /// Checks whether lhs is less than rhs
+  friend bool operator<(const entry&, const entry&) noexcept TMP_EXPORT;
+
+  /// Checks whether lhs is less than or equal to rhs
+  friend bool operator<=(const entry&, const entry&) noexcept TMP_EXPORT;
+
+  /// Checks whether lhs is greater than rhs
+  friend bool operator>(const entry&, const entry&) noexcept TMP_EXPORT;
+
+  /// Checks whether lhs is greater than or equal to rhs
+  friend bool operator>=(const entry&, const entry&) noexcept TMP_EXPORT;
+
 protected:
   /// Creates a temporary entry which owns the given path
   /// @param path      A path to manage
@@ -57,5 +75,10 @@ private:
   std::filesystem::path release() noexcept TMP_NO_EXPORT;
 };
 }    // namespace tmp
+
+/// The template specialization of `std::hash` for `tmp::entry`
+template <> struct TMP_EXPORT std::hash<tmp::entry> {
+  std::size_t operator()(const tmp::entry& entry) const noexcept;
+};
 
 #endif    // TMP_ENTRY_H

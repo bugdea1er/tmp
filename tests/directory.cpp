@@ -6,6 +6,8 @@
 #include <filesystem>
 #include <fstream>
 #include <iterator>
+#include <set>
+#include <stdexcept>
 #include <utility>
 
 namespace tmp {
@@ -103,7 +105,7 @@ TEST(directory, list) {
   fs::create_directory(tmpdir / "subdir");
   std::ofstream(tmpdir / "subdir" / "file") << "Hello, world!";
 
-  std::set<fs::path> entries;
+  std::set entries = std::set<fs::path>();
   for (const auto& entry : tmpdir.list()) {
     entries.insert(fs::relative(entry, tmpdir));
   }
@@ -162,5 +164,35 @@ TEST(directory, move) {
   EXPECT_FALSE(fs::exists(path));
   EXPECT_TRUE(fs::exists(to));
   fs::remove_all(fs::temp_directory_path() / "non-existing");
+}
+
+/// Tests directory swapping
+TEST(directory, swap) {
+  directory fst = directory();
+  directory snd = directory();
+
+  fs::path fst_path = fst.path();
+  fs::path snd_path = snd.path();
+
+  std::swap(fst, snd);
+
+  EXPECT_EQ(fst.path(), snd_path);
+  EXPECT_EQ(snd.path(), fst_path);
+}
+
+/// Tests directory hashing
+TEST(directory, hash) {
+  directory tmpdir = directory();
+  std::hash hash = std::hash<directory>();
+
+  EXPECT_EQ(hash(tmpdir), fs::hash_value(tmpdir.path()));
+}
+
+/// Tests directory relational operators
+TEST(directory, relational) {
+  directory tmpdir = directory();
+
+  EXPECT_TRUE(tmpdir == tmpdir);
+  EXPECT_FALSE(tmpdir < tmpdir);
 }
 }    // namespace tmp

@@ -3,11 +3,13 @@
 
 #include <gtest/gtest.h>
 
+#include <cstddef>
 #include <filesystem>
 #include <fstream>
 #include <ios>
 #include <iterator>
 #include <ostream>
+#include <stdexcept>
 #include <utility>
 
 #ifdef _WIN32
@@ -299,5 +301,39 @@ TEST(file, move) {
   EXPECT_FALSE(native_handle_is_valid(handle));
 
   fs::remove_all(fs::temp_directory_path() / "non-existing");
+}
+
+/// Tests file swapping
+TEST(file, swap) {
+  file fst = file();
+  file snd = file();
+
+  fs::path fst_path = fst.path();
+  fs::path snd_path = snd.path();
+  file::native_handle_type fst_handle = fst.native_handle();
+  file::native_handle_type snd_handle = snd.native_handle();
+
+  std::swap(fst, snd);
+
+  EXPECT_EQ(fst.path(), snd_path);
+  EXPECT_EQ(snd.path(), fst_path);
+  EXPECT_EQ(fst.native_handle(), snd_handle);
+  EXPECT_EQ(snd.native_handle(), fst_handle);
+}
+
+/// Tests file hashing
+TEST(file, hash) {
+  file tmpfile = file();
+  std::hash hash = std::hash<file>();
+
+  EXPECT_EQ(hash(tmpfile), fs::hash_value(tmpfile.path()));
+}
+
+/// Tests file relational operators
+TEST(file, relational) {
+  file tmpfile = file();
+
+  EXPECT_TRUE(tmpfile == tmpfile);
+  EXPECT_FALSE(tmpfile < tmpfile);
 }
 }    // namespace tmp

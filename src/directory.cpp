@@ -88,3 +88,8 @@ directory::~directory() noexcept = default;
 directory::directory(directory&&) noexcept = default;
 directory& directory::operator=(directory&&) noexcept = default;
 }    // namespace tmp
+
+std::size_t std::hash<tmp::directory>::operator()(
+    const tmp::directory& directory) const noexcept {
+  return std::hash<tmp::entry>()(directory);
+}

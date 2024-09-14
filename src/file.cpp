@@ -166,3 +166,8 @@ file& file::operator=(file&& other) noexcept {
   return *this;
 }
 }    // namespace tmp
+
+std::size_t
+std::hash<tmp::file>::operator()(const tmp::file& file) const noexcept {
+  return std::hash<tmp::entry>()(file);
+}
