@@ -149,6 +149,15 @@ void file::append(std::string_view content) const {
   stream(*this, binary, /*append=*/true) << content;
 }
 
+std::ifstream file::input_stream() const {
+  std::ios::openmode mode = binary ? std::ios::binary : std::ios::openmode();
+  return std::ifstream(path(), mode);
+}
+
+std::ofstream file::output_stream(bool append) const {
+  return stream(*this, binary, append);
+}
+
 file::~file() noexcept {
   close(*this);
 }

@@ -94,6 +94,14 @@ public:
   /// @param content   A string to append to this file
   void append(std::string_view content) const;
 
+  /// Returns the input stream to this file
+  /// @returns An opened stream for input operations
+  std::ifstream input_stream() const;
+
+  /// Returns the output stream to this file
+  /// @returns An opened stream for output operations
+  std::ofstream output_stream(bool append = false) const;
+
   /// Deletes (and closes) the managed file
   ~file() noexcept override;
 
