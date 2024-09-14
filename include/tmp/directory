@@ -4,6 +4,7 @@
 #include <tmp/entry>
 #include <tmp/export>
 
+#include <cstddef>
 #include <filesystem>
 #include <string_view>
 

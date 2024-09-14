@@ -4,9 +4,12 @@
 #include <tmp/entry>
 #include <tmp/export>
 
+#include <cstddef>
 #include <filesystem>
+#include <fstream>
 #include <string>
 #include <string_view>
+#include <utility>
 
 namespace tmp {
 

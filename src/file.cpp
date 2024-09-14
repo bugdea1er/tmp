@@ -3,6 +3,7 @@
 
 #include "utils.hpp"
 
+#include <cstddef>
 #include <filesystem>
 #include <fstream>
 #include <ios>
