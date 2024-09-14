@@ -6,6 +6,9 @@
 #include <filesystem>
 #include <fstream>
 #include <iterator>
+#include <set>
+#include <stdexcept>
+#include <unordered_set>
 #include <utility>
 
 namespace tmp {
@@ -103,7 +106,7 @@ TEST(directory, list) {
   fs::create_directory(tmpdir / "subdir");
   std::ofstream(tmpdir / "subdir" / "file") << "Hello, world!";
 
-  std::set<fs::path> entries;
+  std::set entries = std::set<fs::path>();
   for (const auto& entry : tmpdir.list()) {
     entries.insert(fs::relative(entry, tmpdir));
   }
@@ -178,13 +181,21 @@ TEST(directory, swap) {
   EXPECT_EQ(snd.path(), fst_path);
 }
 
-/// Tests directory's standard type traits
-TEST(directory, type_traits) {
-  static_assert(std::is_swappable_v<directory>);                   // Swappable
-  static_assert(std::is_constructible_v<std::hash<directory>>);    // Hashable
+/// Tests directory hashing
+TEST(directory, hash) {
+  const std::size_t MagicNumber = 10000;
+  const double Eps = 0.05;
 
-  directory tmpdir;
-  EXPECT_TRUE(tmpdir == tmpdir);    // EqualityComparable
-  EXPECT_FALSE(tmpdir < tmpdir);    // LessThanComparable
+  std::hash hash = std::hash<directory>();
+
+  std::unordered_set hashes = std::unordered_set<std::size_t>();
+  hashes.reserve(MagicNumber);
+
+  for (std::size_t i = 0; i != MagicNumber; i++) {
+    hashes.emplace(hash(directory()));
+  }
+
+  std::size_t collisions = MagicNumber - hashes.size();
+  EXPECT_LE(collisions, hashes.size() * Eps);
 }
 }    // namespace tmp
