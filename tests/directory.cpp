@@ -164,6 +164,20 @@ TEST(directory, move) {
   fs::remove_all(fs::temp_directory_path() / "non-existing");
 }
 
+/// Tests directory swapping
+TEST(directory, swap) {
+  directory fst = directory();
+  directory snd = directory();
+
+  fs::path fst_path = fst.path();
+  fs::path snd_path = snd.path();
+
+  std::swap(fst, snd);
+
+  EXPECT_EQ(fst.path(), snd_path);
+  EXPECT_EQ(snd.path(), fst_path);
+}
+
 /// Tests directory's standard type traits
 TEST(directory, type_traits) {
   static_assert(std::is_swappable_v<directory>);                   // Swappable

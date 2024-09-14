@@ -301,6 +301,24 @@ TEST(file, move) {
   fs::remove_all(fs::temp_directory_path() / "non-existing");
 }
 
+/// Tests file swapping
+TEST(file, swap) {
+  file fst = file();
+  file snd = file();
+
+  fs::path fst_path = fst.path();
+  fs::path snd_path = snd.path();
+  file::native_handle_type fst_handle = fst.native_handle();
+  file::native_handle_type snd_handle = snd.native_handle();
+
+  std::swap(fst, snd);
+
+  EXPECT_EQ(fst.path(), snd_path);
+  EXPECT_EQ(snd.path(), fst_path);
+  EXPECT_EQ(fst.native_handle(), snd_handle);
+  EXPECT_EQ(snd.native_handle(), fst_handle);
+}
+
 /// Tests file's standard type traits
 TEST(file, type_traits) {
   static_assert(std::is_swappable_v<file>);                   // Swappable
