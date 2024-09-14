@@ -311,7 +311,7 @@ TEST(file, output_stream_append_binary) {
   std::ofstream(tmpfile.path(), std::ios::binary) << "Hello,\n ";
 
   {
-    std::ofstream ostream = tmpfile.output_stream(/*append=*/true);
+    std::ofstream ostream = tmpfile.output_stream(std::ios::app);
     ostream << "world" << std::flush;
   }
 
@@ -322,7 +322,7 @@ TEST(file, output_stream_append_binary) {
   }
 
   {
-    std::ofstream ostream = tmpfile.output_stream(/*append=*/true);
+    std::ofstream ostream = tmpfile.output_stream(std::ios::app);
     ostream << "!" << std::flush;
   }
 
@@ -339,7 +339,7 @@ TEST(file, output_stream_append_text) {
   std::ofstream(tmpfile.path()) << "Hello,\n ";
 
   {
-    std::ofstream ostream = tmpfile.output_stream(/*append=*/true);
+    std::ofstream ostream = tmpfile.output_stream(std::ios::app);
     ostream << "world" << std::flush;
   }
 
@@ -350,7 +350,7 @@ TEST(file, output_stream_append_text) {
   }
 
   {
-    std::ofstream ostream = tmpfile.output_stream(/*append=*/true);
+    std::ofstream ostream = tmpfile.output_stream(std::ios::app);
     ostream << "!" << std::flush;
   }
 

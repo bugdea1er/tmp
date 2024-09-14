@@ -127,11 +127,11 @@ std::string file::read() const {
 }
 
 void file::write(std::string_view content) const {
-  output_stream(/*append=*/false) << content;
+  output_stream(std::ios::trunc) << content;
 }
 
 void file::append(std::string_view content) const {
-  output_stream(/*append=*/true) << content;
+  output_stream(std::ios::app) << content;
 }
 
 std::ifstream file::input_stream() const {
@@ -139,12 +139,8 @@ std::ifstream file::input_stream() const {
   return std::ifstream(path(), mode);
 }
 
-std::ofstream file::output_stream(bool append) const {
-  std::ios::openmode mode = append ? std::ios::app : std::ios::trunc;
-  if (binary) {
-    mode |= std::ios::binary;
-  }
-
+std::ofstream file::output_stream(std::ios::openmode mode) const {
+  binary ? mode |= std::ios::binary : mode ^= std::ios::binary;
   return std::ofstream(path(), mode);
 }
 

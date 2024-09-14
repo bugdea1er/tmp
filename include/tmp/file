@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <filesystem>
 #include <fstream>
+#include <ios>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -102,8 +103,9 @@ public:
   std::ifstream input_stream() const;
 
   /// Returns the output stream to this file
+  /// @param mode      A stream open mode, `std::ios::trunc` or `std::ios::app`
   /// @returns An opened stream for output operations
-  std::ofstream output_stream(bool append = false) const;
+  std::ofstream output_stream(std::ios::openmode mode = std::ios::trunc) const;
 
   /// Deletes (and closes) the managed file
   ~file() noexcept override;
