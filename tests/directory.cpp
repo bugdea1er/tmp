@@ -187,4 +187,12 @@ TEST(directory, hash) {
 
   EXPECT_EQ(hash(tmpdir), fs::hash_value(tmpdir.path()));
 }
+
+/// Tests directory relational operators
+TEST(directory, relational) {
+  directory tmpdir = directory();
+
+  EXPECT_TRUE(tmpdir == tmpdir);
+  EXPECT_FALSE(tmpdir < tmpdir);
+}
 }    // namespace tmp

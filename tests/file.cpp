@@ -328,4 +328,12 @@ TEST(file, hash) {
 
   EXPECT_EQ(hash(tmpfile), fs::hash_value(tmpfile.path()));
 }
+
+/// Tests file relational operators
+TEST(file, relational) {
+  file tmpfile = file();
+
+  EXPECT_TRUE(tmpfile == tmpfile);
+  EXPECT_FALSE(tmpfile < tmpfile);
+}
 }    // namespace tmp
