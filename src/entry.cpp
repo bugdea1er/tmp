@@ -2,6 +2,7 @@
 
 #include "utils.hpp"
 
+#include <cstddef>
 #include <filesystem>
 #include <new>
 #include <system_error>

@@ -4,9 +4,13 @@
 #include <tmp/entry>
 #include <tmp/export>
 
+#include <cstddef>
 #include <filesystem>
+#include <fstream>
+#include <ios>
 #include <string>
 #include <string_view>
+#include <utility>
 
 namespace tmp {
 
@@ -93,6 +97,15 @@ public:
   /// Appends the given content to the end of this file
   /// @param content   A string to append to this file
   void append(std::string_view content) const;
+
+  /// Returns the input stream to this file
+  /// @returns An opened stream for input operations
+  std::ifstream input_stream() const;
+
+  /// Returns the output stream to this file
+  /// @param mode      A stream open mode, `std::ios::trunc` or `std::ios::app`
+  /// @returns An opened stream for output operations
+  std::ofstream output_stream(std::ios::openmode mode = std::ios::trunc) const;
 
   /// Deletes (and closes) the managed file
   ~file() noexcept override;

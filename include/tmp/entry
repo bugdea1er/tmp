@@ -3,6 +3,7 @@
 
 #include <tmp/export>
 
+#include <cstddef>
 #include <filesystem>
 
 namespace tmp {
