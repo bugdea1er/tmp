@@ -29,13 +29,13 @@ void remove(const fs::path& path) noexcept {
   }
 }
 
-/// Throws a filesystem error indicating that a temporary resource cannot be
+/// Throws a filesystem error indicating that a temporary entry cannot be
 /// moved to the specified path
-/// @param to   The target path where the resource was intended to be moved
-/// @param ec   The error code associated with the failure to move the resource
+/// @param to       The target path where the entry was intended to be moved
+/// @param ec       The error code associated with the failure to move the entry
 /// @throws fs::filesystem_error when called
 [[noreturn]] void throw_move_error(const fs::path& to, std::error_code ec) {
-  throw fs::filesystem_error("Cannot move temporary resource", to, ec);
+  throw fs::filesystem_error("Cannot move temporary entry", to, ec);
 }
 }    // namespace
 
