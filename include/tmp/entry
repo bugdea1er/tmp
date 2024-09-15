@@ -19,6 +19,15 @@ namespace tmp {
 /// any opening or closing operations should be managed by subclasses
 class TMP_EXPORT entry {
 public:
+/// Implementation-defined handle type to the temporary entry
+#if defined(_WIN32)
+  using native_handle_type = void*;    // HANDLE
+#elif __has_include(<unistd.h>)
+  using native_handle_type = int;    // POSIX file descriptor
+#else
+#error "Target platform not supported"
+#endif
+
   /// Returns the managed path
   /// @returns The full path this entry manages
   operator const std::filesystem::path&() const noexcept;

@@ -23,14 +23,6 @@
 namespace tmp {
 namespace {
 
-// Confirm that native_handle_type matches `TriviallyCopyable` named requirement
-static_assert(std::is_trivially_copyable_v<file::native_handle_type>);
-
-#ifdef _WIN32
-// Confirm that `HANDLE` is `void*` as implemented in `file`
-static_assert(std::is_same_v<HANDLE, void*>);
-#endif
-
 /// Creates a temporary file with the given prefix in the system's
 /// temporary directory, and opens it for reading and writing
 ///

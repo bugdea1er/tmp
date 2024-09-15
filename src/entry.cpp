@@ -11,6 +11,14 @@
 namespace tmp {
 namespace {
 
+// Confirm that native_handle_type matches `TriviallyCopyable` named requirement
+static_assert(std::is_trivially_copyable_v<entry::native_handle_type>);
+
+#ifdef _WIN32
+// Confirm that `HANDLE` is `void*` as implemented in `entry`
+static_assert(std::is_same_v<HANDLE, void*>);
+#endif
+
 /// Deletes the given path recursively, ignoring any errors
 /// @param path     The path to delete
 void remove(const fs::path& path) noexcept {
