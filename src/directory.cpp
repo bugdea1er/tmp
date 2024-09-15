@@ -57,7 +57,7 @@ fs::path create_directory(std::string_view label) {
 }    // namespace
 
 directory::directory(std::string_view label)
-    : entry(create_directory(label)) {}
+    : entry(create_directory(label), {}) {}
 
 directory directory::copy(const fs::path& path, std::string_view label) {
   std::error_code ec;

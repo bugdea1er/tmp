@@ -8,6 +8,12 @@
 #include <system_error>
 #include <utility>
 
+#ifdef _WIN32
+#include <Windows.h>
+#else
+#include <unistd.h>
+#endif
+
 namespace tmp {
 namespace {
 
@@ -18,6 +24,16 @@ static_assert(std::is_trivially_copyable_v<entry::native_handle_type>);
 // Confirm that `HANDLE` is `void*` as implemented in `entry`
 static_assert(std::is_same_v<HANDLE, void*>);
 #endif
+
+/// Closes the given entry, ignoring any errors
+/// @param entry     The entry to close
+void close(const entry& entry) noexcept {
+#ifdef _WIN32
+  CloseHandle(entry.native_handle());
+#else
+  ::close(entry.native_handle());
+#endif
+}
 
 /// Deletes the given path recursively, ignoring any errors
 /// @param path     The path to delete
@@ -47,19 +63,24 @@ void remove(const fs::path& path) noexcept {
 }
 }    // namespace
 
-entry::entry(fs::path path)
-    : pathobject(std::move(path)) {}
+entry::entry(fs::path path, native_handle_type handle)
+    : pathobject(std::move(path)),
+      handle(handle) {}
 
 entry::entry(entry&& other) noexcept
-    : pathobject(other.release()) {}
+    : pathobject(other.release()),
+      handle(other.handle) {}
 
 entry& entry::operator=(entry&& other) noexcept {
+  close(*this);
   remove(*this);
   pathobject = other.release();
+  handle = other.handle;
   return *this;
 }
 
 entry::~entry() noexcept {
+  close(*this);
   remove(*this);
 }
 
@@ -69,6 +90,10 @@ entry::operator const fs::path&() const noexcept {
 
 const fs::path& entry::path() const noexcept {
   return *this;
+}
+
+entry::native_handle_type entry::native_handle() const noexcept {
+  return handle;
 }
 
 void entry::move(const fs::path& to) {

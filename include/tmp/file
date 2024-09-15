@@ -73,10 +73,6 @@ public:
                    std::string_view label = "",
                    std::string_view extension = "");
 
-  /// Returns an implementation-defined handle to this file
-  /// @returns The underlying implementation-defined handle
-  native_handle_type native_handle() const noexcept;
-
   /// Reads the entire contents of this file
   /// @returns A string with this file contents
   std::string read() const;
@@ -98,7 +94,7 @@ public:
   /// @returns An opened stream for output operations
   std::ofstream output_stream(std::ios::openmode mode = std::ios::trunc) const;
 
-  /// Deletes (and closes) the managed file
+  /// Deletes the managed file
   ~file() noexcept override;
 
   file(file&&) noexcept;                   ///< move-constructible
@@ -107,9 +103,6 @@ public:
   auto operator=(const file&) = delete;    ///< not copy-assignable
 
 private:
-  /// Implementation-defined handle to the file
-  native_handle_type handle;
-
   /// Whether the managed file is opened in binary write mode
   bool binary;
 

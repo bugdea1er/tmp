@@ -68,21 +68,10 @@ create_file(std::string_view label, std::string_view extension) {
 
   return std::pair(path, handle);
 }
-
-/// Closes the given file, ignoring any errors
-/// @param file     The file to close
-void close(const file& file) noexcept {
-#ifdef _WIN32
-  CloseHandle(file.native_handle());
-#else
-  ::close(file.native_handle());
-#endif
-}
 }    // namespace
 
 file::file(std::pair<fs::path, native_handle_type> handle, bool binary) noexcept
-    : entry(std::move(handle.first)),
-      handle(handle.second),
+    : entry(std::move(handle.first), handle.second),
       binary(binary) {}
 
 file::file(std::string_view label, std::string_view extension, bool binary)
@@ -109,10 +98,6 @@ file file::copy(const fs::path& path, std::string_view label,
   return tmpfile;
 }
 
-file::native_handle_type file::native_handle() const noexcept {
-  return handle;
-}
-
 std::string file::read() const {
   std::ifstream stream = input_stream();
   return std::string(std::istreambuf_iterator<char>(stream), {});
@@ -136,22 +121,10 @@ std::ofstream file::output_stream(std::ios::openmode mode) const {
   return std::ofstream(path(), mode);
 }
 
-file::~file() noexcept {
-  close(*this);
-}
+file::~file() noexcept = default;
 
 file::file(file&&) noexcept = default;
-
-file& file::operator=(file&& other) noexcept {
-  entry::operator=(std::move(other));
-
-  close(*this);
-
-  binary = other.binary;    // NOLINT(bugprone-use-after-move)
-  handle = other.handle;    // NOLINT(bugprone-use-after-move)
-
-  return *this;
-}
+file& file::operator=(file&& other) noexcept = default;
 }    // namespace tmp
 
 std::size_t
