@@ -31,7 +31,7 @@ namespace {
 /// @returns A path to the created temporary file and a handle to it
 /// @throws fs::filesystem_error  if cannot create a temporary file
 /// @throws std::invalid_argument if the label or extension is ill-formatted
-std::pair<fs::path, file::native_handle_type>
+std::pair<fs::path, entry::native_handle_type>
 create_file(std::string_view label, std::string_view extension) {
   fs::path::string_type path = make_pattern(label, extension);
 

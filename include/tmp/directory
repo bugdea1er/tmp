@@ -68,6 +68,12 @@ public:
   directory& operator=(directory&&) noexcept;    ///< move-assignable
   directory(const directory&) = delete;          ///< not copy-constructible
   auto operator=(const directory&) = delete;     ///< not copy-assignable
+
+private:
+  /// Creates a unique temporary directory
+  /// @param handle    A path to the created temporary directory and its handle
+  directory(std::pair<std::filesystem::path, native_handle_type>
+                handle) noexcept TMP_NO_EXPORT;
 };
 }    // namespace tmp
 

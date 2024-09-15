@@ -12,6 +12,7 @@
 #include <Windows.h>
 #else
 #include <cerrno>
+#include <fcntl.h>
 #include <unistd.h>
 #endif
 
@@ -24,7 +25,8 @@ namespace {
 /// @returns A path to the created temporary directory
 /// @throws fs::filesystem_error  if cannot create a temporary directory
 /// @throws std::invalid_argument if the label is ill-formatted
-fs::path create_directory(std::string_view label) {
+std::pair<fs::path, entry::native_handle_type>
+create_directory(std::string_view label) {
   fs::path::string_type path = make_pattern(label, "");
 
   std::error_code ec;
@@ -46,18 +48,23 @@ fs::path create_directory(std::string_view label) {
   if (mkdtemp(path.data()) == nullptr) {
     ec = std::error_code(errno, std::system_category());
   }
+
+  int handle = open(path.data(), O_DIRECTORY);
 #endif
 
   if (ec) {
     throw fs::filesystem_error("Cannot create temporary directory", ec);
   }
 
-  return path;
+  return std::pair(path, handle);
 }
 }    // namespace
 
+directory::directory(std::pair<fs::path, native_handle_type> handle) noexcept
+    : entry(std::move(handle.first), handle.second) {}
+
 directory::directory(std::string_view label)
-    : entry(create_directory(label), {}) {}
+    : directory(create_directory(label)) {}
 
 directory directory::copy(const fs::path& path, std::string_view label) {
   std::error_code ec;
