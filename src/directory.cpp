@@ -9,7 +9,9 @@
 #include <system_error>
 
 #ifdef _WIN32
+
 #include <Windows.h>
+
 #else
 #include <cerrno>
 #include <fcntl.h>
@@ -44,6 +46,11 @@ create_directory(std::string_view label) {
 
     ec = std::error_code(err, std::system_category());
   }
+
+  HANDLE handle =
+      CreateFileW(path.c_str(), GENERIC_READ | GENERIC_WRITE,
+                  FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                  nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
 #else
   if (mkdtemp(path.data()) == nullptr) {
     ec = std::error_code(errno, std::system_category());
@@ -94,6 +101,7 @@ fs::directory_iterator directory::list() const {
 directory::~directory() noexcept = default;
 
 directory::directory(directory&&) noexcept = default;
+
 directory& directory::operator=(directory&&) noexcept = default;
 }    // namespace tmp
 
