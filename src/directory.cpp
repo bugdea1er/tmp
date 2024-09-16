@@ -56,7 +56,7 @@ create_directory(std::string_view label) {
     ec = std::error_code(errno, std::system_category());
   }
 
-  int handle = open(path.data(), O_DIRECTORY);
+  int handle = open(path.data(), O_DIRECTORY);    // NOLINT(*-vararg)
 #endif
 
   if (ec) {
