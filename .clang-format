@@ -19,4 +19,5 @@ KeepEmptyLinesAtTheStartOfBlocks: false
 PackConstructorInitializers: Never
 PointerAlignment: Left
 QualifierAlignment: Left
+SpaceAfterTemplateKeyword: false
 SpacesBeforeTrailingComments: 4

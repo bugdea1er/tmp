@@ -78,7 +78,7 @@ private:
 }    // namespace tmp
 
 /// The template specialization of `std::hash` for `tmp::entry`
-template <> struct TMP_EXPORT std::hash<tmp::entry> {
+template<> struct TMP_EXPORT std::hash<tmp::entry> {
   std::size_t operator()(const tmp::entry& entry) const noexcept;
 };
 

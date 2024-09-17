@@ -72,7 +72,7 @@ public:
 }    // namespace tmp
 
 /// The template specialization of `std::hash` for `tmp::directory`
-template <> struct TMP_EXPORT std::hash<tmp::directory> {
+template<> struct TMP_EXPORT std::hash<tmp::directory> {
   std::size_t operator()(const tmp::directory& directory) const noexcept;
 };
 
