@@ -12,6 +12,7 @@
 #include <Windows.h>
 #else
 #include <cerrno>
+#include <fcntl.h>
 #include <unistd.h>
 #endif
 
@@ -21,10 +22,11 @@ namespace {
 /// Creates a temporary directory with the given prefix in the system's
 /// temporary directory, and returns its path
 /// @param label    A label to attach to the temporary directory path
-/// @returns A path to the created temporary directory
+/// @returns A path to the created temporary file and a handle to it
 /// @throws fs::filesystem_error  if cannot create a temporary directory
 /// @throws std::invalid_argument if the label is ill-formatted
-fs::path create_directory(std::string_view label) {
+std::pair<fs::path, entry::native_handle_type>
+create_directory(std::string_view label) {
   fs::path::string_type path = make_pattern(label, "");
 
   std::error_code ec;
@@ -52,12 +54,24 @@ fs::path create_directory(std::string_view label) {
     throw fs::filesystem_error("Cannot create temporary directory", ec);
   }
 
-  return path;
+#ifdef _WIN32
+  HANDLE handle =
+      CreateFileW(path.c_str(), GENERIC_READ | GENERIC_WRITE,
+                  FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                  nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+#else
+  int handle = open(path.data(), O_DIRECTORY);    // NOLINT(*-vararg)
+#endif
+
+  return std::pair(path, handle);
 }
 }    // namespace
 
+directory::directory(std::pair<fs::path, native_handle_type> handle) noexcept
+    : entry(std::move(handle.first), handle.second) {}
+
 directory::directory(std::string_view label)
-    : entry(create_directory(label)) {}
+    : directory(create_directory(label)) {}
 
 directory directory::copy(const fs::path& path, std::string_view label) {
   std::error_code ec;

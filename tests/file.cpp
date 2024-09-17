@@ -1,6 +1,8 @@
 #include <tmp/directory>
 #include <tmp/file>
 
+#include "utils.hpp"
+
 #include <gtest/gtest.h>
 
 #include <cstddef>
@@ -12,30 +14,9 @@
 #include <stdexcept>
 #include <utility>
 
-#ifdef _WIN32
-#include <Windows.h>
-#else
-#include <fcntl.h>
-#endif
-
 namespace tmp {
 
 namespace fs = std::filesystem;
-
-namespace {
-
-/// Checks if the given file handle is valid
-/// @param handle handle to check
-/// @returns @c true if the handle is valid, @c false otherwise
-bool native_handle_is_valid(file::native_handle_type handle) {
-#ifdef _WIN32
-  BY_HANDLE_FILE_INFORMATION info;
-  return GetFileInformationByHandle(handle, &info);
-#else
-  return fcntl(handle, F_GETFD) != -1;
-#endif
-}
-}    // namespace
 
 /// Tests file creation with label
 TEST(file, create_with_label) {
@@ -364,7 +345,7 @@ TEST(file, output_stream_append_text) {
 /// Tests that destructor removes a file
 TEST(file, destructor) {
   fs::path path = fs::path();
-  file::native_handle_type handle;
+  entry::native_handle_type handle;
   {
     file tmpfile = file();
     path = tmpfile;
@@ -393,8 +374,8 @@ TEST(file, move_assignment) {
   fs::path path1 = fst;
   fs::path path2 = snd;
 
-  file::native_handle_type fst_handle = fst.native_handle();
-  file::native_handle_type snd_handle = snd.native_handle();
+  entry::native_handle_type fst_handle = fst.native_handle();
+  entry::native_handle_type snd_handle = snd.native_handle();
 
   fst = std::move(snd);
 
@@ -411,7 +392,7 @@ TEST(file, move_assignment) {
 /// Tests file moving
 TEST(file, move) {
   fs::path path = fs::path();
-  file::native_handle_type handle;
+  entry::native_handle_type handle;
 
   fs::path to = fs::temp_directory_path() / "non-existing" / "parent";
   {
@@ -436,8 +417,8 @@ TEST(file, swap) {
 
   fs::path fst_path = fst.path();
   fs::path snd_path = snd.path();
-  file::native_handle_type fst_handle = fst.native_handle();
-  file::native_handle_type snd_handle = snd.native_handle();
+  entry::native_handle_type fst_handle = fst.native_handle();
+  entry::native_handle_type snd_handle = snd.native_handle();
 
   std::swap(fst, snd);
 
