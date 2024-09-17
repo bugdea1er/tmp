@@ -25,7 +25,6 @@ namespace {
 
 /// Creates a temporary file with the given prefix in the system's
 /// temporary directory, and opens it for reading and writing
-///
 /// @param label     A label to attach to the temporary file path
 /// @param extension An extension of the temporary file path
 /// @returns A path to the created temporary file and a handle to it
