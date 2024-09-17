@@ -13,7 +13,7 @@ namespace tmp {
 
 /// Checks if the given file handle is valid
 /// @param handle handle to check
-/// @returns @c true if the handle is valid, @c false otherwise
+/// @returns whether the handle is valid
 inline bool native_handle_is_valid(entry::native_handle_type handle) {
 #ifdef _WIN32
   BY_HANDLE_FILE_INFORMATION info;
