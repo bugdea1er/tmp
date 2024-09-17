@@ -15,8 +15,8 @@ namespace tmp {
 /// - the managing tmp::entry object is destroyed
 /// - the managing tmp::entry object is assigned another path via operator=
 ///
-/// Subclasses should provide a path to manage for this class;
-/// any opening or closing operations should be managed by subclasses
+/// Subclasses must provide a path and an open handle to the entry constructor;
+/// entry closes the handle before deleting the managed path
 class TMP_EXPORT entry {
 public:
 /// Implementation-defined handle type to the temporary entry
