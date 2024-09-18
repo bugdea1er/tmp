@@ -50,8 +50,15 @@ public:
   /// Deletes the managed path recursively and closes its handle
   virtual ~entry() noexcept;
 
-  entry(const entry&) = delete;             ///< not copy-constructible
-  auto operator=(const entry&) = delete;    ///< not copy-assignable
+  entry(const entry&) = delete;               ///< not CopyConstructible
+  entry& operator=(const entry&) = delete;    ///< not CopyAssignable
+
+  bool operator==(const entry& rhs) const noexcept;    ///< EqualityComparable
+  bool operator!=(const entry& rhs) const noexcept;
+  bool operator<(const entry& rhs) const noexcept;    ///< LessThanComparable
+  bool operator>(const entry& rhs) const noexcept;
+  bool operator<=(const entry& rhs) const noexcept;
+  bool operator>=(const entry& rhs) const noexcept;
 
 protected:
   /// Creates a temporary entry which owns the given path
@@ -59,8 +66,8 @@ protected:
   /// @param handle    An implementation-defined handle to this entry
   explicit entry(std::filesystem::path path, native_handle_type handle);
 
-  entry(entry&&) noexcept;               ///< move-constructible
-  entry& operator=(entry&&) noexcept;    ///< move-assignable
+  entry(entry&&) noexcept;               ///< MoveConstructible
+  entry& operator=(entry&&) noexcept;    ///< MoveAssignable
 
 private:
   /// The managed path
@@ -74,24 +81,6 @@ private:
   /// @returns The full path this entry manages
   std::filesystem::path release() noexcept TMP_NO_EXPORT;
 };
-
-/// Checks whether lhs and rhs are equal
-bool operator==(const entry& lhs, const entry& rhs) noexcept TMP_EXPORT;
-
-/// Checks whether lhs and rhs are not equal
-bool operator!=(const entry& lhs, const entry& rhs) noexcept TMP_EXPORT;
-
-/// Checks whether lhs is less than rhs
-bool operator<(const entry& lhs, const entry& rhs) noexcept TMP_EXPORT;
-
-/// Checks whether lhs is less than or equal to rhs
-bool operator<=(const entry& lhs, const entry& rhs) noexcept TMP_EXPORT;
-
-/// Checks whether lhs is greater than rhs
-bool operator>(const entry& lhs, const entry& rhs) noexcept TMP_EXPORT;
-
-/// Checks whether lhs is greater than or equal to rhs
-bool operator>=(const entry& lhs, const entry& rhs) noexcept TMP_EXPORT;
 }    // namespace tmp
 
 /// The template specialization of `std::hash` for `tmp::entry`

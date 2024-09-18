@@ -64,10 +64,10 @@ public:
   /// Deletes the managed directory recursively
   ~directory() noexcept override;
 
-  directory(directory&&) noexcept;               ///< move-constructible
-  directory& operator=(directory&&) noexcept;    ///< move-assignable
-  directory(const directory&) = delete;          ///< not copy-constructible
-  auto operator=(const directory&) = delete;     ///< not copy-assignable
+  directory(directory&&) noexcept;                    ///< MoveConstructible
+  directory& operator=(directory&&) noexcept;         ///< MoveAssignable
+  directory(const directory&) = delete;               ///< not CopyConstructible
+  directory& operator=(const directory&) = delete;    ///< not CopyAssignable
 
 private:
   /// Creates a unique temporary directory
