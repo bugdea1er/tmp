@@ -129,28 +129,28 @@ fs::path entry::release() noexcept {
   return path;
 }
 
-bool operator==(const entry& lhs, const entry& rhs) noexcept {
-  return lhs.path() == rhs.path();
+bool entry::operator==(const entry& rhs) const noexcept {
+  return path() == rhs.path();
 }
 
-bool operator!=(const entry& lhs, const entry& rhs) noexcept {
-  return lhs.path() != rhs.path();
+bool entry::operator!=(const entry& rhs) const noexcept {
+  return path() != rhs.path();
 }
 
-bool operator<(const entry& lhs, const entry& rhs) noexcept {
-  return lhs.path() < rhs.path();
+bool entry::operator<(const entry& rhs) const noexcept {
+  return path() < rhs.path();
 }
 
-bool operator<=(const entry& lhs, const entry& rhs) noexcept {
-  return lhs.path() <= rhs.path();
+bool entry::operator<=(const entry& rhs) const noexcept {
+  return path() <= rhs.path();
 }
 
-bool operator>(const entry& lhs, const entry& rhs) noexcept {
-  return lhs.path() > rhs.path();
+bool entry::operator>(const entry& rhs) const noexcept {
+  return path() > rhs.path();
 }
 
-bool operator>=(const entry& lhs, const entry& rhs) noexcept {
-  return lhs.path() >= rhs.path();
+bool entry::operator>=(const entry& rhs) const noexcept {
+  return path() >= rhs.path();
 }
 }    // namespace tmp
 

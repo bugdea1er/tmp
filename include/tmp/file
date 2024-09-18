@@ -97,10 +97,10 @@ public:
   /// Deletes the managed file
   ~file() noexcept override;
 
-  file(file&&) noexcept;                   ///< move-constructible
-  file& operator=(file&&) noexcept;        ///< move-assignable
-  file(const file&) = delete;              ///< not copy-constructible
-  auto operator=(const file&) = delete;    ///< not copy-assignable
+  file(file&&) noexcept;                    ///< MoveConstructible
+  file& operator=(file&&) noexcept;         ///< MoveAssignable
+  file(const file&) = delete;               ///< not CopyConstructible
+  file& operator=(const file&) = delete;    ///< not CopyAssignable
 
 private:
   /// Whether the managed file is opened in binary write mode
