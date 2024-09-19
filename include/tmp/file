@@ -4,10 +4,13 @@
 #include <tmp/entry>
 #include <tmp/export>
 
+#include <cstddef>
 #include <filesystem>
 #include <fstream>
+#include <ios>
 #include <string>
 #include <string_view>
+#include <utility>
 
 namespace tmp {
 
@@ -42,15 +45,6 @@ namespace tmp {
 /// @endcode
 class TMP_EXPORT file final : public entry {
 public:
-  /// Implementation-defined handle type to the temporary file
-#if defined(_WIN32)
-  using native_handle_type = void*;    // HANDLE
-#elif __has_include(<unistd.h>)
-  using native_handle_type = int;    // POSIX file descriptor
-#else
-#error "Target platfrom not supported"
-#endif
-
   /// Creates a unique temporary file and opens it for reading and writing
   /// in binary mode
   /// @param label     A label to attach to the temporary file path
@@ -79,10 +73,6 @@ public:
                    std::string_view label = "",
                    std::string_view extension = "");
 
-  /// Returns an implementation-defined handle to this file
-  /// @returns The underlying implementation-defined handle
-  native_handle_type native_handle() const noexcept;
-
   /// Reads the entire contents of this file
   /// @returns A string with this file contents
   std::string read() const;
@@ -95,18 +85,24 @@ public:
   /// @param content   A string to append to this file
   void append(std::string_view content) const;
 
-  /// Deletes the managed file if its path is not empty
+  /// Returns the input stream to this file
+  /// @returns An opened stream for input operations
+  std::ifstream input_stream() const;
+
+  /// Returns the output stream to this file
+  /// @param mode      A stream open mode, `std::ios::trunc` or `std::ios::app`
+  /// @returns An opened stream for output operations
+  std::ofstream output_stream(std::ios::openmode mode = std::ios::trunc) const;
+
+  /// Deletes the managed file
   ~file() noexcept override;
 
-  file(file&&) noexcept;                   ///< move-constructible
-  file& operator=(file&&) noexcept;        ///< move-assignable
-  file(const file&) = delete;              ///< not copy-constructible
-  auto operator=(const file&) = delete;    ///< not copy-assignable
+  file(file&&) noexcept;                    ///< MoveConstructible
+  file& operator=(file&&) noexcept;         ///< MoveAssignable
+  file(const file&) = delete;               ///< not CopyConstructible
+  file& operator=(const file&) = delete;    ///< not CopyAssignable
 
 private:
-  /// Implementation-defined handle to the file
-  native_handle_type handle;
-
   /// Whether the managed file is opened in binary write mode
   bool binary;
 
@@ -117,14 +113,20 @@ private:
   /// @param binary    Whether the managed file is opened in binary write mode
   /// @throws std::filesystem::filesystem_error if cannot create a file
   /// @throws std::invalid_argument             if arguments are ill-formatted
-  file(std::string_view label, std::string_view extension, bool binary);
+  file(std::string_view label, std::string_view extension,
+       bool binary) TMP_NO_EXPORT;
 
   /// Creates a unique temporary file
   /// @param handle    A path to the created temporary file and its handle
   /// @param binary    Whether the managed file is opened in binary write mode
   file(std::pair<std::filesystem::path, native_handle_type> handle,
-       bool binary) noexcept;
+       bool binary) noexcept TMP_NO_EXPORT;
 };
 }    // namespace tmp
+
+/// The template specialization of `std::hash` for `tmp::file`
+template<> struct TMP_EXPORT std::hash<tmp::file> {
+  std::size_t operator()(const tmp::file& file) const noexcept;
+};
 
 #endif    // TMP_FILE_H

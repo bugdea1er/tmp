@@ -1,39 +1,22 @@
 #include <tmp/directory>
 #include <tmp/file>
 
+#include "utils.hpp"
+
 #include <gtest/gtest.h>
 
+#include <cstddef>
 #include <filesystem>
 #include <fstream>
 #include <ios>
 #include <iterator>
 #include <ostream>
+#include <stdexcept>
 #include <utility>
-
-#ifdef _WIN32
-#include <Windows.h>
-#else
-#include <fcntl.h>
-#endif
 
 namespace tmp {
 
 namespace fs = std::filesystem;
-
-namespace {
-
-/// Checks if the given file handle is valid
-/// @param handle handle to check
-/// @returns @c true if the handle is valid, @c false otherwise
-bool native_handle_is_valid(file::native_handle_type handle) {
-#ifdef _WIN32
-  BY_HANDLE_FILE_INFORMATION info;
-  return GetFileInformationByHandle(handle, &info);
-#else
-  return fcntl(handle, F_GETFD) != -1;
-#endif
-}
-}    // namespace
 
 /// Tests file creation with label
 TEST(file, create_with_label) {
@@ -233,10 +216,136 @@ TEST(file, append_text) {
   }
 }
 
+/// Tests binary file reading from input_stream
+TEST(file, input_stream_binary) {
+  file tmpfile = file();
+  std::ofstream ostream = std::ofstream(tmpfile.path(), std::ios::binary);
+
+  ostream << "Hello," << std::endl;
+  ostream << "world!" << std::endl;
+
+  auto istream = tmpfile.input_stream();
+  auto content = std::string(std::istreambuf_iterator<char>(istream), {});
+
+  EXPECT_EQ(content, "Hello,\nworld!\n");
+}
+
+/// Tests text file reading from input_stream
+TEST(file, input_stream_text) {
+  file tmpfile = file::text();
+  std::ofstream ostream = std::ofstream(tmpfile.path());
+
+  ostream << "Hello," << std::endl;
+  ostream << "world!" << std::endl;
+
+  auto istream = tmpfile.input_stream();
+  auto content = std::string(std::istreambuf_iterator<char>(istream), {});
+
+  EXPECT_EQ(content, "Hello,\nworld!\n");
+}
+
+/// Tests binary file writing to output_stream
+TEST(file, output_stream_binary) {
+  file tmpfile = file();
+  std::ofstream ostream = tmpfile.output_stream();
+  ostream << "Hello" << std::endl;
+
+  {
+    auto stream = std::ifstream(tmpfile.path(), std::ios::binary);
+    auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+    EXPECT_EQ(content, "Hello\n");
+  }
+
+  tmpfile.write("world!\n");
+
+  {
+    auto stream = std::ifstream(tmpfile.path(), std::ios::binary);
+    auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+    EXPECT_EQ(content, "world!\n");
+  }
+}
+
+/// Tests text file writing to output_stream
+TEST(file, output_stream_text) {
+  file tmpfile = file::text();
+  std::ofstream ostream = tmpfile.output_stream();
+  ostream << "Hello" << std::endl;
+
+  {
+    auto stream = std::ifstream(tmpfile.path());
+    auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+    EXPECT_EQ(content, "Hello\n");
+  }
+
+  tmpfile.write("world!\n");
+
+  {
+    auto stream = std::ifstream(tmpfile.path());
+    auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+    EXPECT_EQ(content, "world!\n");
+  }
+}
+
+/// Tests binary file appending to output_stream
+TEST(file, output_stream_append_binary) {
+  file tmpfile = file();
+  std::ofstream(tmpfile.path(), std::ios::binary) << "Hello,\n ";
+
+  {
+    std::ofstream ostream = tmpfile.output_stream(std::ios::app);
+    ostream << "world" << std::flush;
+  }
+
+  {
+    auto stream = std::ifstream(tmpfile.path(), std::ios::binary);
+    auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+    EXPECT_EQ(content, "Hello,\n world");
+  }
+
+  {
+    std::ofstream ostream = tmpfile.output_stream(std::ios::app);
+    ostream << "!" << std::flush;
+  }
+
+  {
+    auto stream = std::ifstream(tmpfile.path(), std::ios::binary);
+    auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+    EXPECT_EQ(content, "Hello,\n world!");
+  }
+}
+
+/// Tests text file appending to output_stream
+TEST(file, output_stream_append_text) {
+  file tmpfile = file::text();
+  std::ofstream(tmpfile.path()) << "Hello,\n ";
+
+  {
+    std::ofstream ostream = tmpfile.output_stream(std::ios::app);
+    ostream << "world" << std::flush;
+  }
+
+  {
+    auto stream = std::ifstream(tmpfile.path());
+    auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+    EXPECT_EQ(content, "Hello,\n world");
+  }
+
+  {
+    std::ofstream ostream = tmpfile.output_stream(std::ios::app);
+    ostream << "!" << std::flush;
+  }
+
+  {
+    auto stream = std::ifstream(tmpfile.path());
+    auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+    EXPECT_EQ(content, "Hello,\n world!");
+  }
+}
+
 /// Tests that destructor removes a file
 TEST(file, destructor) {
   fs::path path = fs::path();
-  file::native_handle_type handle;
+  entry::native_handle_type handle;
   {
     file tmpfile = file();
     path = tmpfile;
@@ -265,8 +374,8 @@ TEST(file, move_assignment) {
   fs::path path1 = fst;
   fs::path path2 = snd;
 
-  file::native_handle_type fst_handle = fst.native_handle();
-  file::native_handle_type snd_handle = snd.native_handle();
+  entry::native_handle_type fst_handle = fst.native_handle();
+  entry::native_handle_type snd_handle = snd.native_handle();
 
   fst = std::move(snd);
 
@@ -283,7 +392,7 @@ TEST(file, move_assignment) {
 /// Tests file moving
 TEST(file, move) {
   fs::path path = fs::path();
-  file::native_handle_type handle;
+  entry::native_handle_type handle;
 
   fs::path to = fs::temp_directory_path() / "non-existing" / "parent";
   {
@@ -299,5 +408,39 @@ TEST(file, move) {
   EXPECT_FALSE(native_handle_is_valid(handle));
 
   fs::remove_all(fs::temp_directory_path() / "non-existing");
+}
+
+/// Tests file swapping
+TEST(file, swap) {
+  file fst = file();
+  file snd = file();
+
+  fs::path fst_path = fst.path();
+  fs::path snd_path = snd.path();
+  entry::native_handle_type fst_handle = fst.native_handle();
+  entry::native_handle_type snd_handle = snd.native_handle();
+
+  std::swap(fst, snd);
+
+  EXPECT_EQ(fst.path(), snd_path);
+  EXPECT_EQ(snd.path(), fst_path);
+  EXPECT_EQ(fst.native_handle(), snd_handle);
+  EXPECT_EQ(snd.native_handle(), fst_handle);
+}
+
+/// Tests file hashing
+TEST(file, hash) {
+  file tmpfile = file();
+  std::hash hash = std::hash<file>();
+
+  EXPECT_EQ(hash(tmpfile), fs::hash_value(tmpfile.path()));
+}
+
+/// Tests file relational operators
+TEST(file, relational) {
+  file tmpfile = file();
+
+  EXPECT_TRUE(tmpfile == tmpfile);
+  EXPECT_FALSE(tmpfile < tmpfile);
 }
 }    // namespace tmp

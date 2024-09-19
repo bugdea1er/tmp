@@ -3,8 +3,8 @@
 
 #include <tmp/export>
 
+#include <cstddef>
 #include <filesystem>
-#include <string_view>
 
 namespace tmp {
 
@@ -14,8 +14,20 @@ namespace tmp {
 /// The managed path is deleted of when either of the following happens:
 /// - the managing tmp::entry object is destroyed
 /// - the managing tmp::entry object is assigned another path via operator=
+///
+/// Subclasses must provide a path and an open handle to the entry constructor;
+/// entry closes the handle before deleting the managed path
 class TMP_EXPORT entry {
 public:
+/// Implementation-defined handle type to the temporary entry
+#if defined(_WIN32)
+  using native_handle_type = void*;    // HANDLE
+#elif __has_include(<unistd.h>)
+  using native_handle_type = int;    // POSIX file descriptor
+#else
+#error "Target platform not supported"
+#endif
+
   /// Returns the managed path
   /// @returns The full path this entry manages
   operator const std::filesystem::path&() const noexcept;
@@ -24,6 +36,10 @@ public:
   /// @returns The full path this entry manages
   const std::filesystem::path& path() const noexcept;
 
+  /// Returns an implementation-defined handle to this entry
+  /// @returns The underlying implementation-defined handle
+  native_handle_type native_handle() const noexcept;
+
   /// Moves the managed path recursively to a given target, releasing
   /// ownership of the managed path
   /// @note The target path parent is created when this function is called
@@ -31,29 +47,45 @@ public:
   /// @throws std::filesystem::filesystem_error if cannot move the owned path
   void move(const std::filesystem::path& to);
 
-  /// Deletes the managed path recursively if it is not empty
+  /// Deletes the managed path recursively and closes its handle
   virtual ~entry() noexcept;
 
-  entry(const entry&) = delete;             ///< not copy-constructible
-  auto operator=(const entry&) = delete;    ///< not copy-assignable
+  entry(const entry&) = delete;               ///< not CopyConstructible
+  entry& operator=(const entry&) = delete;    ///< not CopyAssignable
+
+  bool operator==(const entry& rhs) const noexcept;    ///< EqualityComparable
+  bool operator!=(const entry& rhs) const noexcept;
+  bool operator<(const entry& rhs) const noexcept;    ///< LessThanComparable
+  bool operator>(const entry& rhs) const noexcept;
+  bool operator<=(const entry& rhs) const noexcept;
+  bool operator>=(const entry& rhs) const noexcept;
 
 protected:
   /// Creates a temporary entry which owns the given path
   /// @param path      A path to manage
-  explicit entry(std::filesystem::path path);
+  /// @param handle    An implementation-defined handle to this entry
+  explicit entry(std::filesystem::path path, native_handle_type handle);
 
-  entry(entry&&) noexcept;               ///< move-constructible
-  entry& operator=(entry&&) noexcept;    ///< move-assignable
+  entry(entry&&) noexcept;               ///< MoveConstructible
+  entry& operator=(entry&&) noexcept;    ///< MoveAssignable
 
 private:
   /// The managed path
   std::filesystem::path pathobject;
 
+  /// Implementation-defined handle to this entry
+  native_handle_type handle;
+
   /// Releases the ownership of the managed path
   /// @note the destructor will not delete the managed path after the call
   /// @returns The full path this entry manages
-  std::filesystem::path release() noexcept;
+  std::filesystem::path release() noexcept TMP_NO_EXPORT;
 };
 }    // namespace tmp
+
+/// The template specialization of `std::hash` for `tmp::entry`
+template<> struct TMP_EXPORT std::hash<tmp::entry> {
+  std::size_t operator()(const tmp::entry& entry) const noexcept;
+};
 
 #endif    // TMP_ENTRY_H

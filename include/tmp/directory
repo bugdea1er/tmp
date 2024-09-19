@@ -4,6 +4,7 @@
 #include <tmp/entry>
 #include <tmp/export>
 
+#include <cstddef>
 #include <filesystem>
 #include <string_view>
 
@@ -60,14 +61,25 @@ public:
   /// @returns The iterator over this directory
   std::filesystem::directory_iterator list() const;
 
-  /// Deletes the managed directory recursively if its path is not empty
+  /// Deletes the managed directory recursively
   ~directory() noexcept override;
 
-  directory(directory&&) noexcept;               ///< move-constructible
-  directory& operator=(directory&&) noexcept;    ///< move-assignable
-  directory(const directory&) = delete;          ///< not copy-constructible
-  auto operator=(const directory&) = delete;     ///< not copy-assignable
+  directory(directory&&) noexcept;                    ///< MoveConstructible
+  directory& operator=(directory&&) noexcept;         ///< MoveAssignable
+  directory(const directory&) = delete;               ///< not CopyConstructible
+  directory& operator=(const directory&) = delete;    ///< not CopyAssignable
+
+private:
+  /// Creates a unique temporary directory
+  /// @param handle    A path to the created temporary directory and its handle
+  directory(std::pair<std::filesystem::path, native_handle_type>
+                handle) noexcept TMP_NO_EXPORT;
 };
 }    // namespace tmp
+
+/// The template specialization of `std::hash` for `tmp::directory`
+template<> struct TMP_EXPORT std::hash<tmp::directory> {
+  std::size_t operator()(const tmp::directory& directory) const noexcept;
+};
 
 #endif    // TMP_DIRECTORY_H

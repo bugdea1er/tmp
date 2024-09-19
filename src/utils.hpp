@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TMP_UTILS_H
+#define TMP_UTILS_H
 
 #include <filesystem>
 #include <string_view>
@@ -27,3 +28,5 @@ bool create_parent(const fs::path& path, std::error_code& ec);
 /// @throws std::bad_alloc        if memory allocation fails
 fs::path make_pattern(std::string_view label, std::string_view extension);
 }    // namespace tmp
+
+#endif    // TMP_UTILS_H
