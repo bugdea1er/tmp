@@ -5,7 +5,6 @@
 
 #include <gtest/gtest.h>
 
-#include <cstddef>
 #include <filesystem>
 #include <fstream>
 #include <ios>

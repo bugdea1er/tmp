@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <new>
 #include <system_error>
+#include <type_traits>
 #include <utility>
 
 #ifdef _WIN32
