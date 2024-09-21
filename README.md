@@ -123,6 +123,16 @@ and then install:
 sudo cmake --install build
 ```
 
+OR use `dpkg` package manager (requires `dpkg-shlibdeps`):
+```shell
+cd build && cpack -G DEB && sudo dpkg -i *.deb
+```
+
+OR use `rpm` package manager (requires `rpmbuild`):
+```shell
+cd build && cpack -G RPM && sudo rpm -i *.rpm
+```
+
 ## Package managers
 
 If you are using homebrew, use the following command:
