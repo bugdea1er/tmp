@@ -40,6 +40,6 @@ if(TMP_IS_TOP_LEVEL)
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
     COMPONENT Development)
 
+  set(CPACK_PROJECT_CONFIG_FILE "${PROJECT_SOURCE_DIR}/cmake/CPackConfig.cmake")
   include(CPack)
-  # set(CPACK_PROJECT_CONFIG_FILE "cmake/CPackConfig.cmake")
 endif()
