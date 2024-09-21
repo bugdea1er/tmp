@@ -17,7 +17,7 @@ set(CPACK_DEBIAN_DEVELOPMENT_PACKAGE_DEPENDS
 set(CPACK_DEBIAN_RUNTIME_DESCRIPTION "Runtime package")
 set(CPACK_DEBIAN_DEVELOPMENT_DESCRIPTION "Development package")
 
-# Variables specific to CPack RPM generator¶
+# Variables specific to CPack RPM generator
 set(CPACK_RPM_COMPONENT_INSTALL ON)
 set(CPACK_RPM_FILE_NAME RPM-DEFAULT)
 
