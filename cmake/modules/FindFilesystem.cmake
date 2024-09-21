@@ -46,8 +46,8 @@ set(Filesystem_TEST_SOURCE
   #include <filesystem>
   #include <iostream>
   int main() {
-      std::cout << std::filesystem::current_path() << std::endl;
-      return 0;
+    std::cout << std::filesystem::current_path() << std::endl;
+    return 0;
   }
 ")
 
@@ -73,9 +73,9 @@ endif()
 cmake_pop_check_state()
 
 set(Filesystem_FOUND ${STD_FILESYSTEM_FOUND}
-    CACHE BOOL "True if filesystem utilities are found")
+  CACHE BOOL "True if filesystem utilities are found")
 set(Filesystem_LIBRARIES ${STD_FILESYSTEM_LIBRARY}
-    CACHE STRING "The filesystem utilities libraries")
+  CACHE STRING "The filesystem utilities libraries")
 mark_as_advanced(STD_FILESYSTEM_FOUND STD_FILESYSTEM_LIBRARY)
 
 if(Filesystem_LIBRARIES)
