@@ -322,8 +322,3 @@ file::~file() noexcept = default;
 file::file(file&&) noexcept = default;
 file& file::operator=(file&& other) noexcept = default;
 }    // namespace tmp
-
-std::size_t
-std::hash<tmp::file>::operator()(const tmp::file& file) const noexcept {
-  return std::hash<tmp::entry>()(file);
-}

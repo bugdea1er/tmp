@@ -4,7 +4,6 @@
 #include <tmp/entry>
 #include <tmp/export>
 
-#include <cstddef>
 #include <filesystem>
 #include <string_view>
 #include <system_error>
@@ -90,8 +89,6 @@ public:
 }    // namespace tmp
 
 /// The template specialization of `std::hash` for `tmp::directory`
-template<> struct TMP_EXPORT std::hash<tmp::directory> {
-  std::size_t operator()(const tmp::directory& directory) const noexcept;
-};
+template<> struct std::hash<tmp::directory> : std::hash<tmp::entry> {};
 
 #endif    // TMP_DIRECTORY_H
