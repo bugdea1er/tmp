@@ -358,9 +358,11 @@ TEST(file, destructor) {
 /// Tests file move constructor
 TEST(file, move_constructor) {
   file fst = file();
-  file snd = std::move(fst);
+  file snd = file(std::move(fst));
 
-  EXPECT_TRUE(fst.path().empty());
+  fst.~file();
+
+  EXPECT_FALSE(snd.path().empty());
   EXPECT_TRUE(fs::exists(snd));
   EXPECT_TRUE(native_handle_is_valid(snd.native_handle()));
 }
@@ -368,24 +370,29 @@ TEST(file, move_constructor) {
 /// Tests file move assignment operator
 TEST(file, move_assignment) {
   file fst = file();
-  file snd = file();
+  {
+    file snd = file();
 
-  fs::path path1 = fst;
-  fs::path path2 = snd;
+    fs::path path1 = fst;
+    fs::path path2 = snd;
 
-  entry::native_handle_type fst_handle = fst.native_handle();
-  entry::native_handle_type snd_handle = snd.native_handle();
+    entry::native_handle_type fst_handle = fst.native_handle();
+    entry::native_handle_type snd_handle = snd.native_handle();
 
-  fst = std::move(snd);
+    fst = std::move(snd);
 
-  EXPECT_FALSE(fs::exists(path1));
-  EXPECT_TRUE(fs::exists(path2));
+    EXPECT_FALSE(fs::exists(path1));
+    EXPECT_TRUE(fs::exists(path2));
 
-  EXPECT_TRUE(fs::exists(fst));
-  EXPECT_TRUE(fs::equivalent(fst, path2));
+    EXPECT_TRUE(fs::exists(fst));
+    EXPECT_TRUE(fs::equivalent(fst, path2));
 
-  EXPECT_FALSE(native_handle_is_valid(fst_handle));
-  EXPECT_TRUE(native_handle_is_valid(snd_handle));
+    EXPECT_FALSE(native_handle_is_valid(fst_handle));
+    EXPECT_TRUE(native_handle_is_valid(snd_handle));
+  }
+
+  EXPECT_FALSE(fst.path().empty());
+  EXPECT_TRUE(native_handle_is_valid(fst.native_handle()));
 }
 
 /// Tests file moving
