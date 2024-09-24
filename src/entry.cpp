@@ -26,6 +26,13 @@ static_assert(std::is_trivially_copyable_v<entry::native_handle_type>);
 static_assert(std::is_same_v<HANDLE, void*>);
 #endif
 
+/// Implementation-defined invalid handle to the entry
+#ifdef _WIN32
+const entry::native_handle_type invalid_handle = nullptr;
+#else
+const entry::native_handle_type invalid_handle = -1;
+#endif
+
 /// Closes the given entry, ignoring any errors
 /// @param entry     The entry to close
 void close(const entry& entry) noexcept {
@@ -69,14 +76,22 @@ entry::entry(fs::path path, native_handle_type handle)
       handle(handle) {}
 
 entry::entry(entry&& other) noexcept
-    : pathobject(other.release()),
-      handle(other.handle) {}
+    : pathobject(std::move(other.pathobject)),
+      handle(other.handle) {
+  other.pathobject.clear();
+  other.handle = invalid_handle;
+}
 
 entry& entry::operator=(entry&& other) noexcept {
   close(*this);
   remove(*this);
-  pathobject = other.release();
+
+  pathobject = std::move(other.pathobject);
+  other.pathobject.clear();
+
   handle = other.handle;
+  other.handle = invalid_handle;
+
   return *this;
 }
 
