@@ -114,8 +114,7 @@ TEST(file, read_binary) {
   file tmpfile = file();
   std::ofstream stream = std::ofstream(tmpfile.path(), std::ios::binary);
 
-  stream << "Hello," << std::endl;
-  stream << "world!" << std::endl;
+  stream << "Hello,\nworld!\n" << std::flush;
 
   EXPECT_EQ(tmpfile.read(), "Hello,\nworld!\n");
 }
@@ -125,8 +124,7 @@ TEST(file, read_text) {
   file tmpfile = file::text();
   std::ofstream stream = std::ofstream(tmpfile.path());
 
-  stream << "Hello," << std::endl;
-  stream << "world!" << std::endl;
+  stream << "Hello,\nworld!\n" << std::flush;
 
   EXPECT_EQ(tmpfile.read(), "Hello,\nworld!\n");
 }
@@ -220,8 +218,7 @@ TEST(file, input_stream_binary) {
   file tmpfile = file();
   std::ofstream ostream = std::ofstream(tmpfile.path(), std::ios::binary);
 
-  ostream << "Hello," << std::endl;
-  ostream << "world!" << std::endl;
+  ostream << "Hello,\nworld!\n" << std::flush;
 
   auto istream = tmpfile.input_stream();
   auto content = std::string(std::istreambuf_iterator<char>(istream), {});
@@ -234,8 +231,7 @@ TEST(file, input_stream_text) {
   file tmpfile = file::text();
   std::ofstream ostream = std::ofstream(tmpfile.path());
 
-  ostream << "Hello," << std::endl;
-  ostream << "world!" << std::endl;
+  ostream << "Hello,\nworld!\n" << std::flush;
 
   auto istream = tmpfile.input_stream();
   auto content = std::string(std::istreambuf_iterator<char>(istream), {});
@@ -247,7 +243,7 @@ TEST(file, input_stream_text) {
 TEST(file, output_stream_binary) {
   file tmpfile = file();
   std::ofstream ostream = tmpfile.output_stream();
-  ostream << "Hello" << std::endl;
+  ostream << "Hello\n" << std::flush;
 
   {
     auto stream = std::ifstream(tmpfile.path(), std::ios::binary);
@@ -268,7 +264,7 @@ TEST(file, output_stream_binary) {
 TEST(file, output_stream_text) {
   file tmpfile = file::text();
   std::ofstream ostream = tmpfile.output_stream();
-  ostream << "Hello" << std::endl;
+  ostream << "Hello\n" << std::flush;
 
   {
     auto stream = std::ifstream(tmpfile.path());
@@ -360,7 +356,7 @@ TEST(file, move_constructor) {
   file fst = file();
   file snd = file(std::move(fst));
 
-  fst.~file();
+  fst.~file();    // NOLINT(*-use-after-move)
 
   EXPECT_FALSE(snd.path().empty());
   EXPECT_TRUE(fs::exists(snd));
