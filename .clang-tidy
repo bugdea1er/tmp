@@ -11,6 +11,7 @@ Checks: >
   portability-*,
   readability-*,
   -bugprone-easily-swappable-parameters,
+  -cppcoreguidelines-init-variables,
   -misc-const-correctness,
   -misc-include-cleaner,
   -modernize-return-braced-init-list,

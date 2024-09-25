@@ -22,7 +22,7 @@ jobs:
       - name: Run clang-tidy
         run: |
           cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -B build
-          clang-tidy -p build --use-color src/*.cpp
+          clang-tidy -p build --use-color src/*.cpp tests/*.cpp
 
   clang-format:
     runs-on: ubuntu-24.04

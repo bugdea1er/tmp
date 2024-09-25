@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <string_view>
 #include <system_error>
+#include <utility>
 
 #ifdef _WIN32
 #include <Windows.h>
