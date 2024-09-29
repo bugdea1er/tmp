@@ -74,14 +74,14 @@ TEST(directory, copy_directory) {
   directory tmpdir = directory();
   std::ofstream(tmpdir / "file") << "Hello, world!";
 
-  directory tmpcopy = directory::copy(tmpdir);
+  directory copy = directory::copy(tmpdir);
   EXPECT_TRUE(fs::exists(tmpdir));
-  EXPECT_TRUE(fs::exists(tmpcopy));
-  EXPECT_FALSE(fs::equivalent(tmpdir, tmpcopy));
+  EXPECT_TRUE(fs::exists(copy));
+  EXPECT_FALSE(fs::equivalent(tmpdir, copy));
 
-  EXPECT_TRUE(fs::is_directory(tmpcopy));
+  EXPECT_TRUE(fs::is_directory(copy));
 
-  std::ifstream stream = std::ifstream(tmpcopy / "file");
+  std::ifstream stream = std::ifstream(copy / "file");
   auto content = std::string(std::istreambuf_iterator<char>(stream), {});
   EXPECT_EQ(content, "Hello, world!");
 }

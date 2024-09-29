@@ -93,14 +93,14 @@ TEST(file, copy_file) {
   file tmpfile = file();
   tmpfile.write("Hello, world!");
 
-  file tmpcopy = file::copy(tmpfile);
+  file copy = file::copy(tmpfile);
   EXPECT_TRUE(fs::exists(tmpfile));
-  EXPECT_TRUE(fs::exists(tmpcopy));
-  EXPECT_FALSE(fs::equivalent(tmpfile, tmpcopy));
+  EXPECT_TRUE(fs::exists(copy));
+  EXPECT_FALSE(fs::equivalent(tmpfile, copy));
 
   EXPECT_TRUE(fs::is_regular_file(tmpfile));
 
-  EXPECT_EQ(tmpcopy.read(), "Hello, world!");
+  EXPECT_EQ(copy.read(), "Hello, world!");
 }
 
 /// Tests creation of a temporary copy of a directory
