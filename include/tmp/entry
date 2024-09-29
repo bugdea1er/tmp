@@ -75,11 +75,6 @@ private:
 
   /// Implementation-defined handle to this entry
   native_handle_type handle;
-
-  /// Releases the ownership of the managed path
-  /// @note the destructor will not delete the managed path after the call
-  /// @returns The full path this entry manages
-  std::filesystem::path release() noexcept TMP_NO_EXPORT;
 };
 }    // namespace tmp
 

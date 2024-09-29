@@ -135,14 +135,7 @@ void entry::move(const fs::path& to) {
   }
 
   remove(*this);
-  release();
-}
-
-fs::path entry::release() noexcept {
-  fs::path path = std::move(pathobject);
   pathobject.clear();
-
-  return path;
 }
 
 bool entry::operator==(const entry& rhs) const noexcept {
