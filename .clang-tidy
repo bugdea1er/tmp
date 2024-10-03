@@ -10,6 +10,7 @@ Checks: >
   performance-*,
   portability-*,
   readability-*,
+  -*-use-default-member-init,
   -bugprone-easily-swappable-parameters,
   -cppcoreguidelines-init-variables,
   -misc-const-correctness,

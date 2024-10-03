@@ -68,15 +68,16 @@ create_file(std::string_view label, std::string_view extension) {
 }
 }    // namespace
 
-file::file(std::pair<fs::path, native_handle_type> handle, bool binary) noexcept
-    : entry(std::move(handle.first), handle.second),
-      binary(binary) {}
-
 file::file(std::string_view label, std::string_view extension)
-    : file(create_file(label, extension), /*binary=*/true) {}
+    : entry(create_file(label, extension)),
+      binary(/*binary=*/true) {}
 
 file file::text(std::string_view label, std::string_view extension) {
-  return file(create_file(label, extension), /*binary=*/false);
+  // A bit janky, but all in the name of the cleanest headers
+  file result = file(label, extension);
+  result.binary = false;
+
+  return result;
 }
 
 file file::copy(const fs::path& path, std::string_view label,
