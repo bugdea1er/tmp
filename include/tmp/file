@@ -10,7 +10,6 @@
 #include <ios>
 #include <string>
 #include <string_view>
-#include <utility>
 
 namespace tmp {
 
@@ -105,12 +104,6 @@ public:
 private:
   /// Whether the managed file is opened in binary write mode
   bool binary;
-
-  /// Creates a unique temporary file
-  /// @param handle    A path to the created temporary file and its handle
-  /// @param binary    Whether the managed file is opened in binary write mode
-  file(std::pair<std::filesystem::path, native_handle_type> handle,
-       bool binary) noexcept TMP_NO_EXPORT;
 };
 }    // namespace tmp
 
