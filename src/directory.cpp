@@ -68,11 +68,8 @@ create_directory(std::string_view label) {
 }
 }    // namespace
 
-directory::directory(std::pair<fs::path, native_handle_type> handle) noexcept
-    : entry(std::move(handle.first), handle.second) {}
-
 directory::directory(std::string_view label)
-    : directory(create_directory(label)) {}
+    : entry(create_directory(label)) {}
 
 directory directory::copy(const fs::path& path, std::string_view label) {
   std::error_code ec;
