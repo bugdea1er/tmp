@@ -71,6 +71,9 @@ void remove(const fs::path& path) noexcept {
 }
 }    // namespace
 
+entry::entry(std::pair<fs::path, native_handle_type> handle)
+    : entry(std::move(handle.first), handle.second) {}
+
 entry::entry(fs::path path, native_handle_type handle)
     : pathobject(std::move(path)),
       handle(handle) {}
