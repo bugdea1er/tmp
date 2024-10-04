@@ -11,7 +11,6 @@
 #endif
 
 namespace tmp {
-
 namespace {
 
 /// Checks that the given label is valid to attach to a temporary entry path
