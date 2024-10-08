@@ -117,14 +117,16 @@ entry::native_handle_type entry::native_handle() const noexcept {
 
 void entry::move(const fs::path& to) {
   std::error_code ec;
-  if (fs::is_regular_file(*this) && fs::is_directory(to)) {
-    ec = std::make_error_code(std::errc::is_a_directory);
-    throw_move_error(to, ec);
-  }
+  if (fs::exists(to)) {
+    if (!fs::is_directory(*this) && fs::is_directory(to)) {
+      ec = std::make_error_code(std::errc::is_a_directory);
+      throw_move_error(to, ec);
+    }
 
-  if (fs::is_directory(*this) && fs::is_regular_file(to)) {
-    ec = std::make_error_code(std::errc::not_a_directory);
-    throw_move_error(to, ec);
+    if (fs::is_directory(*this) && !fs::is_directory(to)) {
+      ec = std::make_error_code(std::errc::not_a_directory);
+      throw_move_error(to, ec);
+    }
   }
 
   create_parent(to, ec);
