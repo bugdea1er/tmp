@@ -21,7 +21,7 @@ jobs:
     steps:
       - name: Set up `tmpfs` (if supported)
         run: |
-          sudo mount tmpfs -t tmpfs -o size=100k /tmp
+          sudo mount tmpfs -t tmpfs -o size=100m /tmp
           echo $TMPDIR
           df -h
         if: ${{ matrix.os == 'ubuntu-20.04' }}
