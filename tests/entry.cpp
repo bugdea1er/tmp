@@ -169,6 +169,10 @@ TEST(entry, move_directory_to_existing_directory) {
   fs::path to = fs::path(BUILD_DIR) / "move_directory_to_existing_test";
   std::ofstream(to / "file2") << "Goodbye, world!";
 
+#ifdef WIN32
+  // On Windows, `std::filesystem::rename` actually behaves differently here
+  EXPECT_THROW(test_directory().move(to), fs::filesystem_error);
+#else
   {
     directory tmpdir = test_directory();
     path = tmpdir;
@@ -188,7 +192,7 @@ TEST(entry, move_directory_to_existing_directory) {
   }
 
   EXPECT_FALSE(fs::exists(to / "file2"));
-
+#endif
   fs::remove_all(to);
 }
 
