@@ -96,8 +96,8 @@ TEST(entry, move_file_to_existing_directory) {
   fs::remove_all(directory);
 }
 
-/// Tests moving a temporary file to non-existing path
-TEST(entry, move_file_to_non_existing_path) {
+/// Tests moving a temporary file to a non-existing file
+TEST(entry, move_file_to_non_existing_file) {
   fs::path path;
   entry::native_handle_type handle;
 
@@ -119,6 +119,19 @@ TEST(entry, move_file_to_non_existing_path) {
   auto stream = std::ifstream(to);
   auto content = std::string(std::istreambuf_iterator<char>(stream), {});
   EXPECT_EQ(content, "Hello, world!");
+
+  fs::remove_all(parent);
+}
+
+/// Tests moving a temporary file to a non-existing directory
+TEST(entry, move_file_to_non_existing_directory) {
+  fs::path path;
+  entry::native_handle_type handle;
+
+  fs::path parent = fs::path(BUILD_DIR) / "non-existing";
+  fs::path to = parent / "path/";
+
+  EXPECT_THROW(test_file().move(to), fs::filesystem_error);
 
   fs::remove_all(parent);
 }
