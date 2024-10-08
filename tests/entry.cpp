@@ -102,7 +102,7 @@ TEST(entry, move_file_to_non_existing_file) {
   fs::path path;
   entry::native_handle_type handle;
 
-  fs::path parent = fs::path(BUILD_DIR) / "non-existing";
+  fs::path parent = fs::path(BUILD_DIR) / "non-existing1";
   fs::path to = parent / "path";
 
   {
@@ -128,7 +128,7 @@ TEST(entry, move_file_to_non_existing_file) {
 
 /// Tests moving a temporary file to a non-existing directory
 TEST(entry, move_file_to_non_existing_directory) {
-  fs::path parent = fs::path(BUILD_DIR) / "non-existing";
+  fs::path parent = fs::path(BUILD_DIR) / "non-existing2";
   fs::path to = parent / "path/";
 
   EXPECT_THROW(test_file().move(to), fs::filesystem_error);
@@ -207,7 +207,7 @@ TEST(entry, move_directory_to_non_existing_path) {
   fs::path path;
   entry::native_handle_type handle;
 
-  fs::path parent = fs::path(BUILD_DIR) / "non-existing";
+  fs::path parent = fs::path(BUILD_DIR) / "non-existing3";
   fs::path to = parent / "path";
 
   {
