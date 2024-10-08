@@ -84,7 +84,7 @@ TEST(entry, move_file_to_existing_file) {
     EXPECT_EQ(content, "Hello, world!");
   }
 
-  fs::remove_all(path);
+  fs::remove_all(to);
 }
 
 /// Tests moving a temporary file to an existing directory
