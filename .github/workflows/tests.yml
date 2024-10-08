@@ -20,7 +20,10 @@ jobs:
           - windows-2022
     steps:
       - name: Set up `tmpfs` (if supported)
-        run: sudo mount tmpfs -t tmpfs -o size=100k /com.github.bugdea1er.tmp && df -h
+        run: |
+          mkdir /com.github.bugdea1er.tmp
+          sudo mount tmpfs -t tmpfs -o size=100k /com.github.bugdea1er.tmp
+          df -h
         if: ${{ matrix.os == 'ubuntu-20.04' }}
       - name: Checkout repository
         uses: actions/checkout@v4
