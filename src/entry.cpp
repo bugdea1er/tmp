@@ -129,6 +129,11 @@ void entry::move(const fs::path& to) {
       throw_move_error(to, ec);
     }
 
+    if (fs::is_directory(*this) && fs::is_regular_file(to)) {
+      ec = std::make_error_code(std::errc::not_a_directory);
+      throw_move_error(to, ec);
+    }
+
     fs::remove_all(to);
     fs::copy(*this, to, copy_options, ec);
     remove(*this);
