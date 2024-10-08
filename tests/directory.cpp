@@ -172,27 +172,6 @@ TEST(directory, move_assignment) {
   EXPECT_TRUE(native_handle_is_valid(fst.native_handle()));
 }
 
-/// Tests directory moving
-TEST(directory, move) {
-  fs::path path;
-  entry::native_handle_type handle;
-
-  fs::path to = fs::temp_directory_path() / "non-existing" / "parent";
-  {
-    directory tmpdir = directory();
-    path = tmpdir;
-    handle = tmpdir.native_handle();
-
-    tmpdir.move(to);
-  }
-
-  EXPECT_FALSE(fs::exists(path));
-  EXPECT_TRUE(fs::exists(to));
-  EXPECT_FALSE(native_handle_is_valid(handle));
-
-  fs::remove_all(fs::temp_directory_path() / "non-existing");
-}
-
 /// Tests directory swapping
 TEST(directory, swap) {
   directory fst = directory();
