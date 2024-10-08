@@ -51,6 +51,33 @@ TEST(entry, move_file_to_self) {
   fs::remove_all(path);
 }
 
+/// Tests moving a temporary file to existing non-directory file
+TEST(entry, move_file_to_existing) {
+  fs::path path;
+  entry::native_handle_type handle;
+
+  fs::path to = fs::path(BUILD_DIR) / "move_file_to_existing_test";
+  std::ofstream(to / "file") << "Goodbye, world!";
+
+  {
+    file tmpfile = test_file();
+    path = tmpfile;
+    handle = tmpfile.native_handle();
+
+    tmpfile.move(to);
+  }
+
+  EXPECT_TRUE(fs::exists(to));
+  EXPECT_FALSE(fs::exists(path));
+  EXPECT_FALSE(native_handle_is_valid(handle));
+
+  auto stream = std::ifstream(to);
+  auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+  EXPECT_EQ(content, "Hello, world!");
+
+  fs::remove_all(path);
+}
+
 /// Tests that moving a temporary directory to itself does nothing
 TEST(entry, move_directory_to_self) {
   fs::path path;
