@@ -131,13 +131,13 @@ void entry::move(const fs::path& to) {
 
     fs::remove_all(to);
     fs::copy(*this, to, copy_options, ec);
+    remove(*this);
   }
 
   if (ec) {
     throw_move_error(to, ec);
   }
 
-  remove(*this);
   pathobject.clear();
 }
 
