@@ -403,9 +403,6 @@ TEST(file, move) {
     path = tmpfile;
     handle = tmpfile.native_handle();
 
-    std::cout << "from: " << tmpfile.path() << std::endl;
-    std::cout << "to: " << to << std::endl;
-
     tmpfile.move(to);
   }
 
