@@ -339,7 +339,7 @@ TEST(file, output_stream_append_text) {
 
 /// Tests that destructor removes a file
 TEST(file, destructor) {
-  fs::path path = fs::path();
+  fs::path path;
   entry::native_handle_type handle;
   {
     file tmpfile = file();
@@ -393,7 +393,7 @@ TEST(file, move_assignment) {
 
 /// Tests file moving
 TEST(file, move) {
-  fs::path path = fs::path();
+  fs::path path;
   entry::native_handle_type handle;
 
   fs::path to = fs::path(BUILD_DIR) / "non-existing" / "parent";
