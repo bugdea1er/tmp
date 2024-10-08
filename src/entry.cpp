@@ -117,6 +117,26 @@ entry::native_handle_type entry::native_handle() const noexcept {
 
 void entry::move(const fs::path& to) {
   std::error_code ec;
+  if (fs::exists(to)) {
+    if (!fs::is_directory(*this) && fs::is_directory(to)) {
+      ec = std::make_error_code(std::errc::is_a_directory);
+      throw_move_error(to, ec);
+    }
+
+    if (fs::is_directory(*this)) {
+      if (!fs::is_directory(to)) {
+        ec = std::make_error_code(std::errc::not_a_directory);
+        throw_move_error(to, ec);
+      }
+
+#ifdef WIN32
+      if (!fs::equivalent(path(), to)) {
+        fs::remove_all(to);
+      }
+#endif
+    }
+  }
+
   create_parent(to, ec);
   if (ec) {
     throw_move_error(to, ec);
@@ -124,20 +144,15 @@ void entry::move(const fs::path& to) {
 
   fs::rename(*this, to, ec);
   if (ec == std::errc::cross_device_link) {
-    if (fs::is_regular_file(*this) && fs::is_directory(to)) {
-      ec = std::make_error_code(std::errc::is_a_directory);
-      throw_move_error(to, ec);
-    }
-
     fs::remove_all(to);
     fs::copy(*this, to, copy_options, ec);
+    remove(*this);
   }
 
   if (ec) {
     throw_move_error(to, ec);
   }
 
-  remove(*this);
   pathobject.clear();
 }
 
