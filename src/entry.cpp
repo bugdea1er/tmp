@@ -4,6 +4,7 @@
 
 #include <cstddef>
 #include <filesystem>
+#include <iostream>
 #include <new>
 #include <system_error>
 #include <type_traits>
@@ -124,6 +125,7 @@ void entry::move(const fs::path& to) {
 
   fs::rename(*this, to, ec);
   if (ec == std::errc::cross_device_link) {
+    std::cout << "copying" << std::endl;
     if (fs::is_regular_file(*this) && fs::is_directory(to)) {
       ec = std::make_error_code(std::errc::is_a_directory);
       throw_move_error(to, ec);
@@ -131,6 +133,8 @@ void entry::move(const fs::path& to) {
 
     fs::remove_all(to);
     fs::copy(*this, to, copy_options, ec);
+  } else {
+    std::cout << "renaming" << std::endl;
   }
 
   if (ec) {
