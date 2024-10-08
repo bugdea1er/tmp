@@ -413,8 +413,6 @@ TEST(file, move) {
   EXPECT_FALSE(native_handle_is_valid(handle));
 
   fs::remove_all(fs::path(BUILD_DIR) / "non-existing");
-
-  FAIL();
 }
 
 /// Tests file swapping
