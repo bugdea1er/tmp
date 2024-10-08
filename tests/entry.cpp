@@ -49,9 +49,11 @@ TEST(entry, move_file_to_self) {
   EXPECT_TRUE(fs::exists(path));
   EXPECT_FALSE(native_handle_is_valid(handle));
 
-  auto stream = std::ifstream(path);
-  auto content = std::string(std::istreambuf_iterator<char>(stream), {});
-  EXPECT_EQ(content, "Hello, world!");
+  {
+    auto stream = std::ifstream(path);
+    auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+    EXPECT_EQ(content, "Hello, world!");
+  }
 
   fs::remove_all(path);
 }
@@ -76,9 +78,11 @@ TEST(entry, move_file_to_existing_file) {
   EXPECT_FALSE(fs::exists(path));
   EXPECT_FALSE(native_handle_is_valid(handle));
 
-  auto stream = std::ifstream(to);
-  auto content = std::string(std::istreambuf_iterator<char>(stream), {});
-  EXPECT_EQ(content, "Hello, world!");
+  {
+    auto stream = std::ifstream(to);
+    auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+    EXPECT_EQ(content, "Hello, world!");
+  }
 
   fs::remove_all(path);
 }
@@ -113,9 +117,11 @@ TEST(entry, move_file_to_non_existing_file) {
   EXPECT_FALSE(fs::exists(path));
   EXPECT_FALSE(native_handle_is_valid(handle));
 
-  auto stream = std::ifstream(to);
-  auto content = std::string(std::istreambuf_iterator<char>(stream), {});
-  EXPECT_EQ(content, "Hello, world!");
+  {
+    auto stream = std::ifstream(to);
+    auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+    EXPECT_EQ(content, "Hello, world!");
+  }
 
   fs::remove_all(parent);
 }
@@ -146,9 +152,11 @@ TEST(entry, move_directory_to_self) {
   EXPECT_TRUE(fs::exists(path));
   EXPECT_FALSE(native_handle_is_valid(handle));
 
-  auto stream = std::ifstream(path / "file");
-  auto content = std::string(std::istreambuf_iterator<char>(stream), {});
-  EXPECT_EQ(content, "Hello, world!");
+  {
+    auto stream = std::ifstream(path / "file");
+    auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+    EXPECT_EQ(content, "Hello, world!");
+  }
 
   fs::remove_all(path);
 }
@@ -173,9 +181,11 @@ TEST(entry, move_directory_to_existing_directory) {
   EXPECT_FALSE(fs::exists(path));
   EXPECT_FALSE(native_handle_is_valid(handle));
 
-  auto stream = std::ifstream(to / "file");
-  auto content = std::string(std::istreambuf_iterator<char>(stream), {});
-  EXPECT_EQ(content, "Hello, world!");
+  {
+    auto stream = std::ifstream(to / "file");
+    auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+    EXPECT_EQ(content, "Hello, world!");
+  }
 
   EXPECT_FALSE(fs::exists(to / "file2"));
 
@@ -212,9 +222,11 @@ TEST(entry, move_directory_to_non_existing_path) {
   EXPECT_FALSE(fs::exists(path));
   EXPECT_FALSE(native_handle_is_valid(handle));
 
-  auto stream = std::ifstream(to / "file");
-  auto content = std::string(std::istreambuf_iterator<char>(stream), {});
-  EXPECT_EQ(content, "Hello, world!");
+  {
+    auto stream = std::ifstream(to / "file");
+    auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+    EXPECT_EQ(content, "Hello, world!");
+  }
 
   fs::remove_all(parent);
 }
