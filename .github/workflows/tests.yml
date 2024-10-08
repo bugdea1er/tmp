@@ -25,5 +25,7 @@ jobs:
         run: cmake -B build -DCMAKE_COMPILE_WARNING_AS_ERROR=ON
       - name: Build tests
         run: cmake --build build
+      - run: df -h
+        if: ${{ matrix.os == 'ubuntu-20.04' }}
       - name: Run tests
         run: ctest --output-on-failure --test-dir build
