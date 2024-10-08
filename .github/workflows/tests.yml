@@ -23,6 +23,7 @@ jobs:
         run: |
           sudo mkdir /com.github.bugdea1er.tmp
           sudo mount tmpfs -t tmpfs -o size=100k /com.github.bugdea1er.tmp
+          echo $TMPDIR
           df -h
         if: ${{ matrix.os == 'ubuntu-20.04' }}
       - name: Checkout repository
