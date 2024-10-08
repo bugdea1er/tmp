@@ -397,11 +397,14 @@ TEST(file, move) {
   fs::path path = fs::path();
   entry::native_handle_type handle;
 
-  fs::path to = fs::temp_directory_path() / "non-existing" / "parent";
+  fs::path to = fs::path(BUILD_DIR) / "non-existing" / "parent";
   {
     file tmpfile = file();
     path = tmpfile;
     handle = tmpfile.native_handle();
+
+    std::cout << "from: " << tmpfile.path() << std::endl;
+    std::cout << "to: " << to << std::endl;
 
     tmpfile.move(to);
   }
@@ -410,7 +413,9 @@ TEST(file, move) {
   EXPECT_TRUE(fs::exists(to));
   EXPECT_FALSE(native_handle_is_valid(handle));
 
-  fs::remove_all(fs::temp_directory_path() / "non-existing");
+  fs::remove_all(fs::path(BUILD_DIR) / "non-existing");
+
+  FAIL();
 }
 
 /// Tests file swapping
