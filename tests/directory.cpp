@@ -120,7 +120,7 @@ TEST(directory, list) {
 
 /// Tests that destructor removes a directory
 TEST(directory, destructor) {
-  fs::path path = fs::path();
+  fs::path path;
   entry::native_handle_type handle;
   {
     directory tmpdir = directory();
@@ -174,7 +174,7 @@ TEST(directory, move_assignment) {
 
 /// Tests directory moving
 TEST(directory, move) {
-  fs::path path = fs::path();
+  fs::path path;
   entry::native_handle_type handle;
 
   fs::path to = fs::temp_directory_path() / "non-existing" / "parent";
