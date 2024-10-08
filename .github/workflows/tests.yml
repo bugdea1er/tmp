@@ -20,11 +20,8 @@ jobs:
           - windows-2022
     steps:
       - name: Set up `tmpfs` (if supported)
-        run: |
-          sudo mount tmpfs -t tmpfs -o size=100m /tmp
-          echo $TMPDIR
-          df -h
-        if: ${{ matrix.os == 'ubuntu-20.04' }}
+        run: sudo mount tmpfs -t tmpfs -o size=100m /tmp
+        if: runner.os == 'Linux'
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Configure CMake
