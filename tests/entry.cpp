@@ -85,7 +85,7 @@ TEST(entry, move_file_to_existing_file) {
 
 /// Tests moving a temporary file to an existing directory
 TEST(entry, move_file_to_existing_directory) {
-  fs::path directory = fs::path(BUILD_DIR) / "existing";
+  fs::path directory = fs::path(BUILD_DIR) / "existing_directory";
   fs::create_directories(directory);
 
   EXPECT_THROW(test_file().move(directory), fs::filesystem_error);
@@ -151,5 +151,44 @@ TEST(entry, move_directory_to_self) {
   EXPECT_EQ(content, "Hello, world!");
 
   fs::remove_all(path);
+}
+
+/// Tests moving a temporary directory to existing directory
+TEST(entry, move_directory_to_existing_directory) {
+  fs::path path;
+  entry::native_handle_type handle;
+
+  fs::path to = fs::path(BUILD_DIR) / "move_directory_to_existing_test";
+  std::ofstream(to / "file2") << "Goodbye, world!";
+
+  {
+    directory tmpdir = test_directory();
+    path = tmpdir;
+    handle = tmpdir.native_handle();
+
+    tmpdir.move(to);
+  }
+
+  EXPECT_TRUE(fs::exists(to));
+  EXPECT_FALSE(fs::exists(path));
+  EXPECT_FALSE(native_handle_is_valid(handle));
+
+  auto stream = std::ifstream(to / "file");
+  auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+  EXPECT_EQ(content, "Hello, world!");
+
+  EXPECT_FALSE(fs::exists(to / "file2"));
+
+  fs::remove_all(to);
+}
+
+/// Tests moving a temporary directory to an existing file
+TEST(entry, move_directory_to_existing_file) {
+  fs::path to = fs::path(BUILD_DIR) / "existing_file";
+  std::ofstream(to) << "Goodbye, world!";
+
+  EXPECT_THROW(test_directory().move(to), fs::filesystem_error);
+
+  fs::remove_all(to);
 }
 }    // namespace tmp
