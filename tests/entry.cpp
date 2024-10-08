@@ -85,9 +85,6 @@ TEST(entry, move_file_to_existing_file) {
 
 /// Tests moving a temporary file to an existing directory
 TEST(entry, move_file_to_existing_directory) {
-  fs::path path;
-  entry::native_handle_type handle;
-
   fs::path directory = fs::path(BUILD_DIR) / "existing";
   fs::create_directories(directory);
 
@@ -125,9 +122,6 @@ TEST(entry, move_file_to_non_existing_file) {
 
 /// Tests moving a temporary file to a non-existing directory
 TEST(entry, move_file_to_non_existing_directory) {
-  fs::path path;
-  entry::native_handle_type handle;
-
   fs::path parent = fs::path(BUILD_DIR) / "non-existing";
   fs::path to = parent / "path/";
 
