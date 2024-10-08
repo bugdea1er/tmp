@@ -5,6 +5,7 @@
 #include "utils.hpp"
 
 #include <gtest/gtest.h>
+#include <filesystem>
 
 namespace tmp {
 namespace {
@@ -52,7 +53,7 @@ TEST(entry, move_file_to_self) {
 }
 
 /// Tests moving a temporary file to existing non-directory file
-TEST(entry, move_file_to_existing) {
+TEST(entry, move_file_to_existing_file) {
   fs::path path;
   entry::native_handle_type handle;
 
@@ -78,8 +79,21 @@ TEST(entry, move_file_to_existing) {
   fs::remove_all(path);
 }
 
+/// Tests moving a temporary file to an existing directory
+TEST(entry, move_file_to_existing_directory) {
+  fs::path path;
+  entry::native_handle_type handle;
+
+  fs::path directory = fs::path(BUILD_DIR) / "existing";
+  fs::create_directories(directory);
+
+  EXPECT_THROW(test_file().move(directory), fs::filesystem_error);
+
+  fs::remove_all(directory);
+}
+
 /// Tests moving a temporary file to non-existing path
-TEST(entry, move_file_to_non_existing) {
+TEST(entry, move_file_to_non_existing_path) {
   fs::path path;
   entry::native_handle_type handle;
 
