@@ -5,7 +5,11 @@
 #include "utils.hpp"
 
 #include <gtest/gtest.h>
+
 #include <filesystem>
+#include <fstream>
+#include <iterator>
+#include <string>
 
 namespace tmp {
 namespace {
