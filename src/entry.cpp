@@ -123,9 +123,17 @@ void entry::move(const fs::path& to) {
       throw_move_error(to, ec);
     }
 
-    if (fs::is_directory(*this) && !fs::is_directory(to)) {
-      ec = std::make_error_code(std::errc::not_a_directory);
-      throw_move_error(to, ec);
+    if (fs::is_directory(*this)) {
+      if (!fs::is_directory(to)) {
+        ec = std::make_error_code(std::errc::not_a_directory);
+        throw_move_error(to, ec);
+      }
+
+#ifdef WIN32
+      if (!fs::equivalent(path(), to)) {
+        fs::remove_all(to);
+      }
+#endif
     }
   }
 
