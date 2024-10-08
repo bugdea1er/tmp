@@ -21,8 +21,7 @@ jobs:
     steps:
       - name: Set up `tmpfs` (if supported)
         run: |
-          sudo mkdir /com.github.bugdea1er.tmp
-          sudo mount tmpfs -t tmpfs -o size=100k /com.github.bugdea1er.tmp
+          sudo mount tmpfs -t tmpfs -o size=100k /tmp
           echo $TMPDIR
           df -h
         if: ${{ matrix.os == 'ubuntu-20.04' }}
