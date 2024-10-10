@@ -14,6 +14,7 @@
 #include <utility>
 
 namespace tmp {
+namespace {
 
 namespace fs = std::filesystem;
 
@@ -445,4 +446,5 @@ TEST(file, relational) {
   EXPECT_TRUE(tmpfile == tmpfile);
   EXPECT_FALSE(tmpfile < tmpfile);
 }
+}    // namespace
 }    // namespace tmp
