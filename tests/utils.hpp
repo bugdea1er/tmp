@@ -19,7 +19,7 @@ inline bool native_handle_is_valid(entry::native_handle_type handle) {
   BY_HANDLE_FILE_INFORMATION info;
   return GetFileInformationByHandle(handle, &info);
 #else
-  return fcntl(handle, F_GETFD) != -1; 
+  return fcntl(handle, F_GETFD) != -1;
 #endif
 }
 }    // namespace tmp
