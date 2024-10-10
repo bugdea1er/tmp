@@ -31,5 +31,5 @@ jobs:
         uses: actions/checkout@v4
       - name: Run clang-format
         run: |
-          clang-format -i include/tmp/* src/*.cpp tests/*.cpp
+          clang-format -i include/tmp/* src/*.(h|c)pp tests/*.(h|c)pp
           git diff --color --exit-code
