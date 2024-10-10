@@ -13,6 +13,7 @@
 #include <utility>
 
 namespace tmp {
+namespace {
 
 namespace fs = std::filesystem;
 
@@ -225,4 +226,5 @@ TEST(directory, relational) {
   EXPECT_TRUE(tmpdir == tmpdir);
   EXPECT_FALSE(tmpdir < tmpdir);
 }
+}    // namespace
 }    // namespace tmp
