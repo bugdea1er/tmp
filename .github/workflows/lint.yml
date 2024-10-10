@@ -25,7 +25,7 @@ jobs:
       - name: Run clang-tidy
         run: |
           cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -B build
-          clang-tidy --quiet -p build --use-color src/*.(h|c)pp tests/*.(h|c)pp
+          clang-tidy --quiet -p build --use-color src/*.?pp tests/*.?pp
 
   clang-format:
     runs-on: ubuntu-24.04
@@ -34,5 +34,5 @@ jobs:
         uses: actions/checkout@v4
       - name: Run clang-format
         run: |
-          clang-format -i include/tmp/* src/*.(h|c)pp tests/*.(h|c)pp
+          clang-format -i include/tmp/* src/*.?pp tests/*.?pp
           git diff --color --exit-code
