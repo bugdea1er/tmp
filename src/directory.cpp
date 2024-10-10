@@ -61,7 +61,7 @@ create_directory(std::string_view label) {
                   FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
                   nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
 #else
-  int handle = open(path.data(), O_DIRECTORY);    // NOLINT(*-vararg)
+  int handle = open(path.data(), O_DIRECTORY);
 #endif
 
   return std::pair(path, handle);
