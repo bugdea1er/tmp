@@ -135,8 +135,9 @@ void entry::move(const fs::path& to) {
   }
 
 #ifdef _WIN32
+  // On Windows, the underlying `MoveFileExW` fails when moving a directory
+  // between drives; in that case we copy the directory manually
   if (fs::is_directory(*this) && path().root_name() != to.root_name()) {
-    fs::remove_all(to);
     fs::copy(*this, to, copy_options, ec);
     remove(*this);
   } else {
