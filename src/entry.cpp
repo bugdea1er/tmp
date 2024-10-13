@@ -44,7 +44,7 @@ void close(const entry& entry) noexcept {
 }
 
 /// Deletes the given path recursively, ignoring any errors
-/// @param path     The path to delete
+/// @param path      The path to delete
 void remove(const fs::path& path) noexcept {
   if (!path.empty()) {
     try {
@@ -61,13 +61,56 @@ void remove(const fs::path& path) noexcept {
   }
 }
 
-/// Throws a filesystem error indicating that a temporary entry cannot be
-/// moved to the specified path
-/// @param to       The target path where the entry was intended to be moved
-/// @param ec       The error code associated with the failure to move the entry
-/// @throws fs::filesystem_error when called
-[[noreturn]] void throw_move_error(const fs::path& to, std::error_code ec) {
-  throw fs::filesystem_error("Cannot move temporary entry", to, ec);
+/// Moves the filesystem object as if by `std::filesystem::rename`
+/// even when moving between filesystems
+/// @param[in]  from The path to move
+/// @param[in]  to   A path to the target file or directory
+/// @param[out] ec   Parameter for error reporting
+/// @throws std::bad_alloc if memory allocation fails
+void move(const fs::path& from, const fs::path& to, std::error_code& ec) {
+  if (fs::exists(to)) {
+    if (!fs::is_directory(from) && fs::is_directory(to)) {
+      ec = std::make_error_code(std::errc::is_a_directory);
+      return;
+    }
+
+    if (fs::is_directory(from) && !fs::is_directory(to)) {
+      ec = std::make_error_code(std::errc::not_a_directory);
+      return;
+    }
+  }
+
+  create_parent(to, ec);
+  if (ec) {
+    return;
+  }
+
+  bool copying = false;
+
+#ifdef _WIN32
+  // On Windows, the underlying `MoveFileExW` fails when moving a directory
+  // between drives; in that case we copy the directory manually
+  copying = fs::is_directory(from) && from.root_name() != to.root_name();
+  if (copying) {
+    fs::copy(from, to, copy_options, ec);
+  } else {
+    fs::rename(from, to, ec);
+  }
+#else
+  // On POSIX-compliant systems, the underlying `rename` function may return
+  // `EXDEV` if the implementation does not support links between file systems;
+  // so we try to rename the file, and if we fail with `EXDEV`, move it manually
+  fs::rename(from, to, ec);
+  copying = ec == std::errc::cross_device_link;
+  if (copying) {
+    fs::remove_all(to);
+    fs::copy(from, to, copy_options, ec);
+  }
+#endif
+
+  if (!ec && copying) {
+    tmp::remove(from);
+  }
 }
 }    // namespace
 
@@ -117,52 +160,10 @@ entry::native_handle_type entry::native_handle() const noexcept {
 
 void entry::move(const fs::path& to) {
   std::error_code ec;
-  if (fs::exists(to)) {
-    if (!fs::is_directory(*this) && fs::is_directory(to)) {
-      ec = std::make_error_code(std::errc::is_a_directory);
-      throw_move_error(to, ec);
-    }
-
-    if (fs::is_directory(*this) && !fs::is_directory(to)) {
-      ec = std::make_error_code(std::errc::not_a_directory);
-      throw_move_error(to, ec);
-    }
-  }
-
-  create_parent(to, ec);
-  if (ec) {
-    throw_move_error(to, ec);
-  }
-
-  bool copying = false;
-
-#ifdef _WIN32
-  // On Windows, the underlying `MoveFileExW` fails when moving a directory
-  // between drives; in that case we copy the directory manually
-  copying = fs::is_directory(*this) && path().root_name() != to.root_name();
-  if (copying) {
-    fs::copy(*this, to, copy_options, ec);
-  } else {
-    fs::rename(*this, to, ec);
-  }
-#else
-  // On POSIX-compliant systems, the underlying `rename` function may return
-  // `EXDEV` if the implementation does not support links between file systems;
-  // so we try to rename the file, and if we fail with `EXDEV`, move it manually
-  fs::rename(*this, to, ec);
-  copying = ec == std::errc::cross_device_link;
-  if (copying) {
-    fs::remove_all(to);
-    fs::copy(*this, to, copy_options, ec);
-  }
-#endif
+  tmp::move(*this, to, ec);
 
   if (ec) {
-    throw_move_error(to, ec);
-  }
-
-  if (copying) {
-    remove(*this);
+    throw fs::filesystem_error("Cannot move temporary entry", to, ec);
   }
 
   pathobject.clear();
