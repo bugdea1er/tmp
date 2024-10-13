@@ -136,7 +136,7 @@ void entry::move(const fs::path& to) {
         throw_move_error(to, ec);
       }
 
-#ifdef WIN32
+#ifdef _WIN32
       if (!fs::equivalent(path(), to)) {
         fs::remove_all(to);
       }
