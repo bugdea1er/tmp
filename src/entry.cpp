@@ -33,13 +33,6 @@ const entry::native_handle_type invalid_handle = nullptr;
 const entry::native_handle_type invalid_handle = -1;
 #endif
 
-/// Cross-volume (cross-device) platform-dependent error code
-#ifdef _WIN32
-const std::errc cross_device_copy = std::errc::permission_denied;
-#else
-const std::errc cross_device_copy = std::errc::cross_device_link;
-#endif
-
 /// Closes the given entry, ignoring any errors
 /// @param entry     The entry to close
 void close(const entry& entry) noexcept {
@@ -130,17 +123,9 @@ void entry::move(const fs::path& to) {
       throw_move_error(to, ec);
     }
 
-    if (fs::is_directory(*this)) {
-      if (!fs::is_directory(to)) {
-        ec = std::make_error_code(std::errc::not_a_directory);
-        throw_move_error(to, ec);
-      }
-
-#ifdef _WIN32
-      if (!fs::equivalent(path(), to)) {
-        fs::remove_all(to);
-      }
-#endif
+    if (fs::is_directory(*this) && !fs::is_directory(to)) {
+      ec = std::make_error_code(std::errc::not_a_directory);
+      throw_move_error(to, ec);
     }
   }
 
@@ -149,12 +134,24 @@ void entry::move(const fs::path& to) {
     throw_move_error(to, ec);
   }
 
-  fs::rename(*this, to, ec);
-  if (ec == cross_device_copy) {
+#ifdef _WIN32
+  if (fs::is_directory(*this) && path().root_name() != to.root_name()) {
     fs::remove_all(to);
     fs::copy(*this, to, copy_options, ec);
     remove(*this);
+  } else {
+    fs::rename(*this, to, ec);
   }
+#else
+  // On POSIX-compliant systems, the underlying `rename` function may return
+  // `EXDEV` if the implementation does not support links between file systems;
+  // so we try to rename the file, and if we fail with `EXDEV`, move it manually
+  fs::rename(*this, to, ec);
+  if (ec == std::errc::cross_device_link) {
+    fs::copy(*this, to, copy_options, ec);
+    remove(*this);
+  }
+#endif
 
   if (ec) {
     throw_move_error(to, ec);
