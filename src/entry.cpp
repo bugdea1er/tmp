@@ -134,10 +134,13 @@ void entry::move(const fs::path& to) {
     throw_move_error(to, ec);
   }
 
+  bool copying = false;
+
 #ifdef _WIN32
   // On Windows, the underlying `MoveFileExW` fails when moving a directory
   // between drives; in that case we copy the directory manually
-  if (fs::is_directory(*this) && path().root_name() != to.root_name()) {
+  copying = fs::is_directory(*this) && path().root_name() != to.root_name();
+  if (copying) {
     fs::copy(*this, to, copy_options, ec);
   } else {
     fs::rename(*this, to, ec);
@@ -147,7 +150,8 @@ void entry::move(const fs::path& to) {
   // `EXDEV` if the implementation does not support links between file systems;
   // so we try to rename the file, and if we fail with `EXDEV`, move it manually
   fs::rename(*this, to, ec);
-  if (ec == std::errc::cross_device_link) {
+  copying = ec == std::errc::cross_device_link;
+  if (copying) {
     fs::remove_all(to);
     fs::copy(*this, to, copy_options, ec);
   }
@@ -157,7 +161,7 @@ void entry::move(const fs::path& to) {
     throw_move_error(to, ec);
   }
 
-  if (fs::exists(*this) && !fs::equivalent(*this, to)) {
+  if (copying) {
     remove(*this);
   }
 
