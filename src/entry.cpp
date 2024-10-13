@@ -33,6 +33,13 @@ const entry::native_handle_type invalid_handle = nullptr;
 const entry::native_handle_type invalid_handle = -1;
 #endif
 
+/// Cross-volume (cross-device) platform-dependent error code
+#ifdef _WIN32
+const std::errc cross_device_copy = std::errc::permission_denied;
+#else
+const std::errc cross_device_copy = std::errc::cross_device_link;
+#endif
+
 /// Closes the given entry, ignoring any errors
 /// @param entry     The entry to close
 void close(const entry& entry) noexcept {
@@ -143,7 +150,7 @@ void entry::move(const fs::path& to) {
   }
 
   fs::rename(*this, to, ec);
-  if (ec == std::errc::cross_device_link || ec == std::errc::permission_denied) {
+  if (ec == cross_device_copy) {
     fs::remove_all(to);
     fs::copy(*this, to, copy_options, ec);
     remove(*this);
