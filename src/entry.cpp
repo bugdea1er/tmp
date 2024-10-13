@@ -149,6 +149,7 @@ void entry::move(const fs::path& to) {
   // so we try to rename the file, and if we fail with `EXDEV`, move it manually
   fs::rename(*this, to, ec);
   if (ec == std::errc::cross_device_link) {
+    fs::remove_all(to);
     fs::copy(*this, to, copy_options, ec);
     remove(*this);
   }
