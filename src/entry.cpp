@@ -139,7 +139,6 @@ void entry::move(const fs::path& to) {
   // between drives; in that case we copy the directory manually
   if (fs::is_directory(*this) && path().root_name() != to.root_name()) {
     fs::copy(*this, to, copy_options, ec);
-    remove(*this);
   } else {
     fs::rename(*this, to, ec);
   }
@@ -151,12 +150,15 @@ void entry::move(const fs::path& to) {
   if (ec == std::errc::cross_device_link) {
     fs::remove_all(to);
     fs::copy(*this, to, copy_options, ec);
-    remove(*this);
   }
 #endif
 
   if (ec) {
     throw_move_error(to, ec);
+  }
+
+  if (fs::exists(*this) && !fs::equivalent(*this, to)) {
+    remove(*this);
   }
 
   pathobject.clear();
