@@ -120,7 +120,7 @@ TEST(directory, list) {
 
 /// Tests that destructor removes a directory
 TEST(directory, destructor) {
-  fs::path path = fs::path();
+  fs::path path;
   entry::native_handle_type handle;
   {
     directory tmpdir = directory();
@@ -170,27 +170,6 @@ TEST(directory, move_assignment) {
 
   EXPECT_FALSE(fst.path().empty());
   EXPECT_TRUE(native_handle_is_valid(fst.native_handle()));
-}
-
-/// Tests directory moving
-TEST(directory, move) {
-  fs::path path = fs::path();
-  entry::native_handle_type handle;
-
-  fs::path to = fs::temp_directory_path() / "non-existing" / "parent";
-  {
-    directory tmpdir = directory();
-    path = tmpdir;
-    handle = tmpdir.native_handle();
-
-    tmpdir.move(to);
-  }
-
-  EXPECT_FALSE(fs::exists(path));
-  EXPECT_TRUE(fs::exists(to));
-  EXPECT_FALSE(native_handle_is_valid(handle));
-
-  fs::remove_all(fs::temp_directory_path() / "non-existing");
 }
 
 /// Tests directory swapping

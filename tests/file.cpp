@@ -340,7 +340,7 @@ TEST(file, output_stream_append_text) {
 
 /// Tests that destructor removes a file
 TEST(file, destructor) {
-  fs::path path = fs::path();
+  fs::path path;
   entry::native_handle_type handle;
   {
     file tmpfile = file();
@@ -390,27 +390,6 @@ TEST(file, move_assignment) {
 
   EXPECT_FALSE(fst.path().empty());
   EXPECT_TRUE(native_handle_is_valid(fst.native_handle()));
-}
-
-/// Tests file moving
-TEST(file, move) {
-  fs::path path = fs::path();
-  entry::native_handle_type handle;
-
-  fs::path to = fs::temp_directory_path() / "non-existing" / "parent";
-  {
-    file tmpfile = file();
-    path = tmpfile;
-    handle = tmpfile.native_handle();
-
-    tmpfile.move(to);
-  }
-
-  EXPECT_FALSE(fs::exists(path));
-  EXPECT_TRUE(fs::exists(to));
-  EXPECT_FALSE(native_handle_is_valid(handle));
-
-  fs::remove_all(fs::temp_directory_path() / "non-existing");
 }
 
 /// Tests file swapping

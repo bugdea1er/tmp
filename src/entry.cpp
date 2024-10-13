@@ -117,27 +117,54 @@ entry::native_handle_type entry::native_handle() const noexcept {
 
 void entry::move(const fs::path& to) {
   std::error_code ec;
+  if (fs::exists(to)) {
+    if (!fs::is_directory(*this) && fs::is_directory(to)) {
+      ec = std::make_error_code(std::errc::is_a_directory);
+      throw_move_error(to, ec);
+    }
+
+    if (fs::is_directory(*this) && !fs::is_directory(to)) {
+      ec = std::make_error_code(std::errc::not_a_directory);
+      throw_move_error(to, ec);
+    }
+  }
+
   create_parent(to, ec);
   if (ec) {
     throw_move_error(to, ec);
   }
 
-  fs::rename(*this, to, ec);
-  if (ec == std::errc::cross_device_link) {
-    if (fs::is_regular_file(*this) && fs::is_directory(to)) {
-      ec = std::make_error_code(std::errc::is_a_directory);
-      throw_move_error(to, ec);
-    }
+  bool copying = false;
 
+#ifdef _WIN32
+  // On Windows, the underlying `MoveFileExW` fails when moving a directory
+  // between drives; in that case we copy the directory manually
+  copying = fs::is_directory(*this) && path().root_name() != to.root_name();
+  if (copying) {
+    fs::copy(*this, to, copy_options, ec);
+  } else {
+    fs::rename(*this, to, ec);
+  }
+#else
+  // On POSIX-compliant systems, the underlying `rename` function may return
+  // `EXDEV` if the implementation does not support links between file systems;
+  // so we try to rename the file, and if we fail with `EXDEV`, move it manually
+  fs::rename(*this, to, ec);
+  copying = ec == std::errc::cross_device_link;
+  if (copying) {
     fs::remove_all(to);
     fs::copy(*this, to, copy_options, ec);
   }
+#endif
 
   if (ec) {
     throw_move_error(to, ec);
   }
 
-  remove(*this);
+  if (copying) {
+    remove(*this);
+  }
+
   pathobject.clear();
 }
 
