@@ -143,7 +143,7 @@ void entry::move(const fs::path& to) {
   }
 
   fs::rename(*this, to, ec);
-  if (ec == std::errc::cross_device_link) {
+  if (ec == std::errc::cross_device_link || ec == std::errc::permission_denied) {
     fs::remove_all(to);
     fs::copy(*this, to, copy_options, ec);
     remove(*this);
