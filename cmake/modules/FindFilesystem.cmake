@@ -72,8 +72,8 @@ endif()
 
 cmake_pop_check_state()
 
-set(Filesystem_FOUND ${STD_FILESYSTEM_FOUND} "True if filesystem utilities are found")
-set(Filesystem_LIBRARIES ${STD_FILESYSTEM_LIBRARY} "The filesystem utilities libraries")
+set(Filesystem_FOUND ${STD_FILESYSTEM_FOUND})
+set(Filesystem_LIBRARIES ${STD_FILESYSTEM_LIBRARY})
 mark_as_advanced(STD_FILESYSTEM_FOUND STD_FILESYSTEM_LIBRARY)
 
 if(Filesystem_LIBRARIES)
