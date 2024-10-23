@@ -39,10 +39,6 @@ create_directory(std::string_view label) {
 #ifdef _WIN32
   if (!CreateDirectoryW(path.c_str(), nullptr)) {
     DWORD err = GetLastError();
-    if (err == ERROR_ALREADY_EXISTS) {
-      return create_directory(label);
-    }
-
     ec = std::error_code(err, std::system_category());
   }
 #else
