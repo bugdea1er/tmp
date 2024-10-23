@@ -38,8 +38,7 @@ create_directory(std::string_view label) {
 
 #ifdef _WIN32
   if (!CreateDirectoryW(path.c_str(), nullptr)) {
-    DWORD err = GetLastError();
-    ec = std::error_code(err, std::system_category());
+    ec = std::error_code(GetLastError(), std::system_category());
   }
 #else
   if (mkdtemp(path.data()) == nullptr) {
