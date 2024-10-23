@@ -46,8 +46,7 @@ create_file(std::string_view label, std::string_view extension) {
                   nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
 
   if (handle == INVALID_HANDLE_VALUE) {
-    DWORD err = GetLastError();
-    ec = std::error_code(err, std::system_category());
+    ec = std::error_code(GetLastError(), std::system_category());
   }
 #else
   int handle = mkstemps(path.data(), static_cast<int>(extension.size()));
