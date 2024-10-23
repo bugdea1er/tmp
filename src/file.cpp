@@ -47,10 +47,6 @@ create_file(std::string_view label, std::string_view extension) {
 
   if (handle == INVALID_HANDLE_VALUE) {
     DWORD err = GetLastError();
-    if (err == ERROR_ALREADY_EXISTS) {
-      return create_file(label, extension);
-    }
-
     ec = std::error_code(err, std::system_category());
   }
 #else
