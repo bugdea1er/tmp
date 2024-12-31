@@ -95,7 +95,8 @@ std::string file::read() const {
 }
 
 void file::write(std::string_view content) const {
-  output_stream(std::ios::trunc) << content;
+  fs::resize_file(path(), 0);
+  append(content);
 }
 
 void file::append(std::string_view content) const {
