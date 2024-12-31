@@ -8,6 +8,7 @@
 #include <fstream>
 #include <ios>
 #include <iterator>
+#include <sstream>
 #include <string_view>
 #include <system_error>
 #include <utility>
@@ -16,6 +17,7 @@
 #include <Windows.h>
 #else
 #include <cerrno>
+#include <sys/fcntl.h>
 #include <unistd.h>
 #endif
 
@@ -90,17 +92,79 @@ file file::copy(const fs::path& path, std::string_view label,
 }
 
 std::string file::read() const {
+  std::string content;
+  content.resize(file_size(path()));
+
+#ifdef _WIN32
   std::ifstream stream = input_stream();
   return std::string(std::istreambuf_iterator<char>(stream), {});
+#else
+  int fd = open(path().c_str(), O_RDONLY);
+
+  std::size_t offset = 0;
+  while (offset < content.size()) {
+    ssize_t bytes_read = ::read(fd, &content[offset], content.size() - offset);
+    if (bytes_read < 0) {
+      std::error_code ec = std::error_code(errno, std::system_category());
+      throw fs::filesystem_error("Cannot read a temporary file", path(), ec);
+    }
+
+    offset += bytes_read;
+  }
+#endif
+
+  // FIXME: close fd
+  return content;
 }
 
 void file::write(std::string_view content) const {
-  fs::resize_file(path(), 0);
-  append(content);
+#ifdef _WIN32
+  output_stream(std::ios::trunc) << content;
+#else
+  int fd = open(path().c_str(), O_WRONLY | O_TRUNC);
+  if (fd == -1) {
+    std::error_code ec = std::error_code(errno, std::system_category());
+    throw fs::filesystem_error("Cannot write to a temporary file", path(), ec);
+  }
+
+  std::size_t offset = 0;
+  while (offset < content.size()) {
+    ssize_t written = ::write(fd, &content[offset], content.size() - offset);
+    if (written < 0) {
+      std::error_code ec = std::error_code(errno, std::system_category());
+      throw fs::filesystem_error("Cannot write to a temporary file", path(),
+                                 ec);
+    }
+
+    offset += written;
+  }
+#endif
+  // FIXME: close fd
 }
 
 void file::append(std::string_view content) const {
+#ifdef _WIN32
   output_stream(std::ios::app) << content;
+#else
+  int fd = open(path().c_str(), O_WRONLY | O_APPEND);
+  if (fd == -1) {
+    std::error_code ec = std::error_code(errno, std::system_category());
+    throw fs::filesystem_error("Cannot write to a temporary file", path(), ec);
+  }
+
+  std::size_t offset = 0;
+  while (offset < content.size()) {
+    ssize_t written = ::write(fd, &content[offset], content.size() - offset);
+    if (written < 0) {
+      std::error_code ec = std::error_code(errno, std::system_category());
+      throw fs::filesystem_error("Cannot write to a temporary file", path(),
+                                 ec);
+    }
+
+    offset += written;
+  }
+#endif
+  // FIXME: close fd
 }
 
 std::ifstream file::input_stream() const {
