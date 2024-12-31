@@ -98,8 +98,19 @@ std::string file::read() const {
   native_handle_type handle = native_handle();
 
 #ifdef _WIN32
-  std::ifstream stream = input_stream();
-  return std::string(std::istreambuf_iterator<char>(stream), {});
+  SetFilePointer(handle, 0, nullptr, FILE_BEGIN);
+
+  std::size_t offset = 0;
+  while (offset < content.size()) {
+    DWORD bytes_read;
+    BOOL ret = ReadFile(handle, &content[offset], content.size() - offset, &bytes_read, nullptr);
+    if (!ret) {
+      std::error_code ec = std::error_code(GetLastError(), std::system_category());
+      throw fs::filesystem_error("Cannot read a temporary file", path(), ec);
+    }
+
+    offset += bytes_read;
+  }
 #else
   lseek(handle, 0, SEEK_SET);
 
@@ -122,7 +133,20 @@ void file::write(std::string_view content) const {
   native_handle_type handle = native_handle();
 
 #ifdef _WIN32
-  output_stream(std::ios::trunc) << content;
+  SetFilePointer(handle, 0, nullptr, FILE_BEGIN);
+  SetEndOfFile(handle);
+
+  std::size_t offset = 0;
+  while (offset < content.size()) {
+    DWORD bytes_written;
+    BOOL ret = WriteFile(handle, &content[offset], content.size() - offset, &bytes_written, nullptr);
+    if (!ret) {
+      std::error_code ec = std::error_code(GetLastError(), std::system_category());
+      throw fs::filesystem_error("Cannot read a temporary file", path(), ec);
+    }
+
+    offset += bytes_written;
+  }
 #else
   ftruncate(handle, 0);
   lseek(handle, 0, SEEK_SET);
@@ -144,7 +168,19 @@ void file::append(std::string_view content) const {
   native_handle_type handle = native_handle();
 
 #ifdef _WIN32
-  output_stream(std::ios::app) << content;
+  SetFilePointer(handle, 0, nullptr, FILE_END);
+
+  std::size_t offset = 0;
+  while (offset < content.size()) {
+    DWORD bytes_written;
+    BOOL ret = WriteFile(handle, &content[offset], content.size() - offset, &bytes_written, nullptr);
+    if (!ret) {
+      std::error_code ec = std::error_code(GetLastError(), std::system_category());
+      throw fs::filesystem_error("Cannot read a temporary file", path(), ec);
+    }
+
+    offset += bytes_written;
+  }
 #else
   lseek(handle, 0, SEEK_END);
 
