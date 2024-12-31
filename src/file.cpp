@@ -92,39 +92,36 @@ file file::copy(const fs::path& path, std::string_view label,
 }
 
 std::string file::read() const {
-  std::string content;
-  content.resize(file_size(path()));
-
   native_handle_type handle = native_handle();
 
 #ifdef _WIN32
   SetFilePointer(handle, 0, nullptr, FILE_BEGIN);
+#else
+  lseek(handle, 0, SEEK_SET);
+#endif
+
+  std::string content;
+  content.resize(file_size(path()));
 
   std::size_t offset = 0;
   while (offset < content.size()) {
+#ifdef _WIN32
     DWORD bytes_read;
     BOOL ret = ReadFile(handle, &content[offset], content.size() - offset, &bytes_read, nullptr);
     if (!ret) {
       std::error_code ec = std::error_code(GetLastError(), std::system_category());
       throw fs::filesystem_error("Cannot read a temporary file", path(), ec);
     }
-
-    offset += bytes_read;
-  }
 #else
-  lseek(handle, 0, SEEK_SET);
-
-  std::size_t offset = 0;
-  while (offset < content.size()) {
     ssize_t bytes_read = ::read(handle, &content[offset], content.size() - offset);
     if (bytes_read < 0) {
       std::error_code ec = std::error_code(errno, std::system_category());
       throw fs::filesystem_error("Cannot read a temporary file", path(), ec);
     }
+#endif
 
     offset += bytes_read;
   }
-#endif
 
   return content;
 }
@@ -139,32 +136,29 @@ void file::append(std::string_view content) const {
 
 #ifdef _WIN32
   SetFilePointer(handle, 0, nullptr, FILE_END);
+#else
+  lseek(handle, 0, SEEK_END);
+#endif
 
   std::size_t offset = 0;
   while (offset < content.size()) {
+#ifdef _WIN32
     DWORD bytes_written;
     BOOL ret = WriteFile(handle, &content[offset], content.size() - offset, &bytes_written, nullptr);
     if (!ret) {
       std::error_code ec = std::error_code(GetLastError(), std::system_category());
-      throw fs::filesystem_error("Cannot read a temporary file", path(), ec);
+      throw fs::filesystem_error("Cannot write to a temporary file", path(), ec);
     }
-
-    offset += bytes_written;
-  }
 #else
-  lseek(handle, 0, SEEK_END);
-
-  std::size_t offset = 0;
-  while (offset < content.size()) {
-    ssize_t written = ::write(handle, &content[offset], content.size() - offset);
-    if (written < 0) {
+    ssize_t bytes_written = ::write(handle, &content[offset], content.size() - offset);
+    if (bytes_written < 0) {
       std::error_code ec = std::error_code(errno, std::system_category());
       throw fs::filesystem_error("Cannot write to a temporary file", path(), ec);
     }
-
-    offset += written;
-  }
 #endif
+
+    offset += bytes_written;
+  }
 }
 
 std::ifstream file::input_stream() const {
