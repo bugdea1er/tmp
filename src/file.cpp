@@ -95,15 +95,17 @@ std::string file::read() const {
   std::string content;
   content.resize(file_size(path()));
 
+  native_handle_type handle = native_handle();
+
 #ifdef _WIN32
   std::ifstream stream = input_stream();
   return std::string(std::istreambuf_iterator<char>(stream), {});
 #else
-  int fd = open(path().c_str(), O_RDONLY);
+  lseek(handle, 0, SEEK_SET);
 
   std::size_t offset = 0;
   while (offset < content.size()) {
-    ssize_t bytes_read = ::read(fd, &content[offset], content.size() - offset);
+    ssize_t bytes_read = ::read(handle, &content[offset], content.size() - offset);
     if (bytes_read < 0) {
       std::error_code ec = std::error_code(errno, std::system_category());
       throw fs::filesystem_error("Cannot read a temporary file", path(), ec);
@@ -113,58 +115,50 @@ std::string file::read() const {
   }
 #endif
 
-  // FIXME: close fd
   return content;
 }
 
 void file::write(std::string_view content) const {
+  native_handle_type handle = native_handle();
+
 #ifdef _WIN32
   output_stream(std::ios::trunc) << content;
 #else
-  int fd = open(path().c_str(), O_WRONLY | O_TRUNC);
-  if (fd == -1) {
-    std::error_code ec = std::error_code(errno, std::system_category());
-    throw fs::filesystem_error("Cannot write to a temporary file", path(), ec);
-  }
+  ftruncate(handle, 0);
+  lseek(handle, 0, SEEK_SET);
 
   std::size_t offset = 0;
   while (offset < content.size()) {
-    ssize_t written = ::write(fd, &content[offset], content.size() - offset);
+    ssize_t written = ::write(handle, &content[offset], content.size() - offset);
     if (written < 0) {
       std::error_code ec = std::error_code(errno, std::system_category());
-      throw fs::filesystem_error("Cannot write to a temporary file", path(),
-                                 ec);
+      throw fs::filesystem_error("Cannot write to a temporary file", path(), ec);
     }
 
     offset += written;
   }
 #endif
-  // FIXME: close fd
 }
 
 void file::append(std::string_view content) const {
+  native_handle_type handle = native_handle();
+
 #ifdef _WIN32
   output_stream(std::ios::app) << content;
 #else
-  int fd = open(path().c_str(), O_WRONLY | O_APPEND);
-  if (fd == -1) {
-    std::error_code ec = std::error_code(errno, std::system_category());
-    throw fs::filesystem_error("Cannot write to a temporary file", path(), ec);
-  }
+  lseek(handle, 0, SEEK_END);
 
   std::size_t offset = 0;
   while (offset < content.size()) {
-    ssize_t written = ::write(fd, &content[offset], content.size() - offset);
+    ssize_t written = ::write(handle, &content[offset], content.size() - offset);
     if (written < 0) {
       std::error_code ec = std::error_code(errno, std::system_category());
-      throw fs::filesystem_error("Cannot write to a temporary file", path(),
-                                 ec);
+      throw fs::filesystem_error("Cannot write to a temporary file", path(), ec);
     }
 
     offset += written;
   }
 #endif
-  // FIXME: close fd
 }
 
 std::ifstream file::input_stream() const {
