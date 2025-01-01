@@ -3,20 +3,21 @@
 
 #include "utils.hpp"
 
-#include <climits>
 #include <cstddef>
 #include <fcntl.h>
 #include <filesystem>
 #include <fstream>
 #include <ios>
+#include <limits>
 #include <string_view>
 #include <system_error>
 #include <utility>
 
 #ifdef _WIN32
+#define NOMINMAX
 #define UNICODE
-#include <Corecrt_io.h>
 #include <Windows.h>
+#include <corecrt_io.h>
 #else
 #include <cerrno>
 #include <unistd.h>
@@ -24,6 +25,9 @@
 
 namespace tmp {
 namespace {
+
+/// Maximum number of bytes in one read/write operation
+constexpr std::string_view::size_type io_max = std::numeric_limits<int>::max();
 
 /// Creates a temporary file with the given prefix in the system's
 /// temporary directory, and opens it for reading and writing
@@ -94,16 +98,11 @@ file file::copy(const fs::path& path, std::string_view label,
 
 std::string file::read() const {
 #ifdef _WIN32
-  // On Windows, the native API does not distinguish between text and binary
-  // files; opening a separate CRT file descriptor is the easiest way here
   int mode = _O_RDONLY | (binary ? _O_BINARY : _O_TEXT);
+  std::intptr_t osfhandle = reinterpret_cast<std::intptr_t>(native_handle());
 
-  int handle;
-  std::ignore = _wsopen_s(&handle, path().c_str(), mode, _SH_DENYNO, _S_IREAD);
-  auto closer =
-      std::shared_ptr<nullptr_t>(nullptr, [&](auto) { _close(handle); });
+  int handle = _open_osfhandle(osfhandle, mode);
 #else
-  // On POSIX-compliant systems, we can just use already open handle
   native_handle_type handle = native_handle();
   lseek(handle, 0, SEEK_SET);
 #endif
@@ -112,10 +111,9 @@ std::string file::read() const {
   content.resize(file_size(path()));
 
   std::size_t offset = 0;
-  while (offset < content.size()) {
+  do {
     // `read` will fail if the parameter `nbyte` exceeds `INT_MAX`
-    int nbyte =
-        static_cast<int>(std::min<size_t>(content.size() - offset, INT_MAX));
+    int nbyte = static_cast<int>(std::min(content.size() - offset, io_max));
     auto bytes_read = ::read(handle, &content[offset], nbyte);
 
     if (bytes_read == 0) {
@@ -128,7 +126,7 @@ std::string file::read() const {
     }
 
     offset += bytes_read;
-  }
+  } while (true);
 
   content.resize(offset);
   return content;
@@ -141,23 +139,18 @@ void file::write(std::string_view content) const {
 
 void file::append(std::string_view content) const {
 #ifdef _WIN32
-  // On Windows, the native API does not distinguish between text and binary
-  // files; opening a separate CRT file descriptor is the easiest way here
   int mode = _O_WRONLY | _O_APPEND | (binary ? _O_BINARY : _O_TEXT);
+  std::intptr_t osfhandle = reinterpret_cast<std::intptr_t>(native_handle());
 
-  int handle;
-  std::ignore = _wsopen_s(&handle, path().c_str(), mode, _SH_DENYNO, _S_IWRITE);
-  auto closer =
-      std::shared_ptr<nullptr_t>(nullptr, [&](nullptr_t) { _close(handle); });
+  int handle = _open_osfhandle(osfhandle, mode);
 #else
-  // On POSIX-compliant systems, we can just use already open handle
   native_handle_type handle = native_handle();
   lseek(handle, 0, SEEK_END);
 #endif
 
   do {
     // `write` will fail if the parameter `nbyte` exceeds `INT_MAX`
-    int nbyte = static_cast<int>(std::min<size_t>(content.size(), INT_MAX));
+    int nbyte = static_cast<int>(std::min(content.size(), io_max));
 
     auto bytes_written = ::write(handle, content.data(), nbyte);
     if (bytes_written < 0) {
