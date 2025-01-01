@@ -95,10 +95,10 @@ file file::copy(const fs::path& path, std::string_view label,
 
 std::string file::read() const {
 #ifdef _WIN32
-  // FIXME: use _wsopen_s
-  int mode = _O_RDONLY;
-  binary ? mode |= _O_BINARY : mode |= _O_TEXT;
-  int handle = _wopen(path().c_str(), mode);
+  int mode = _O_RDONLY | (binary ? _O_BINARY : _O_TEXT);
+
+  int handle;
+  std::ignore = _wsopen_s(&handle, path().c_str(), mode, _SH_DENYNO, _S_IREAD);
   // finally
 #else
   native_handle_type handle = native_handle();
@@ -112,7 +112,7 @@ std::string file::read() const {
   while (offset < content.size()) {
     // FIXME: handle large buffers
 #ifdef _WIN32
-    int bytes_read = ::read(handle, &content[offset], content.size() - offset);
+    int bytes_read = _read(handle, &content[offset], content.size() - offset);
 #else
     ssize_t bytes_read = ::read(handle, &content[offset], content.size() - offset);
 #endif
@@ -145,10 +145,10 @@ void file::write(std::string_view content) const {
 
 void file::append(std::string_view content) const {
 #ifdef _WIN32
-  int mode = _O_WRONLY | _O_APPEND;
-  binary ? mode |= _O_BINARY : mode |= _O_TEXT;
-  // FIXME: use _wsopen_s
-  int handle = _wopen(path().c_str(), mode);
+  int mode = _O_WRONLY | _O_APPEND | (binary ? _O_BINARY : _O_TEXT);
+
+  int handle;
+  std::ignore = _wsopen_s(&handle, path().c_str(), mode, _SH_DENYNO, _S_IWRITE);
   // finally
 #else
   native_handle_type handle = native_handle();
