@@ -132,7 +132,12 @@ std::string file::read() const {
 }
 
 void file::write(std::string_view content) const {
-  fs::resize_file(path(), 0);
+  std::error_code ec;
+  fs::resize_file(path(), 0, ec);
+  if (ec) {
+    throw fs::filesystem_error("Cannot write to a temporary file", ec);
+  }
+
   append(content);
 }
 
