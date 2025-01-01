@@ -13,6 +13,7 @@
 #include <utility>
 
 #ifdef _WIN32
+#define UNICODE
 #include <Windows.h>
 #else
 #include <cerrno>
@@ -41,9 +42,9 @@ create_file(std::string_view label, std::string_view extension) {
 
 #ifdef _WIN32
   HANDLE handle =
-      CreateFileW(path.c_str(), GENERIC_READ | GENERIC_WRITE,
-                  FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                  nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
+      CreateFile(path.c_str(), GENERIC_READ | GENERIC_WRITE,
+                 FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                 nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
 
   if (handle == INVALID_HANDLE_VALUE) {
     ec = std::error_code(GetLastError(), std::system_category());

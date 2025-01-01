@@ -10,6 +10,7 @@
 #include <utility>
 
 #ifdef _WIN32
+#define UNICODE
 #include <Windows.h>
 #else
 #include <cerrno>
@@ -37,7 +38,7 @@ create_directory(std::string_view label) {
   }
 
 #ifdef _WIN32
-  if (!CreateDirectoryW(path.c_str(), nullptr)) {
+  if (!CreateDirectory(path.c_str(), nullptr)) {
     ec = std::error_code(GetLastError(), std::system_category());
   }
 #else
@@ -52,9 +53,9 @@ create_directory(std::string_view label) {
 
 #ifdef _WIN32
   HANDLE handle =
-      CreateFileW(path.c_str(), GENERIC_READ | GENERIC_WRITE,
-                  FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                  nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+      CreateFile(path.c_str(), GENERIC_READ | GENERIC_WRITE,
+                 FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                 nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
 #else
   int handle = open(path.data(), O_DIRECTORY);
 #endif
