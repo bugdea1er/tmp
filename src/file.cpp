@@ -4,6 +4,7 @@
 #include "utils.hpp"
 
 #include <cstddef>
+#include <fcntl.h>
 #include <filesystem>
 #include <fstream>
 #include <ios>
@@ -15,10 +16,10 @@
 
 #ifdef _WIN32
 #define UNICODE
+#include <corecrt_io.h>
 #include <Windows.h>
 #else
 #include <cerrno>
-#include <sys/fcntl.h>
 #include <unistd.h>
 #endif
 
@@ -93,10 +94,16 @@ file file::copy(const fs::path& path, std::string_view label,
 }
 
 std::string file::read() const {
+#ifdef _WIN32
+  // FIXME: use _wsopen_s
+  int handle = _wopen(path().c_str(), _O_RDONLY);
+  // finally
+#else
   native_handle_type handle = native_handle();
+#endif
 
 #ifdef _WIN32
-  SetFilePointer(handle, 0, nullptr, FILE_BEGIN);
+  _lseek(handle, 0, SEEK_SET);
 #else
   lseek(handle, 0, SEEK_SET);
 #endif
@@ -106,23 +113,30 @@ std::string file::read() const {
 
   std::size_t offset = 0;
   while (offset < content.size()) {
+    // FIXME: handle large buffers
 #ifdef _WIN32
-    DWORD bytes_read;
-    BOOL ret = ReadFile(handle, &content[offset], content.size() - offset, &bytes_read, nullptr);
-    if (!ret) {
-      std::error_code ec = std::error_code(GetLastError(), std::system_category());
-      throw fs::filesystem_error("Cannot read a temporary file", path(), ec);
-    }
+    int bytes_read = _read(handle, &content[offset], content.size() - offset);
 #else
     ssize_t bytes_read = ::read(handle, &content[offset], content.size() - offset);
+#endif
+
+    if (bytes_read == 0) {
+      break;
+    }
+
     if (bytes_read < 0) {
       std::error_code ec = std::error_code(errno, std::system_category());
       throw fs::filesystem_error("Cannot read a temporary file", path(), ec);
     }
-#endif
 
     offset += bytes_read;
   }
+
+  content.resize(offset);
+
+#ifdef _WIN32
+  _close(handle); // FIXME: close on errors too
+#endif
 
   return content;
 }
@@ -133,33 +147,37 @@ void file::write(std::string_view content) const {
 }
 
 void file::append(std::string_view content) const {
+#ifdef _WIN32
+  int mode = _O_WRONLY | _O_APPEND;
+  binary ? mode |= _O_BINARY : mode |= _O_TEXT;
+  // FIXME: use _wsopen_s
+  int handle = _wopen(path().c_str(), mode);
+  // finally
+#else
   native_handle_type handle = native_handle();
+#endif
 
 #ifdef _WIN32
-  SetFilePointer(handle, 0, nullptr, FILE_END);
+  _lseek(handle, 0, SEEK_END);
 #else
   lseek(handle, 0, SEEK_END);
 #endif
 
   std::size_t offset = 0;
   while (offset < content.size()) {
+    // FIXME: handle large buffers
 #ifdef _WIN32
-    DWORD bytes_written;
-    BOOL ret = WriteFile(handle, &content[offset], content.size() - offset, &bytes_written, nullptr);
-    if (!ret) {
-      std::error_code ec = std::error_code(GetLastError(), std::system_category());
-      throw fs::filesystem_error("Cannot write to a temporary file", path(), ec);
-    }
+    int bytes_written = _write(handle, &content[offset], content.size() - offset);
 #else
     ssize_t bytes_written = ::write(handle, &content[offset], content.size() - offset);
-    if (bytes_written < 0) {
-      std::error_code ec = std::error_code(errno, std::system_category());
-      throw fs::filesystem_error("Cannot write to a temporary file", path(), ec);
-    }
 #endif
 
     offset += bytes_written;
   }
+
+#ifdef _WIN32
+  _close(handle); // FIXME: close on errors too
+#endif
 }
 
 std::ifstream file::input_stream() const {
