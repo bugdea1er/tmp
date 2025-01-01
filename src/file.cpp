@@ -154,16 +154,20 @@ void file::append(std::string_view content) const {
   lseek(handle, 0, SEEK_END);
 #endif
 
-  std::size_t offset = 0;
-  while (offset < content.size()) {
+  while (!content.empty()) {
     // FIXME: handle large buffers
 #ifdef _WIN32
-    int bytes_written = _write(handle, &content[offset], content.size() - offset);
+    int bytes_written = _write(handle, content.data(), content.size());
 #else
-    ssize_t bytes_written = ::write(handle, &content[offset], content.size() - offset);
+    ssize_t bytes_written = ::write(handle, content.data(), content.size());
 #endif
 
-    offset += bytes_written;
+    if (bytes_written < 0) {
+      std::error_code ec = std::error_code(errno, std::system_category());
+      throw fs::filesystem_error("Cannot write to a temporary file", path(), ec);
+    }
+
+    content = content.substr(bytes_written);
   }
 }
 
