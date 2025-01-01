@@ -95,12 +95,15 @@ file file::copy(const fs::path& path, std::string_view label,
 
 std::string file::read() const {
 #ifdef _WIN32
+  // On Windows, the native API does not distinguish between text and binary
+  // files; opening a separate CRT file descriptor is the easiest way here
   int mode = _O_RDONLY | (binary ? _O_BINARY : _O_TEXT);
 
   int handle;
   std::ignore = _wsopen_s(&handle, path().c_str(), mode, _SH_DENYNO, _S_IREAD);
-  // finally
+  auto closer = std::shared_ptr<nullptr_t>(nullptr, [&](auto) { _close(handle); });
 #else
+  // On POSIX-compliant systems, we can just use already open handle
   native_handle_type handle = native_handle();
   lseek(handle, 0, SEEK_SET);
 #endif
@@ -130,11 +133,6 @@ std::string file::read() const {
   }
 
   content.resize(offset);
-
-#ifdef _WIN32
-  _close(handle); // FIXME: close on errors too
-#endif
-
   return content;
 }
 
@@ -145,12 +143,15 @@ void file::write(std::string_view content) const {
 
 void file::append(std::string_view content) const {
 #ifdef _WIN32
+  // On Windows, the native API does not distinguish between text and binary
+  // files; opening a separate CRT file descriptor is the easiest way here
   int mode = _O_WRONLY | _O_APPEND | (binary ? _O_BINARY : _O_TEXT);
 
   int handle;
   std::ignore = _wsopen_s(&handle, path().c_str(), mode, _SH_DENYNO, _S_IWRITE);
-  // finally
+  auto closer = std::shared_ptr<nullptr_t>(nullptr, [&](nullptr_t) { _close(handle); });
 #else
+  // On POSIX-compliant systems, we can just use already open handle
   native_handle_type handle = native_handle();
   lseek(handle, 0, SEEK_END);
 #endif
@@ -166,10 +167,6 @@ void file::append(std::string_view content) const {
 
     offset += bytes_written;
   }
-
-#ifdef _WIN32
-  _close(handle); // FIXME: close on errors too
-#endif
 }
 
 std::ifstream file::input_stream() const {
