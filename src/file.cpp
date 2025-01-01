@@ -155,13 +155,10 @@ void file::append(std::string_view content) const {
 #endif
 
   while (!content.empty()) {
-    // FIXME: handle large buffers
-#ifdef _WIN32
-    int bytes_written = _write(handle, content.data(), content.size());
-#else
-    ssize_t bytes_written = ::write(handle, content.data(), content.size());
-#endif
+    // `write` will fail if the parameter `nbyte` exceeds `INT_MAX`
+    int nbyte = static_cast<int>(std::min<size_t>(content.size(), INT_MAX));
 
+    auto bytes_written = ::write(handle, content.data(), nbyte);
     if (bytes_written < 0) {
       std::error_code ec = std::error_code(errno, std::system_category());
       throw fs::filesystem_error("Cannot write to a temporary file", path(), ec);
