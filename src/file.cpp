@@ -4,6 +4,7 @@
 #include "utils.hpp"
 
 #include <cstddef>
+#include <climits>
 #include <fcntl.h>
 #include <filesystem>
 #include <fstream>
