@@ -3,8 +3,8 @@
 
 #include "utils.hpp"
 
-#include <cstddef>
 #include <climits>
+#include <cstddef>
 #include <fcntl.h>
 #include <filesystem>
 #include <fstream>
@@ -15,7 +15,7 @@
 
 #ifdef _WIN32
 #define UNICODE
-#include <corecrt_io.h>
+#include <Corecrt_io.h>
 #include <Windows.h>
 #else
 #include <cerrno>
@@ -100,7 +100,8 @@ std::string file::read() const {
 
   int handle;
   std::ignore = _wsopen_s(&handle, path().c_str(), mode, _SH_DENYNO, _S_IREAD);
-  auto closer = std::shared_ptr<nullptr_t>(nullptr, [&](auto) { _close(handle); });
+  auto closer =
+      std::shared_ptr<nullptr_t>(nullptr, [&](auto) { _close(handle); });
 #else
   // On POSIX-compliant systems, we can just use already open handle
   native_handle_type handle = native_handle();
@@ -113,7 +114,8 @@ std::string file::read() const {
   std::size_t offset = 0;
   while (offset < content.size()) {
     // `read` will fail if the parameter `nbyte` exceeds `INT_MAX`
-    int nbyte = static_cast<int>(std::min<size_t>(content.size() - offset, INT_MAX));
+    int nbyte =
+        static_cast<int>(std::min<size_t>(content.size() - offset, INT_MAX));
     auto bytes_read = ::read(handle, &content[offset], nbyte);
 
     if (bytes_read == 0) {
@@ -122,7 +124,7 @@ std::string file::read() const {
 
     if (bytes_read < 0) {
       std::error_code ec = std::error_code(errno, std::system_category());
-      throw fs::filesystem_error("Cannot read a temporary file", path(), ec);
+      throw fs::filesystem_error("Cannot read a temporary file", ec);
     }
 
     offset += bytes_read;
@@ -145,25 +147,26 @@ void file::append(std::string_view content) const {
 
   int handle;
   std::ignore = _wsopen_s(&handle, path().c_str(), mode, _SH_DENYNO, _S_IWRITE);
-  auto closer = std::shared_ptr<nullptr_t>(nullptr, [&](nullptr_t) { _close(handle); });
+  auto closer =
+      std::shared_ptr<nullptr_t>(nullptr, [&](nullptr_t) { _close(handle); });
 #else
   // On POSIX-compliant systems, we can just use already open handle
   native_handle_type handle = native_handle();
   lseek(handle, 0, SEEK_END);
 #endif
 
-  while (!content.empty()) {
+  do {
     // `write` will fail if the parameter `nbyte` exceeds `INT_MAX`
     int nbyte = static_cast<int>(std::min<size_t>(content.size(), INT_MAX));
 
     auto bytes_written = ::write(handle, content.data(), nbyte);
     if (bytes_written < 0) {
       std::error_code ec = std::error_code(errno, std::system_category());
-      throw fs::filesystem_error("Cannot write to a temporary file", path(), ec);
+      throw fs::filesystem_error("Cannot write to a temporary file", ec);
     }
 
     content = content.substr(bytes_written);
-  }
+  } while (!content.empty());
 }
 
 std::ifstream file::input_stream() const {
