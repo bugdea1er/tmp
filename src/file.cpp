@@ -111,12 +111,9 @@ std::string file::read() const {
 
   std::size_t offset = 0;
   while (offset < content.size()) {
-    // FIXME: handle large buffers
-#ifdef _WIN32
-    int bytes_read = _read(handle, &content[offset], content.size() - offset);
-#else
-    ssize_t bytes_read = ::read(handle, &content[offset], content.size() - offset);
-#endif
+    // `read` will fail if the parameter `nbyte` exceeds `INT_MAX`
+    int nbyte = static_cast<int>(std::min<size_t>(content.size() - offset, INT_MAX));
+    auto bytes_read = ::read(handle, &content[offset], nbyte);
 
     if (bytes_read == 0) {
       break;
