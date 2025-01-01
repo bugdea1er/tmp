@@ -112,21 +112,20 @@ std::string file::read() const {
 
   std::size_t offset = 0;
   do {
-    // `read` will fail if the parameter `nbyte` exceeds `INT_MAX`
-    int nbyte = static_cast<int>(std::min(content.size() - offset, io_max));
-    auto bytes_read = ::read(handle, &content[offset], nbyte);
+    int readable = static_cast<int>(std::min(content.size() - offset, io_max));
+    auto read = ::read(handle, &content[offset], readable);
 
-    if (bytes_read == 0) {
+    if (read == 0) {
       break;
     }
 
-    if (bytes_read < 0) {
+    if (read < 0) {
       std::error_code ec = std::error_code(errno, std::system_category());
       throw fs::filesystem_error("Cannot read a temporary file", ec);
     }
 
-    offset += bytes_read;
-  } while (true);
+    offset += read;
+  } while (offset < content.size());
 
   content.resize(offset);
   return content;
@@ -149,16 +148,15 @@ void file::append(std::string_view content) const {
 #endif
 
   do {
-    // `write` will fail if the parameter `nbyte` exceeds `INT_MAX`
-    int nbyte = static_cast<int>(std::min(content.size(), io_max));
+    int writable = static_cast<int>(std::min(content.size(), io_max));
 
-    auto bytes_written = ::write(handle, content.data(), nbyte);
-    if (bytes_written < 0) {
+    auto written = ::write(handle, content.data(), writable);
+    if (written < 0) {
       std::error_code ec = std::error_code(errno, std::system_category());
       throw fs::filesystem_error("Cannot write to a temporary file", ec);
     }
 
-    content = content.substr(bytes_written);
+    content = content.substr(written);
   } while (!content.empty());
 }
 
