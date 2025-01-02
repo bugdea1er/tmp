@@ -381,7 +381,6 @@ TEST(file, output_stream_append_text) {
 #else
     EXPECT_EQ(content, "Hello,\n world");
 #endif
-
   }
 
   {
