@@ -156,17 +156,25 @@ TEST(file, write_text) {
   tmpfile.write("Hello\n");
 
   {
-    auto stream = std::ifstream(tmpfile.path());
+    auto stream = std::ifstream(tmpfile.path(), std::ios::binary);
     auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+#ifdef _WIN32
+    EXPECT_EQ(content, "Hello\r\n");
+#else
     EXPECT_EQ(content, "Hello\n");
+#endif
   }
 
   tmpfile.write("world!\n");
 
   {
-    auto stream = std::ifstream(tmpfile.path());
+    auto stream = std::ifstream(tmpfile.path(), std::ios::binary);
     auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+#ifdef _WIN32
+    EXPECT_EQ(content, "world!\r\n");
+#else
     EXPECT_EQ(content, "world!\n");
+#endif
   }
 }
 
@@ -195,22 +203,30 @@ TEST(file, append_binary) {
 /// Tests text file appending
 TEST(file, append_text) {
   file tmpfile = file::text();
-  std::ofstream(tmpfile.path()) << "Hello,\n ";
+  std::ofstream(tmpfile.path()) << "Hello,";
 
-  tmpfile.append("world");
+  tmpfile.append("\n world");
 
   {
-    auto stream = std::ifstream(tmpfile.path());
+    auto stream = std::ifstream(tmpfile.path(), std::ios::binary);
     auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+#ifdef _WIN32
+    EXPECT_EQ(content, "Hello,\r\n world");
+#else
     EXPECT_EQ(content, "Hello,\n world");
+#endif
   }
 
-  tmpfile.append("!");
+  tmpfile.append("!\n");
 
   {
-    auto stream = std::ifstream(tmpfile.path());
+    auto stream = std::ifstream(tmpfile.path(), std::ios::binary);
     auto content = std::string(std::istreambuf_iterator<char>(stream), {});
-    EXPECT_EQ(content, "Hello,\n world!");
+#ifdef _WIN32
+    EXPECT_EQ(content, "Hello,\r\n world!\r\n");
+#else
+    EXPECT_EQ(content, "Hello,\n world!\n");
+#endif
   }
 }
 
