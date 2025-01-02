@@ -109,7 +109,7 @@ std::ifstream file::input_stream() const {
 }
 
 std::ofstream file::output_stream(std::ios::openmode mode) const {
-  binary ? mode |= std::ios::binary : mode ^= std::ios::binary;
+  binary ? mode |= std::ios::binary : mode &= ~std::ios::binary;
   return std::ofstream(path(), mode);
 }
 
