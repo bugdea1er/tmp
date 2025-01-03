@@ -130,6 +130,14 @@ TEST(file, read_text) {
   EXPECT_EQ(tmpfile.read(), "Hello,\nworld!\n");
 }
 
+/// Tests file reading error reporting
+TEST(file, read_error) {
+  file tmpfile = file();
+  fs::remove(tmpfile);
+
+  EXPECT_THROW(tmpfile.read(), fs::filesystem_error);
+}
+
 /// Tests binary file writing
 TEST(file, write_binary) {
   file tmpfile = file();
@@ -176,6 +184,15 @@ TEST(file, write_text) {
     EXPECT_EQ(content, "world!\n");
 #endif
   }
+}
+
+/// Tests file writing error reporting
+TEST(file, write_error) {
+  file tmpfile = file();
+  fs::permissions(tmpfile.path(), fs::perms::none);
+
+  EXPECT_THROW(tmpfile.write("Hello!"), fs::filesystem_error);
+  fs::permissions(tmpfile.path(), fs::perms::all);
 }
 
 /// Tests binary file appending
@@ -228,6 +245,15 @@ TEST(file, append_text) {
     EXPECT_EQ(content, "Hello,\n world!\n");
 #endif
   }
+}
+
+/// Tests file appending error reporting
+TEST(file, append_error) {
+  file tmpfile = file();
+  fs::permissions(tmpfile.path(), fs::perms::none);
+
+  EXPECT_THROW(tmpfile.append("world!"), fs::filesystem_error);
+  fs::permissions(tmpfile.path(), fs::perms::all);
 }
 
 /// Tests binary file reading from input_stream

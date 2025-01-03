@@ -4,7 +4,6 @@ include(GenerateExportHeader)
 add_library(${PROJECT_NAME} entry.cpp file.cpp directory.cpp utils.cpp)
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 target_link_libraries(${PROJECT_NAME} PUBLIC std::filesystem)
-target_compile_definitions(${PROJECT_NAME} PRIVATE _CRT_NONSTDC_NO_WARNINGS)
 
 set_target_properties(${PROJECT_NAME}
   PROPERTIES EXPORT_NAME ${PROJECT_NAME}
