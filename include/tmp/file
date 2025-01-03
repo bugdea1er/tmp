@@ -74,14 +74,17 @@ public:
 
   /// Reads the entire contents of this file
   /// @returns A string with this file contents
+  /// @throws std::filesystem::filesystem_error if cannot read the file contents
   std::string read() const;
 
   /// Writes the given content to this file discarding any previous content
   /// @param content   A string to write to this file
+  /// @throws std::filesystem::filesystem_error if cannot write to the file
   void write(std::string_view content) const;
 
   /// Appends the given content to the end of this file
   /// @param content   A string to append to this file
+  /// @throws std::filesystem::filesystem_error if cannot append to the file
   void append(std::string_view content) const;
 
   /// Returns the input stream to this file
