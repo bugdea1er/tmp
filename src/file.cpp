@@ -96,8 +96,8 @@ std::string file::read() const {
     stream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 
     return std::string(std::istreambuf_iterator(stream), {});
-  } catch (const std::ios::failure& error) {
-    throw fs::filesystem_error("Cannot read a temporary file", error.code());
+  } catch (const std::ios::failure& err) {
+    throw fs::filesystem_error("Cannot read a temporary file", err.code());
   }
 }
 
@@ -107,8 +107,8 @@ void file::write(std::string_view content) const {
     stream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 
     stream << content;
-  } catch (const std::ios::failure& error) {
-    throw fs::filesystem_error("Cannot write to a temporary file", error.code());
+  } catch (const std::ios::failure& err) {
+    throw fs::filesystem_error("Cannot write to a temporary file", err.code());
   }
 }
 
@@ -118,8 +118,8 @@ void file::append(std::string_view content) const {
     stream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 
     stream << content;
-  } catch (const std::ios::failure& error) {
-    throw fs::filesystem_error("Cannot write to a temporary file", error.code());
+  } catch (const std::ios::failure& err) {
+    throw fs::filesystem_error("Cannot write to a temporary file", err.code());
   }
 }
 
