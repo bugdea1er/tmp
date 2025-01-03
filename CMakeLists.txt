@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 project(tmp
-  VERSION 1.2
+  VERSION 1.2.1
   DESCRIPTION "RAII-wrappers for unique temporary files and directories for modern C++"
   HOMEPAGE_URL "https://github.com/bugdea1er/tmp"
   LANGUAGES CXX)
