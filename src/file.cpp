@@ -4,7 +4,6 @@
 #include "utils.hpp"
 
 #include <cstddef>
-#include <fcntl.h>
 #include <filesystem>
 #include <fstream>
 #include <ios>
@@ -17,7 +16,6 @@
 #define NOMINMAX
 #define UNICODE
 #include <Windows.h>
-#include <corecrt_io.h>
 #else
 #include <cerrno>
 #include <unistd.h>
@@ -98,12 +96,17 @@ file file::copy(const fs::path& path, std::string_view label,
 
 std::string file::read() const {
 #ifdef _WIN32
-  int mode = _O_RDONLY | (binary ? _O_BINARY : _O_TEXT);
-  std::intptr_t osfhandle = reinterpret_cast<std::intptr_t>(native_handle());
+  if (!binary) {
+    std::ifstream stream = input_stream();
+    return std::string(std::istreambuf_iterator<char>(stream), {});
+  }
+#endif
 
-  int handle = _open_osfhandle(osfhandle, mode);
-#else
   native_handle_type handle = native_handle();
+
+#ifdef _WIN32
+  SetFilePointer(handle, 0, nullptr, FILE_BEGIN);
+#else
   lseek(handle, 0, SEEK_SET);
 #endif
 
@@ -112,15 +115,27 @@ std::string file::read() const {
 
   std::size_t offset = 0;
   do {
+    std::error_code ec;
     int readable = static_cast<int>(std::min(content.size() - offset, io_max));
-    auto read = ::read(handle, &content[offset], readable);
+
+#ifdef _WIN32
+    DWORD read;
+    if (!ReadFile(handle, content.data(), readable, &read, nullptr)) {
+      ec = std::error_code(GetLastError(), std::system_category());
+    }
+#else
+    ssize_t read = ::read(handle, &content[offset], readable);
+
+    if (read < 0) {
+      ec = std::error_code(errno, std::system_category());
+    }
+#endif
 
     if (read == 0) {
       break;
     }
 
-    if (read < 0) {
-      std::error_code ec = std::error_code(errno, std::system_category());
+    if (ec) {
       throw fs::filesystem_error("Cannot read a temporary file", ec);
     }
 
@@ -143,21 +158,38 @@ void file::write(std::string_view content) const {
 
 void file::append(std::string_view content) const {
 #ifdef _WIN32
-  int mode = _O_WRONLY | _O_APPEND | (binary ? _O_BINARY : _O_TEXT);
-  std::intptr_t osfhandle = reinterpret_cast<std::intptr_t>(native_handle());
+  if (!binary) {
+    output_stream(std::ios::app) << content;
+    return;
+  }
+#endif
 
-  int handle = _open_osfhandle(osfhandle, mode);
-#else
   native_handle_type handle = native_handle();
+
+#ifdef _WIN32
+  SetFilePointer(handle, 0, nullptr, FILE_END);
+#else
   lseek(handle, 0, SEEK_END);
 #endif
 
   do {
+    std::error_code ec;
     int writable = static_cast<int>(std::min(content.size(), io_max));
 
-    auto written = ::write(handle, content.data(), writable);
+#ifdef _WIN32
+    DWORD written;
+    if (!WriteFile(handle, content.data(), writable, &written, nullptr)) {
+      ec = std::error_code(GetLastError(), std::system_category());
+    }
+#else
+    ssize_t written = ::write(handle, content.data(), writable);
+
     if (written < 0) {
-      std::error_code ec = std::error_code(errno, std::system_category());
+      ec = std::error_code(errno, std::system_category());
+    }
+#endif
+
+    if (ec) {
       throw fs::filesystem_error("Cannot write to a temporary file", ec);
     }
 
