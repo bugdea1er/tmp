@@ -34,7 +34,7 @@ create_directory(std::string_view label) {
   std::error_code ec;
   create_parent(path, ec);
   if (ec) {
-    throw fs::filesystem_error("Cannot create temporary directory", ec);
+    throw fs::filesystem_error("Cannot create a temporary directory", ec);
   }
 
 #ifdef _WIN32
@@ -48,7 +48,7 @@ create_directory(std::string_view label) {
 #endif
 
   if (ec) {
-    throw fs::filesystem_error("Cannot create temporary directory", ec);
+    throw fs::filesystem_error("Cannot create a temporary directory", ec);
   }
 
 #ifdef _WIN32
@@ -68,9 +68,9 @@ directory::directory(std::string_view label)
     : entry(create_directory(label)) {}
 
 directory directory::copy(const fs::path& path, std::string_view label) {
-  std::error_code ec;
   directory tmpdir = directory(label);
 
+  std::error_code ec;
   if (fs::is_directory(path)) {
     fs::copy(path, tmpdir, copy_options, ec);
   } else {

@@ -30,7 +30,7 @@ static_assert(std::is_same_v<HANDLE, void*>);
 #ifdef _WIN32
 const entry::native_handle_type invalid_handle = INVALID_HANDLE_VALUE;
 #else
-const entry::native_handle_type invalid_handle = -1;
+constexpr entry::native_handle_type invalid_handle = -1;
 #endif
 
 /// Closes the given entry, ignoring any errors

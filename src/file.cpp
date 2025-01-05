@@ -37,7 +37,7 @@ create_file(std::string_view label, std::string_view extension) {
   std::error_code ec;
   create_parent(path, ec);
   if (ec) {
-    throw fs::filesystem_error("Cannot create temporary file", ec);
+    throw fs::filesystem_error("Cannot create a temporary file", ec);
   }
 
 #ifdef _WIN32
@@ -66,10 +66,9 @@ create_file(std::string_view label, std::string_view extension) {
 
 file::file(std::string_view label, std::string_view extension)
     : entry(create_file(label, extension)),
-      binary(/*binary=*/true) {}
+      binary(true) {}
 
 file file::text(std::string_view label, std::string_view extension) {
-  // A bit janky, but all in the name of the cleanest headers
   file result = file(label, extension);
   result.binary = false;
 
@@ -78,9 +77,9 @@ file file::text(std::string_view label, std::string_view extension) {
 
 file file::copy(const fs::path& path, std::string_view label,
                 std::string_view extension) {
-  std::error_code ec;
   file tmpfile = file(label, extension);
 
+  std::error_code ec;
   fs::copy_file(path, tmpfile, copy_options, ec);
 
   if (ec) {
@@ -93,7 +92,7 @@ file file::copy(const fs::path& path, std::string_view label,
 std::string file::read() const {
   try {
     std::ifstream stream = input_stream();
-    stream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    stream.exceptions(std::ios::failbit | std::ios::badbit);
 
     return std::string(std::istreambuf_iterator(stream), {});
   } catch (const std::ios::failure& err) {
@@ -104,7 +103,7 @@ std::string file::read() const {
 void file::write(std::string_view content) const {
   try {
     std::ofstream stream = output_stream(std::ios::trunc);
-    stream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    stream.exceptions(std::ios::failbit | std::ios::badbit);
 
     stream << content;
   } catch (const std::ios::failure& err) {
@@ -115,7 +114,7 @@ void file::write(std::string_view content) const {
 void file::append(std::string_view content) const {
   try {
     std::ofstream stream = output_stream(std::ios::app);
-    stream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    stream.exceptions(std::ios::failbit | std::ios::badbit);
 
     stream << content;
   } catch (const std::ios::failure& err) {
