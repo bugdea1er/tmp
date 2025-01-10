@@ -3,6 +3,10 @@ project(${PROJECT_NAME}.test)
 find_package(GTest)
 
 add_executable(${PROJECT_NAME} entry.cpp directory.cpp file.cpp)
+if(NOT WIN32)
+    target_sources(${PROJECT_NAME} PRIVATE socket.cpp)
+endif()
+
 target_link_libraries(${PROJECT_NAME} tmp::tmp GTest::gtest_main)
 target_compile_definitions(${PROJECT_NAME}
   PRIVATE LABEL="com.github.bugdea1er.tmp"

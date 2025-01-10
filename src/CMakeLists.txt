@@ -5,6 +5,10 @@ add_library(${PROJECT_NAME} entry.cpp file.cpp directory.cpp utils.cpp)
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 target_link_libraries(${PROJECT_NAME} PUBLIC std::filesystem)
 
+if(NOT WIN32)
+  target_sources(${PROJECT_NAME} PRIVATE socket.cpp)
+endif()
+
 set_target_properties(${PROJECT_NAME}
   PROPERTIES EXPORT_NAME ${PROJECT_NAME}
              CXX_EXTENSIONS OFF

@@ -1,0 +1,55 @@
+#ifndef TMP_SOCKET_H
+#define TMP_SOCKET_H
+
+#ifndef _WIN32
+
+#include <tmp/entry>
+#include <tmp/export>
+
+#include <cstddef>
+#include <future>
+#include <filesystem>
+#include <string_view>
+
+namespace tmp {
+
+/// tmp::socket is a smart handle that owns and manages a temporary
+/// unix domain socket and deletes it when this handle goes out of scope
+class TMP_EXPORT socket final : public entry {
+public:
+   using acceptor = std::string(*)(std::string_view) noexcept;
+
+  /// Creates a unique temporary unix domain socket
+  /// @param label     A label to attach to the temporary socket path
+  /// @throws std::filesystem::filesystem_error if cannot create a socket
+  /// @throws std::invalid_argument             if the label is ill-formatted
+  explicit socket(std::string_view label = "");
+
+  /// Creates a temporary unix domain socket at the given path
+  /// @note The given path will be overwritten
+  /// @param path     A path for the temporary socket
+  /// @throws std::filesystem::filesystem_error if cannot create a socket
+  /// @throws std::invalid_argument             if the label is ill-formatted
+  explicit socket(std::filesystem::path path);
+
+  std::future<void> listen(acceptor function);
+
+  void shutdown();
+
+  /// Deletes the managed socket
+  ~socket() noexcept override;
+
+  socket(socket&&) noexcept;                    ///< MoveConstructible
+  socket& operator=(socket&&) noexcept;         ///< MoveAssignable
+  socket(const socket&) = delete;               ///< not CopyConstructible
+  socket& operator=(const socket&) = delete;    ///< not CopyAssignable
+};
+}    // namespace tmp
+
+/// The template specialization of `std::hash` for `tmp::socket`
+template<> struct TMP_EXPORT std::hash<tmp::socket> {
+  std::size_t operator()(const tmp::socket& socket) const noexcept;
+};
+
+#endif    // _WIN32
+#endif    // TMP_SOCKET_H
