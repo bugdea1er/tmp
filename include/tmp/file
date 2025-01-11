@@ -42,7 +42,7 @@ namespace tmp {
 ///     // tmp::file object goes out of scope and is destroyed
 ///   }
 /// @endcode
-class TMP_EXPORT file final : public entry {
+class TMP_EXPORT file : public entry {
 public:
   /// Creates a unique temporary file and opens it for reading and writing
   /// in binary mode
