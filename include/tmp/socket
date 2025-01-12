@@ -35,7 +35,7 @@ namespace tmp {
 ///
 ///   auto func(std::string_view content) {
 ///     auto tmpsocket = tmp::socket("org.example.product");
-///     auto future = tmpsocket.listen(acceptor);
+///     tmpsocket.listen(acceptor);
 ///
 ///     // the temporary socket is deleted when the
 ///     // tmp::socket object goes out of scope and is destroyed

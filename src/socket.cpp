@@ -88,7 +88,7 @@ void socket::listen(acceptor function) {
     while (true) {
       int client = accept(handle, nullptr, nullptr);
       if (client < 0) {
-        if (errno == EBADF) {    // closed via `socket::shutdown()`
+        if (errno == EBADF) {    // closed via `~socket()`
           break;
         }
 
