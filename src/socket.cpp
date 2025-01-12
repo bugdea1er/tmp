@@ -32,7 +32,6 @@ std::pair<fs::path, entry::native_handle_type> create_socket(fs::path path) {
   // FIXME: check if the filename isn't too long
 
   sockaddr_un address;
-  address.sun_len = sizeof(address);
   address.sun_family = AF_UNIX;
   memcpy(address.sun_path, path.c_str(), path.string().length() + 1);
 
@@ -116,7 +115,7 @@ void socket::listen(acceptor function) {
   thread.detach();
 }
 
-socket::~socket() noexcept = default; // FIXME: shutdown(fd, SHUT_RD)?
+socket::~socket() noexcept = default;    // FIXME: shutdown(fd, SHUT_RD)?
 
 socket::socket(socket&&) noexcept = default;
 socket& socket::operator=(socket&& other) noexcept = default;

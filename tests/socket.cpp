@@ -4,6 +4,7 @@
 
 #include <gtest/gtest.h>
 
+#include <climits>
 #include <sys/socket.h>
 #include <sys/un.h>
 
@@ -58,7 +59,6 @@ TEST(socket, listening) {
   });
 
   sockaddr_un address;
-  address.sun_len = sizeof(address);
   address.sun_family = AF_UNIX;
   memcpy(address.sun_path, tmpsocket.path().c_str(),
          tmpsocket.path().string().length() + 1);
