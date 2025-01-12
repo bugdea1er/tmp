@@ -1,0 +1,81 @@
+#ifndef TMP_SOCKET_H
+#define TMP_SOCKET_H
+
+#ifndef _WIN32
+
+#include <tmp/entry>
+#include <tmp/export>
+
+#include <cstddef>
+#include <filesystem>
+#include <future>
+#include <string_view>
+
+namespace tmp {
+
+/// tmp::socket is a smart handle that owns and manages a temporary
+/// unix domain socket and deletes it when this handle goes out of scope
+///
+/// When a tmp::socket object is created, it creates a temporary socket using
+/// the system's default location for temporary files and binds to it
+///
+/// The managed socket is deleted of when either of the following happens:
+/// - the managing tmp::socket object is destroyed
+/// - the managing tmp::socket object is assigned another path via operator=
+///
+/// tmp::socket provides additional `listen` method which allow implementing
+/// a simple server-client loop
+///
+/// The following example uses a tmp::socket object to create a temporary socket
+/// and accept incoming connections; when the function returns, the tmp::socket
+/// object goes out of scope and the temporary socket is deleted:
+///
+/// @code{.cpp}
+///   #include <tmp/socket>
+///
+///   auto func(std::string_view content) {
+///     auto tmpsocket = tmp::socket("org.example.product");
+///     tmpsocket.listen(acceptor);
+///
+///     // the temporary socket is deleted when the
+///     // tmp::socket object goes out of scope and is destroyed
+///   }
+/// @endcode
+class TMP_EXPORT socket final : public entry {
+public:
+  using acceptor = std::string (*)(std::string_view) noexcept;
+
+  /// Creates a unique temporary unix domain socket
+  /// @param label     A label to attach to the temporary socket path
+  /// @throws std::filesystem::filesystem_error if cannot create a socket
+  /// @throws std::invalid_argument             if the label is ill-formatted
+  explicit socket(std::string_view label = "");
+
+  /// Creates a temporary unix domain socket at the given path
+  /// @note The given path will be overwritten
+  /// @param path     A path for the temporary socket
+  /// @throws std::filesystem::filesystem_error if cannot create a socket
+  /// @throws std::invalid_argument             if the label is ill-formatted
+  explicit socket(std::filesystem::path path);
+
+  /// Listens incoming connections for this socket in a separate detached thread
+  /// @param function callback for handling incoming messages
+  void listen(acceptor function);
+
+  /// Deletes the managed socket
+  ~socket() noexcept override;
+
+  socket(socket&&) noexcept;                    ///< MoveConstructible
+  socket& operator=(socket&&) noexcept;         ///< MoveAssignable
+  socket(const socket&) = delete;               ///< not CopyConstructible
+  socket& operator=(const socket&) = delete;    ///< not CopyAssignable
+};
+}    // namespace tmp
+
+/// The template specialization of `std::hash` for `tmp::socket`
+template<> struct TMP_EXPORT std::hash<tmp::socket> {
+  std::size_t operator()(const tmp::socket& socket) const noexcept;
+};
+
+#endif    // _WIN32
+#endif    // TMP_SOCKET_H
