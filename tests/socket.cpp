@@ -58,7 +58,7 @@ TEST(socket, listening) {
     return std::string("Bye, world!");
   });
 
-  sockaddr_un address;
+  sockaddr_un address = sockaddr_un();
   address.sun_family = AF_UNIX;
   memcpy(address.sun_path, tmpsocket.path().c_str(),
          tmpsocket.path().string().length() + 1);

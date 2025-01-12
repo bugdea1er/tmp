@@ -31,7 +31,7 @@ std::pair<fs::path, entry::native_handle_type> create_socket(fs::path path) {
 
   // FIXME: check if the filename isn't too long
 
-  sockaddr_un address;
+  sockaddr_un address = sockaddr_un();
   address.sun_family = AF_UNIX;
   memcpy(address.sun_path, path.c_str(), path.string().length() + 1);
 
