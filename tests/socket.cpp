@@ -12,11 +12,6 @@ namespace {
 
 namespace fs = std::filesystem;
 
-std::string acceptor(std::string_view input) noexcept {
-  EXPECT_EQ(input, "Hello, world!");
-  return "Bye, world!";
-}
-
 /// Tests socket creation with label
 TEST(socket, create_with_label) {
   socket tmpsocket = socket(std::string_view(LABEL));
@@ -57,8 +52,10 @@ TEST(socket, create_with_path) {
 /// Tests socket listening
 TEST(socket, listening) {
   socket tmpsocket = socket();
-
-  tmpsocket.listen(&acceptor);
+  tmpsocket.listen([](std::string_view input) noexcept {
+    EXPECT_EQ(input, std::string_view("Hello, world!"));
+    return std::string("Bye, world!");
+  });
 
   sockaddr_un address;
   address.sun_len = sizeof(address);
@@ -67,16 +64,17 @@ TEST(socket, listening) {
          tmpsocket.path().string().length() + 1);
 
   int client = ::socket(PF_LOCAL, SOCK_STREAM, 0);
-  connect(client, (sockaddr*)&address, sizeof(address));
+  connect(client, reinterpret_cast<sockaddr*>(&address), sizeof(address));
 
-  char buffer[1024];
-  int read_count;
+  std::string_view input = "Hello, world!";
+  write(client, input.data(), input.size());
 
-  strcpy(buffer, "Hello, world!");
-  write(client, buffer, strlen(buffer) + 1);
-  read_count = read(client, buffer, 1024);
+  std::string output;
+  output.resize(strlen("Bye, world!"));
+  ssize_t bytes_read = read(client, output.data(), INT_MAX);
 
-  EXPECT_EQ(std::string_view(buffer, read_count), "Bye, world!");
+  EXPECT_EQ(bytes_read, output.size());
+  EXPECT_EQ(output, "Bye, world!");
 }
 
 /// Tests that destructor removes a socket

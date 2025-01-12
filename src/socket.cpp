@@ -104,7 +104,7 @@ void socket::listen(acceptor function) {
         continue;
       }
 
-      input.resize(received - 1);    // FIXME: strange
+      input.resize(received);
 
       std::string response = function(input);
 
