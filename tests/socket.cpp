@@ -58,7 +58,7 @@ TEST(socket, create_with_path) {
 TEST(socket, listening) {
   socket tmpsocket = socket();
 
-  auto _ = tmpsocket.listen(&acceptor);
+  tmpsocket.listen(&acceptor);
 
   sockaddr_un address;
   address.sun_len = sizeof(address);
@@ -77,8 +77,6 @@ TEST(socket, listening) {
   read_count = read(client, buffer, 1024);
 
   EXPECT_EQ(std::string_view(buffer, read_count), "Bye, world!");
-  EXPECT_NO_THROW(tmpsocket.shutdown());
-  std::cout << "Closing socket" << std::endl;
 }
 
 /// Tests that destructor removes a socket

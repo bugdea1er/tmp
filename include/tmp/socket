@@ -23,8 +23,8 @@ namespace tmp {
 /// - the managing tmp::socket object is destroyed
 /// - the managing tmp::socket object is assigned another path via operator=
 ///
-/// tmp::socket provides additional `listen` and `shutdown` server-side API
-/// methods which allow implementing a simple server-client loop
+/// tmp::socket provides additional `listen` method which allow implementing
+/// a simple server-client loop
 ///
 /// The following example uses a tmp::socket object to create a temporary socket
 /// and accept incoming connections; when the function returns, the tmp::socket
@@ -36,9 +36,7 @@ namespace tmp {
 ///   auto func(std::string_view content) {
 ///     auto tmpsocket = tmp::socket("org.example.product");
 ///     auto future = tmpsocket.listen(acceptor);
-///     // listening for incoming connections
 ///
-///     tmpsocket.shutdown;
 ///     // the temporary socket is deleted when the
 ///     // tmp::socket object goes out of scope and is destroyed
 ///   }
@@ -60,9 +58,9 @@ public:
   /// @throws std::invalid_argument             if the label is ill-formatted
   explicit socket(std::filesystem::path path);
 
-  std::future<void> listen(acceptor function);
-
-  void shutdown();
+  /// Listens incoming connections for this socket in a separate detached thread
+  /// @param function callback for handling incoming messages
+  void listen(acceptor function);
 
   /// Deletes the managed socket
   ~socket() noexcept override;

@@ -75,7 +75,7 @@ socket::socket(std::string_view label)
 socket::socket(fs::path path)
     : entry(create_socket(std::move(path))) {}
 
-std::future<void> socket::listen(acceptor function) {
+void socket::listen(acceptor function) {
   native_handle_type handle = native_handle();
 
   int ret = ::listen(handle, SOMAXCONN);
@@ -84,7 +84,7 @@ std::future<void> socket::listen(acceptor function) {
     throw fs::filesystem_error("Cannot listen a temporary socket", ec);
   }
 
-  return std::async(std::launch::async, [handle, function] {
+  std::thread thread = std::thread([handle, function] {
     while (true) {
       int client = accept(handle, nullptr, nullptr);
       if (client < 0) {
@@ -112,17 +112,11 @@ std::future<void> socket::listen(acceptor function) {
       close(client);
     }
   });
+
+  thread.detach();
 }
 
-void socket::shutdown() {
-  int ret = ::close(native_handle());    // FIXME: shutdown(fd, SHUT_RD)?
-  if (ret != 0) {
-    std::error_code ec = std::error_code(errno, std::system_category());
-    throw fs::filesystem_error("Cannot shutdown a temporary socket", ec);
-  }
-}
-
-socket::~socket() noexcept = default;
+socket::~socket() noexcept = default; // FIXME: shutdown(fd, SHUT_RD)?
 
 socket::socket(socket&&) noexcept = default;
 socket& socket::operator=(socket&& other) noexcept = default;
