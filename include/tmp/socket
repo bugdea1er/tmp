@@ -15,6 +15,34 @@ namespace tmp {
 
 /// tmp::socket is a smart handle that owns and manages a temporary
 /// unix domain socket and deletes it when this handle goes out of scope
+///
+/// When a tmp::socket object is created, it creates a temporary socket using
+/// the system's default location for temporary files and binds to it
+///
+/// The managed socket is deleted of when either of the following happens:
+/// - the managing tmp::socket object is destroyed
+/// - the managing tmp::socket object is assigned another path via operator=
+///
+/// tmp::socket provides additional `listen` and `shutdown` server-side API
+/// methods which allow implementing a simple server-client loop
+///
+/// The following example uses a tmp::socket object to create a temporary socket
+/// and accept incoming connections; when the function returns, the tmp::socket
+/// object goes out of scope and the temporary socket is deleted:
+///
+/// @code{.cpp}
+///   #include <tmp/socket>
+///
+///   auto func(std::string_view content) {
+///     auto tmpsocket = tmp::socket("org.example.product");
+///     auto future = tmpsocket.listen(acceptor);
+///     // listening for incoming connections
+///
+///     tmpsocket.shutdown;
+///     // the temporary socket is deleted when the
+///     // tmp::socket object goes out of scope and is destroyed
+///   }
+/// @endcode
 class TMP_EXPORT socket final : public entry {
 public:
   using acceptor = std::string (*)(std::string_view) noexcept;
