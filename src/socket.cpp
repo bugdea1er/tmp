@@ -29,14 +29,18 @@ std::pair<fs::path, entry::native_handle_type> create_socket(fs::path path) {
     fs::remove_all(path);
   }
 
-  // FIXME: check if the filename isn't too long
-
-  sockaddr_un address = sockaddr_un();
-  address.sun_family = AF_UNIX;
-  memcpy(address.sun_path, path.c_str(), path.string().length() + 1);
+  std::string_view path_string = path.native();
+  if (path_string.length() >= sizeof(sockaddr_un::sun_path)) {
+    std::error_code ec = std::make_error_code(std::errc::filename_too_long);
+    throw fs::filesystem_error("Cannot create a temporary socket", ec);
+  }
 
   entry::native_handle_type handle = ::socket(PF_LOCAL, SOCK_STREAM, 0);
   // FIXME: check if handle is valid
+
+  sockaddr_un address = sockaddr_un();
+  address.sun_family = AF_UNIX;
+  std::copy(path_string.begin(), path_string.end(), address.sun_path);
 
   int ret = bind(handle, (sockaddr*)&address, sizeof(address));
   if (ret != 0) {
