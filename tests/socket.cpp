@@ -121,7 +121,7 @@ TEST(socket, move_assignment) {
     EXPECT_TRUE(fs::exists(path2));
 
     EXPECT_TRUE(fs::exists(fst));
-    EXPECT_TRUE(fs::equivalent(fst, path2));
+    EXPECT_TRUE(fst == path2);    // fs::equivalent is not supported for sockets
 
     EXPECT_FALSE(native_handle_is_valid(fst_handle));
     EXPECT_TRUE(native_handle_is_valid(snd_handle));
