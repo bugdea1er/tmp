@@ -45,7 +45,6 @@ std::pair<fs::path, entry::native_handle_type> create_socket(fs::path path) {
     throw fs::filesystem_error("Cannot create a temporary socket", ec);
   }
 
-  listen(handle, SOMAXCONN);    // FIXME: check for errors
   return std::pair(std::move(path), handle);
 }
 
@@ -77,9 +76,17 @@ socket::socket(fs::path path)
     : entry(create_socket(std::move(path))) {}
 
 std::future<void> socket::listen(acceptor function) {
-  return std::async(std::launch::async, [&, function] {
+  native_handle_type handle = native_handle();
+
+  int ret = ::listen(handle, SOMAXCONN);
+  if (ret != 0) {
+    std::error_code ec = std::error_code(errno, std::system_category());
+    throw fs::filesystem_error("Cannot listen a temporary socket", ec);
+  }
+
+  return std::async(std::launch::async, [handle, function] {
     while (true) {
-      int client = accept(native_handle(), nullptr, nullptr);
+      int client = accept(handle, nullptr, nullptr);
       if (client < 0) {
         if (errno == EBADF) {    // closed via `socket::shutdown()`
           break;

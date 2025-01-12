@@ -7,8 +7,8 @@
 #include <tmp/export>
 
 #include <cstddef>
-#include <future>
 #include <filesystem>
+#include <future>
 #include <string_view>
 
 namespace tmp {
@@ -17,7 +17,7 @@ namespace tmp {
 /// unix domain socket and deletes it when this handle goes out of scope
 class TMP_EXPORT socket final : public entry {
 public:
-   using acceptor = std::string(*)(std::string_view) noexcept;
+  using acceptor = std::string (*)(std::string_view) noexcept;
 
   /// Creates a unique temporary unix domain socket
   /// @param label     A label to attach to the temporary socket path
