@@ -58,10 +58,11 @@ TEST(socket, listening) {
     return std::string("Bye, world!");
   });
 
+  std::string_view path = tmpsocket.path().native();
+
   sockaddr_un address = sockaddr_un();
   address.sun_family = AF_UNIX;
-  memcpy(address.sun_path, tmpsocket.path().c_str(),
-         tmpsocket.path().string().length() + 1);
+  std::copy(path.begin(), path.end(), static_cast<char*>(address.sun_path));
 
   int client = ::socket(PF_LOCAL, SOCK_STREAM, 0);
   connect(client, reinterpret_cast<sockaddr*>(&address), sizeof(address));
