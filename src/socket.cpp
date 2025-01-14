@@ -101,7 +101,7 @@ void socket::listen(acceptor function) {
       std::string input;
       input.resize(1024);    // FIXME: magic constant
 
-      ssize_t received = read(client, input.data(), input.capacity());
+      ssize_t received = ::read(client, input.data(), input.capacity());
       if (received <= 0) {
         close(client);
         continue;
@@ -111,7 +111,7 @@ void socket::listen(acceptor function) {
 
       std::string response = function(input);
 
-      write(client, response.c_str(), response.size());
+      ::write(client, response.c_str(), response.size());
       close(client);
     }
   });

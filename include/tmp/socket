@@ -41,7 +41,7 @@ namespace tmp {
 ///     // tmp::socket object goes out of scope and is destroyed
 ///   }
 /// @endcode
-class TMP_EXPORT socket final : public entry {
+class TMP_EXPORT socket : public entry {
 public:
   using acceptor = std::string (*)(std::string_view) noexcept;
 

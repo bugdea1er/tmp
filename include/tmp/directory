@@ -34,7 +34,7 @@ namespace tmp {
 ///     // tmp::directory object goes out of scope and is destroyed
 ///   }
 /// @endcode
-class TMP_EXPORT directory final : public entry {
+class TMP_EXPORT directory : public entry {
 public:
   /// Creates a unique temporary directory
   /// @param label     A label to attach to the temporary directory path
