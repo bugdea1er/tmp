@@ -7,12 +7,13 @@
 #include <filesystem>
 #include <fstream>
 #include <ios>
-#include <iterator>
+#include <limits>
 #include <string_view>
 #include <system_error>
 #include <utility>
 
 #ifdef _WIN32
+#define NOMINMAX
 #define UNICODE
 #include <Windows.h>
 #else
@@ -22,6 +23,9 @@
 
 namespace tmp {
 namespace {
+
+/// A block size for file reading
+constexpr std::size_t file_block_size = 4096;
 
 /// Creates a temporary file with the given prefix in the system's
 /// temporary directory, and opens it for reading and writing
@@ -90,35 +94,61 @@ file file::copy(const fs::path& path, std::string_view label,
 }
 
 std::string file::read() const {
-  try {
+#ifdef _WIN32
+  if (!binary) {
     std::ifstream stream = input_stream();
-    stream.exceptions(std::ios::failbit | std::ios::badbit);
-
-    return std::string(std::istreambuf_iterator(stream), {});
-  } catch (const std::ios::failure& err) {
-    throw fs::filesystem_error("Cannot read a temporary file", err.code());
+    return std::string(std::istreambuf_iterator<char>(stream), {});
   }
+#endif
+
+  native_handle_type handle = native_handle();
+
+#ifdef _WIN32
+  SetFilePointer(handle, 0, nullptr, FILE_BEGIN);
+#else
+  lseek(handle, 0, SEEK_SET);
+#endif
+
+  std::error_code ec;
+  std::string contents = tmp::read<file_block_size>(handle, ec);
+  if (ec) {
+    throw fs::filesystem_error("Cannot read a temporary file", ec);
+  }
+
+  return contents;
 }
 
 void file::write(std::string_view content) const {
-  try {
-    std::ofstream stream = output_stream(std::ios::trunc);
-    stream.exceptions(std::ios::failbit | std::ios::badbit);
-
-    stream << content;
-  } catch (const std::ios::failure& err) {
-    throw fs::filesystem_error("Cannot write to a temporary file", err.code());
+  std::error_code ec;
+  fs::resize_file(path(), 0, ec);
+  if (ec) {
+    throw fs::filesystem_error("Cannot write to a temporary file", ec);
   }
+
+  append(content);
 }
 
 void file::append(std::string_view content) const {
-  try {
-    std::ofstream stream = output_stream(std::ios::app);
-    stream.exceptions(std::ios::failbit | std::ios::badbit);
+#ifdef _WIN32
+  if (!binary) {
+    output_stream(std::ios::app) << content;
+    return;
+  }
+#endif
 
-    stream << content;
-  } catch (const std::ios::failure& err) {
-    throw fs::filesystem_error("Cannot write to a temporary file", err.code());
+  native_handle_type handle = native_handle();
+
+#ifdef _WIN32
+  SetFilePointer(handle, 0, nullptr, FILE_END);
+#else
+  lseek(handle, 0, SEEK_END);
+#endif
+
+  std::error_code ec;
+  tmp::write(handle, content, ec);
+
+  if (ec) {
+    throw fs::filesystem_error("Cannot write to a temporary file", ec);
   }
 }
 

@@ -133,7 +133,12 @@ TEST(file, read_text) {
 /// Tests file reading error reporting
 TEST(file, read_error) {
   file tmpfile = file();
-  fs::remove(tmpfile);
+
+#ifdef _WIN32
+  CloseHandle(tmpfile.native_handle());
+#else
+  ::close(tmpfile.native_handle());
+#endif
 
   EXPECT_THROW(tmpfile.read(), fs::filesystem_error);
 }
@@ -250,10 +255,14 @@ TEST(file, append_text) {
 /// Tests file appending error reporting
 TEST(file, append_error) {
   file tmpfile = file();
-  fs::permissions(tmpfile.path(), fs::perms::none);
+
+#ifdef _WIN32
+  CloseHandle(tmpfile.native_handle());
+#else
+  ::close(tmpfile.native_handle());
+#endif
 
   EXPECT_THROW(tmpfile.append("world!"), fs::filesystem_error);
-  fs::permissions(tmpfile.path(), fs::perms::all);
 }
 
 /// Tests binary file reading from input_stream
