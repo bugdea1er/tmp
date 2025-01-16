@@ -85,9 +85,14 @@ public:
   std::string read(std::error_code& ec) const;
 
   /// Writes the given content to this file discarding any previous content
-  /// @param content   A string to write to this file
+  /// @param[in]  content A string to write to this file
   /// @throws std::filesystem::filesystem_error if cannot write to the file
   void write(std::string_view content) const;
+
+  /// Writes the given content to this file discarding any previous content
+  /// @param[in]  content A string to write to this file
+  /// @param[out] ec      Parameter for error reporting
+  void write(std::string_view content, std::error_code& ec) const;
 
   /// Appends the given content to the end of this file
   /// @param content   A string to append to this file

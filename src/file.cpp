@@ -116,13 +116,24 @@ std::string file::read(std::error_code& ec) const {
 
 
 void file::write(std::string_view content) const {
+  std::error_code ec;
+  write(content, ec);
+
+  if (ec) {
+    throw fs::filesystem_error("Cannot write to a temporary file", path(), ec);
+  }
+}
+
+void file::write(std::string_view content, std::error_code& ec) const {
+  // TODO: can be optimized to not open the file again using native API
+
   try {
     std::ofstream stream = output_stream(std::ios::trunc);
     stream.exceptions(std::ios::failbit | std::ios::badbit);
 
     stream << content;
   } catch (const std::ios::failure& err) {
-    throw fs::filesystem_error("Cannot write to a temporary file", err.code());
+    ec = err.code();
   }
 }
 
