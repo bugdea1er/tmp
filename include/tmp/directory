@@ -54,7 +54,7 @@ public:
                         std::string_view label = "");
 
   /// Concatenates this directory path with a given source
-  /// @param source A string which represents a path name
+  /// @param[in] source A string which represents a path name
   /// @returns The result of path concatenation
   std::filesystem::path operator/(std::string_view source) const;
 
