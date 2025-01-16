@@ -114,7 +114,6 @@ std::string file::read(std::error_code& ec) const {
   }
 }
 
-
 void file::write(std::string_view content) const {
   std::error_code ec;
   write(content, ec);
