@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <filesystem>
+#include <system_error>
 #include <utility>
 
 namespace tmp {
@@ -45,9 +46,17 @@ public:
   /// ownership of the managed path; behaves like `std::filesystem::rename`
   /// even when moving between filesystems
   /// @note The target path parent is created when this function is called
-  /// @param to        A path to the target file or directory
+  /// @param[in] to A path to the target file or directory
   /// @throws std::filesystem::filesystem_error if cannot move the owned path
   void move(const std::filesystem::path& to);
+
+  /// Moves the managed path recursively to a given target, releasing
+  /// ownership of the managed path; behaves like `std::filesystem::rename`
+  /// even when moving between filesystems
+  /// @note The target path parent is created when this function is called
+  /// @param[in]  to A path to the target file or directory
+  /// @param[out] ec Parameter for error reporting
+  void move(const std::filesystem::path& to, std::error_code& ec);
 
   /// Deletes the managed path recursively and closes its handle
   virtual ~entry() noexcept;

@@ -90,35 +90,71 @@ file file::copy(const fs::path& path, std::string_view label,
 }
 
 std::string file::read() const {
+  std::error_code ec;
+  std::string content = read(ec);
+
+  if (ec) {
+    throw fs::filesystem_error("Cannot read a temporary file", path(), ec);
+  }
+
+  return content;
+}
+
+std::string file::read(std::error_code& ec) const {
+  // TODO: can be optimized to not open the file again using native API
+
   try {
     std::ifstream stream = input_stream();
     stream.exceptions(std::ios::failbit | std::ios::badbit);
 
     return std::string(std::istreambuf_iterator(stream), {});
   } catch (const std::ios::failure& err) {
-    throw fs::filesystem_error("Cannot read a temporary file", err.code());
+    ec = err.code();
+    return std::string();
   }
 }
 
 void file::write(std::string_view content) const {
+  std::error_code ec;
+  write(content, ec);
+
+  if (ec) {
+    throw fs::filesystem_error("Cannot write to a temporary file", path(), ec);
+  }
+}
+
+void file::write(std::string_view content, std::error_code& ec) const {
+  // TODO: can be optimized to not open the file again using native API
+
   try {
     std::ofstream stream = output_stream(std::ios::trunc);
     stream.exceptions(std::ios::failbit | std::ios::badbit);
 
     stream << content;
   } catch (const std::ios::failure& err) {
-    throw fs::filesystem_error("Cannot write to a temporary file", err.code());
+    ec = err.code();
   }
 }
 
 void file::append(std::string_view content) const {
+  std::error_code ec;
+  append(content, ec);
+
+  if (ec) {
+    throw fs::filesystem_error("Cannot append to a temporary file", path(), ec);
+  }
+}
+
+void file::append(std::string_view content, std::error_code& ec) const {
+  // TODO: can be optimized to not open the file again using native API
+
   try {
     std::ofstream stream = output_stream(std::ios::app);
     stream.exceptions(std::ios::failbit | std::ios::badbit);
 
     stream << content;
   } catch (const std::ios::failure& err) {
-    throw fs::filesystem_error("Cannot write to a temporary file", err.code());
+    ec = err.code();
   }
 }
 
