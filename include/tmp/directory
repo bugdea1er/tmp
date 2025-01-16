@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <filesystem>
 #include <string_view>
+#include <system_error>
 
 namespace tmp {
 
@@ -59,7 +60,16 @@ public:
   /// Returns an iterator over the contents of this directory
   /// @note The special pathnames `.` and `..` are skipped
   /// @returns The iterator over this directory
+  /// @throws std::filesystem::filesystem_error on underlying OS API errors
+  /// @throws std::bad_alloc if memory allocation fails
   std::filesystem::directory_iterator list() const;
+
+  /// Returns an iterator over the contents of this directory
+  /// @note The special pathnames `.` and `..` are skipped
+  /// @param[out] ec Parameter for error reporting
+  /// @returns The iterator over this directory
+  /// @throws std::bad_alloc if memory allocation fails
+  std::filesystem::directory_iterator list(std::error_code& ec) const;
 
   /// Deletes the managed directory recursively
   ~directory() noexcept override;
