@@ -75,13 +75,11 @@ public:
   /// Reads the entire contents of this file
   /// @returns A string with this file contents
   /// @throws std::filesystem::filesystem_error if cannot read the file contents
-  /// @throws std::bad_alloc if memory allocation fails
   std::string read() const;
 
   /// Reads the entire contents of this file
   /// @param[out] ec Parameter for error reporting
   /// @returns A string with this file contents
-  /// @throws std::bad_alloc if memory allocation fails
   std::string read(std::error_code& ec) const;
 
   /// Writes the given content to this file discarding any previous content
