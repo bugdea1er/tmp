@@ -160,13 +160,18 @@ entry::native_handle_type entry::native_handle() const noexcept {
 
 void entry::move(const fs::path& to) {
   std::error_code ec;
-  tmp::move(*this, to, ec);
+  move(to, ec);
 
   if (ec) {
-    throw fs::filesystem_error("Cannot move temporary entry", to, ec);
+    throw fs::filesystem_error("Cannot move a temporary entry", path(), to, ec);
   }
+}
 
-  pathobject.clear();
+void entry::move(const fs::path& to, std::error_code& ec) {
+  tmp::move(*this, to, ec);
+  if (!ec) {
+    pathobject.clear();
+  }
 }
 
 bool entry::operator==(const entry& rhs) const noexcept {
