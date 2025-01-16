@@ -95,9 +95,14 @@ public:
   void write(std::string_view content, std::error_code& ec) const;
 
   /// Appends the given content to the end of this file
-  /// @param content   A string to append to this file
+  /// @param[in]  content A string to append to this file
   /// @throws std::filesystem::filesystem_error if cannot append to the file
   void append(std::string_view content) const;
+
+  /// Appends the given content to the end of this file
+  /// @param[in]  content A string to append to this file
+  /// @param[out] ec      Parameter for error reporting
+  void append(std::string_view content, std::error_code& ec) const;
 
   /// Returns the input stream to this file
   /// @returns An opened stream for input operations
