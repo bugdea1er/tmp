@@ -73,11 +73,6 @@ public:
 
 protected:
   /// Creates a temporary entry which owns the given path and handle
-  /// @param path      A path to manage
-  /// @param handle    An implementation-defined handle to this entry
-  explicit entry(std::filesystem::path path, native_handle_type handle);
-
-  /// Creates a temporary entry which owns the given path and handle
   /// @param handle    A pair of a path and a handle to manage
   explicit entry(std::pair<std::filesystem::path, native_handle_type> handle);
 

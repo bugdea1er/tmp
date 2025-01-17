@@ -114,12 +114,9 @@ void move(const fs::path& from, const fs::path& to, std::error_code& ec) {
 }
 }    // namespace
 
-entry::entry(fs::path path, native_handle_type handle)
-    : pathobject(std::move(path)),
-      handle(handle) {}
-
 entry::entry(std::pair<std::filesystem::path, native_handle_type> handle)
-    : entry(std::move(handle.first), handle.second) {}
+    : pathobject(std::move(handle.first)),
+      handle(handle.second) {}
 
 entry::entry(entry&& other) noexcept
     : pathobject(std::move(other.pathobject)),
