@@ -22,8 +22,8 @@ namespace {
 static_assert(std::is_trivially_copyable_v<entry::native_handle_type>);
 
 #ifdef _WIN32
-// Confirm that `HANDLE` is `void*` as implemented in `entry`
-static_assert(std::is_same_v<HANDLE, void*>);
+// Confirm that `HANDLE` is as implemented in `entry`
+static_assert(std::is_same_v<HANDLE, entry::native_handle_type>);
 #endif
 
 /// Implementation-defined invalid handle to the entry
