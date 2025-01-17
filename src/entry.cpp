@@ -33,18 +33,8 @@ const entry::native_handle_type invalid_handle = INVALID_HANDLE_VALUE;
 constexpr entry::native_handle_type invalid_handle = -1;
 #endif
 
-/// Closes the given entry, ignoring any errors
-/// @param entry     The entry to close
-void close(const entry& entry) noexcept {
-#ifdef _WIN32
-  CloseHandle(entry.native_handle());
-#else
-  ::close(entry.native_handle());
-#endif
-}
-
 /// Deletes the given path recursively, ignoring any errors
-/// @param path      The path to delete
+/// @param[in] path The path to delete
 void remove(const fs::path& path) noexcept {
   if (!path.empty()) {
     try {
@@ -59,6 +49,19 @@ void remove(const fs::path& path) noexcept {
       static_cast<void>(ex);
     }
   }
+}
+
+/// Closes the given entry, ignoring any errors
+/// @note Also deletes the managed path
+/// @param[in] entry The entry to close
+void close(const entry& entry) noexcept {
+  remove(entry);
+
+#ifdef _WIN32
+  CloseHandle(entry.native_handle());
+#else
+  ::close(entry.native_handle());
+#endif
 }
 
 /// Moves the filesystem object as if by `std::filesystem::rename`
@@ -127,7 +130,6 @@ entry::entry(entry&& other) noexcept
 
 entry& entry::operator=(entry&& other) noexcept {
   close(*this);
-  remove(*this);
 
   pathobject = std::move(other.pathobject);
   other.pathobject.clear();
@@ -140,7 +142,6 @@ entry& entry::operator=(entry&& other) noexcept {
 
 entry::~entry() noexcept {
   close(*this);
-  remove(*this);
 }
 
 entry::operator const fs::path&() const noexcept {
