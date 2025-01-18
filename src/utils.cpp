@@ -6,11 +6,8 @@
 #include <system_error>
 
 #ifdef _WIN32
-#define NOMINMAX
 #include <Windows.h>
 #include <cwchar>
-#else
-#include <unistd.h>
 #endif
 
 namespace tmp {

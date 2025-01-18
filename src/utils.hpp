@@ -21,8 +21,8 @@ constexpr fs::copy_options copy_options =
 bool create_parent(const fs::path& path, std::error_code& ec);
 
 /// Creates a temporary path pattern with the given label and extension
-/// @param[in] label     A label to attach to the path pattern
-/// @param[in] extension An extension of the temporary file path
+/// @param label     A label to attach to the path pattern
+/// @param extension An extension of the temporary file path
 /// @returns A path pattern for the unique temporary path
 /// @throws std::invalid_argument if the label or extension is ill-formatted
 /// @throws std::bad_alloc        if memory allocation fails
