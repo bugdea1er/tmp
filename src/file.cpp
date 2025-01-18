@@ -190,10 +190,19 @@ std::string file::read(std::error_code& ec) const {
   native_handle_type handle = native_handle();
 
 #ifdef _WIN32
-  SetFilePointer(handle, 0, nullptr, FILE_BEGIN);
+  if (SetFilePointer(handle, 0, NULL, FILE_BEGIN) == INVALID_SET_FILE_POINTER) {
+    ec = std::error_code(GetLastError(), std::system_category());
+  }
 #else
-  lseek(handle, 0, SEEK_SET);
+  off_t ret = lseek(handle, 0, SEEK_SET);
+  if (ret == -1) {
+    ec = std::error_code(errno, std::system_category());
+  }
 #endif
+
+  if (ec) {
+    return std::string();
+  }
 
   return tmp::read(handle, ec);
 }
@@ -241,12 +250,19 @@ void file::append(std::string_view content, std::error_code& ec) const {
   native_handle_type handle = native_handle();
 
 #ifdef _WIN32
-  SetFilePointer(handle, 0, nullptr, FILE_END);
+  if (SetFilePointer(handle, 0, NULL, FILE_END) == INVALID_SET_FILE_POINTER) {
+    ec = std::error_code(GetLastError(), std::system_category());
+  }
 #else
-  lseek(handle, 0, SEEK_END);
+  off_t ret = lseek(handle, 0, SEEK_END);
+  if (ret == -1) {
+    ec = std::error_code(errno, std::system_category());
+  }
 #endif
 
-  tmp::write(handle, content, ec);
+  if (!ec) {
+    tmp::write(handle, content, ec);
+  }
 }
 
 std::ifstream file::input_stream() const {
