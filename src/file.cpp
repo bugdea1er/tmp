@@ -103,6 +103,7 @@ std::string read(entry::native_handle_type handle, std::error_code& ec) {
     content.write(buffer.data(), read);
   }
 
+  ec = std::error_code();
   return std::move(content).str();
 }
 
@@ -132,6 +133,7 @@ void write(entry::native_handle_type handle, std::string_view content,
 
     content = content.substr(written);
   } while (!content.empty());
+  ec = std::error_code();
 }
 }    // namespace
 
@@ -172,7 +174,7 @@ std::string file::read() const {
 }
 
 std::string file::read(std::error_code& ec) const {
-#ifdef _WIN32
+#ifdef _WIN32    // TODO: can be optimized to not open the file again
   if (!binary) {
     try {
       std::ifstream stream = input_stream();
@@ -222,7 +224,7 @@ void file::append(std::string_view content) const {
 }
 
 void file::append(std::string_view content, std::error_code& ec) const {
-#ifdef _WIN32
+#ifdef _WIN32    // TODO: can be optimized to not open the file again
   if (!binary) {
     try {
       std::ofstream stream = output_stream(std::ios::app);
