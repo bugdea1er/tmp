@@ -194,8 +194,7 @@ std::string file::read(std::error_code& ec) const {
     ec = std::error_code(GetLastError(), std::system_category());
   }
 #else
-  off_t ret = lseek(handle, 0, SEEK_SET);
-  if (ret == -1) {
+  if (lseek(handle, 0, SEEK_SET) == -1) {
     ec = std::error_code(errno, std::system_category());
   }
 #endif
@@ -266,8 +265,7 @@ void file::append(std::string_view content, std::error_code& ec) const {
     ec = std::error_code(GetLastError(), std::system_category());
   }
 #else
-  off_t ret = lseek(handle, 0, SEEK_END);
-  if (ret == -1) {
+  if (lseek(handle, 0, SEEK_END) == -1) {
     ec = std::error_code(errno, std::system_category());
   }
 #endif
