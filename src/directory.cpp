@@ -89,8 +89,6 @@ fs::path directory::operator/(std::string_view source) const {
 }
 
 fs::directory_iterator directory::list() const {
-  // TODO: can be optimized to not open the directory again using native API
-
   std::error_code ec;
   fs::directory_iterator iterator = list(ec);
   if (ec) {
