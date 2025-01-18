@@ -3,7 +3,9 @@
 
 #include "utils.hpp"
 
+#include <array>
 #include <cstddef>
+#include <sstream>
 #include <filesystem>
 #include <fstream>
 #include <ios>
@@ -23,6 +25,9 @@
 
 namespace tmp {
 namespace {
+
+/// Maximum number of bytes in one read/write operation
+constexpr std::string_view::size_type io_max = std::numeric_limits<int>::max();
 
 /// A block size for file reading
 constexpr std::size_t file_block_size = 4096;
@@ -66,6 +71,71 @@ create_file(std::string_view label, std::string_view extension) {
 
   return std::pair(path, handle);
 }
+
+/// Reads the content from the given native handle
+/// @note uses handle current offset for reading
+/// @param[in]  handle A native handle to read from
+/// @param[out] ec     Parameter for error reporting
+/// @returns A string with read contents
+/// @throws std::bad_alloc if memory allocation fails
+std::string read(entry::native_handle_type handle, std::error_code& ec) {
+  std::ostringstream stream;
+
+  std::array<std::string::value_type, file_block_size> buffer;
+
+  while (true) {
+    constexpr int readable = std::min(file_block_size, io_max);
+
+#ifdef _WIN32
+    DWORD read;
+    if (!ReadFile(handle, buffer.data(), readable, &read, nullptr)) {
+      ec = std::error_code(GetLastError(), std::system_category());
+      return std::string();
+    }
+#else
+    ssize_t read = ::read(handle, buffer.data(), readable);
+    if (read < 0) {
+      ec = std::error_code(errno, std::system_category());
+      return std::string();
+    }
+#endif
+    if (read == 0) {
+      break;
+    }
+
+    stream.write(buffer.data(), read);
+  }
+
+  return std::move(stream).str();
+}
+
+/// Writes the given content to the native handle
+/// @note uses handle current offset for writing
+/// @param[in]  handle  A native handle to write to
+/// @param[in]  content A string to write to this file
+/// @param[out] ec      Parameter for error reporting
+void write(entry::native_handle_type handle, std::string_view content,
+           std::error_code& ec) noexcept {
+  do {
+    int writable = static_cast<int>(std::min(content.size(), io_max));
+
+#ifdef _WIN32
+    DWORD written;
+    if (!WriteFile(handle, content.data(), writable, &written, nullptr)) {
+      ec = std::error_code(GetLastError(), std::system_category());
+      return;
+    }
+#else
+    ssize_t written = ::write(handle, content.data(), writable);
+    if (written < 0) {
+      ec = std::error_code(errno, std::system_category());
+      return;
+    }
+#endif
+
+    content = content.substr(written);
+  } while (!content.empty());
+}
 }    // namespace
 
 file::file(std::string_view label, std::string_view extension)
@@ -94,13 +164,30 @@ file file::copy(const fs::path& path, std::string_view label,
 }
 
 std::string file::read() const {
+  std::error_code ec;
+  std::string content = read(ec);
+
+  if (ec) {
+    throw fs::filesystem_error("Cannot read a temporary file", path(), ec);
+  }
+
+  return content;
+}
+
+std::string file::read(std::error_code& ec) const {
 #ifdef _WIN32
   if (!binary) {
-    std::ifstream stream = input_stream();
-    return std::string(std::istreambuf_iterator<char>(stream), {});
+    try {
+      std::ifstream stream = input_stream();
+      stream.exceptions(std::ios::failbit | std::ios::badbit);
+
+      return std::string(std::istreambuf_iterator(stream), {});
+    } catch (const std::ios::failure& err) {
+      ec = err.code();
+      return std::string();
+    }
   }
 #endif
-
   native_handle_type handle = native_handle();
 
 #ifdef _WIN32
@@ -109,33 +196,49 @@ std::string file::read() const {
   lseek(handle, 0, SEEK_SET);
 #endif
 
-  std::error_code ec;
-  std::string contents = tmp::read<file_block_size>(handle, ec);
-  if (ec) {
-    throw fs::filesystem_error("Cannot read a temporary file", ec);
-  }
-
-  return contents;
+  return tmp::read(handle, ec);
 }
 
 void file::write(std::string_view content) const {
   std::error_code ec;
-  fs::resize_file(path(), 0, ec);
-  if (ec) {
-    throw fs::filesystem_error("Cannot write to a temporary file", ec);
-  }
+  write(content, ec);
 
-  append(content);
+  if (ec) {
+    throw fs::filesystem_error("Cannot write to a temporary file", path(), ec);
+  }
+}
+
+void file::write(std::string_view content, std::error_code& ec) const {
+  fs::resize_file(path(), 0, ec);
+  if (!ec) {
+    append(content, ec);
+  }
 }
 
 void file::append(std::string_view content) const {
+  std::error_code ec;
+  append(content, ec);
+
+  if (ec) {
+    throw fs::filesystem_error("Cannot append to a temporary file", path(), ec);
+  }
+}
+
+void file::append(std::string_view content, std::error_code& ec) const {
 #ifdef _WIN32
   if (!binary) {
-    output_stream(std::ios::app) << content;
+    try {
+      std::ofstream stream = output_stream(std::ios::app);
+      stream.exceptions(std::ios::failbit | std::ios::badbit);
+
+      stream << content;
+    } catch (const std::ios::failure& err) {
+      ec = err.code();
+    }
+
     return;
   }
 #endif
-
   native_handle_type handle = native_handle();
 
 #ifdef _WIN32
@@ -144,12 +247,7 @@ void file::append(std::string_view content) const {
   lseek(handle, 0, SEEK_END);
 #endif
 
-  std::error_code ec;
   tmp::write(handle, content, ec);
-
-  if (ec) {
-    throw fs::filesystem_error("Cannot write to a temporary file", ec);
-  }
 }
 
 std::ifstream file::input_stream() const {

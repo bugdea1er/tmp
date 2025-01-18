@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <filesystem>
 #include <string_view>
+#include <system_error>
 
 namespace tmp {
 
@@ -29,6 +30,7 @@ namespace tmp {
 ///
 ///   auto func() {
 ///     auto tmpdir = tmp::directory("org.example.product");
+///     std::ostream(tmpdir / "file.txt") << "Hello, world!";
 ///
 ///     // the temporary directory is deleted recursively when the
 ///     // tmp::directory object goes out of scope and is destroyed
@@ -52,14 +54,21 @@ public:
                         std::string_view label = "");
 
   /// Concatenates this directory path with a given source
-  /// @param source    A string which represents a path name
+  /// @param[in] source A string which represents a path name
   /// @returns The result of path concatenation
   std::filesystem::path operator/(std::string_view source) const;
 
   /// Returns an iterator over the contents of this directory
   /// @note The special pathnames `.` and `..` are skipped
   /// @returns The iterator over this directory
+  /// @throws std::filesystem::filesystem_error on underlying OS API errors
   std::filesystem::directory_iterator list() const;
+
+  /// Returns an iterator over the contents of this directory
+  /// @note The special pathnames `.` and `..` are skipped
+  /// @param[out] ec Parameter for error reporting
+  /// @returns The iterator over this directory
+  std::filesystem::directory_iterator list(std::error_code& ec) const;
 
   /// Deletes the managed directory recursively
   ~directory() noexcept override;

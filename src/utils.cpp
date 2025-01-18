@@ -78,27 +78,4 @@ fs::path make_pattern(std::string_view label, std::string_view extension) {
 
   return pattern;
 }
-
-void write(entry::native_handle_type handle, std::string_view content,
-           std::error_code& ec) noexcept {
-  do {
-    int writable = static_cast<int>(std::min(content.size(), io_max));
-
-#ifdef _WIN32
-    DWORD written;
-    if (!WriteFile(handle, content.data(), writable, &written, nullptr)) {
-      ec = std::error_code(GetLastError(), std::system_category());
-      return;
-    }
-#else
-    ssize_t written = ::write(handle, content.data(), writable);
-    if (written < 0) {
-      ec = std::error_code(errno, std::system_category());
-      return;
-    }
-#endif
-
-    content = content.substr(written);
-  } while (!content.empty());
-}
 }    // namespace tmp
