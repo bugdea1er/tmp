@@ -12,6 +12,7 @@ Checks: >
   readability-*,
   -*-use-default-member-init,
   -bugprone-easily-swappable-parameters,
+  -cppcoreguidelines-avoid-do-while,
   -cppcoreguidelines-init-variables,
   -cppcoreguidelines-pro-type-vararg,
   -misc-const-correctness,
