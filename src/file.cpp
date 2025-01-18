@@ -219,7 +219,7 @@ void file::write(std::string_view content, std::error_code& ec) const {
   native_handle_type handle = native_handle();
 
 #ifdef _WIN32
-  if (SetFilePointer(handle, 0, NULL, FILE_END) == INVALID_SET_FILE_POINTER ||
+  if (SetFilePointer(handle, 0, NULL, FILE_BEGIN) == INVALID_SET_FILE_POINTER ||
       !SetEndOfFile(handle)) {
     ec = std::error_code(GetLastError(), std::system_category());
   }
