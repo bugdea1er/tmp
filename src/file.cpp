@@ -79,8 +79,8 @@ create_file(std::string_view label, std::string_view extension) {
 /// @returns A string with read contents
 /// @throws std::bad_alloc if memory allocation fails
 std::string read(entry::native_handle_type handle, std::error_code& ec) {
-  std::ostringstream stream;
-  std::array<std::string::value_type, block_size> buffer;
+  std::array buffer = std::array<std::string::value_type, block_size>();
+  std::ostringstream content;
 
   while (true) {
 #ifdef _WIN32
@@ -100,10 +100,10 @@ std::string read(entry::native_handle_type handle, std::error_code& ec) {
       break;
     }
 
-    stream.write(buffer.data(), read);
+    content.write(buffer.data(), read);
   }
 
-  return std::move(stream).str();
+  return std::move(content).str();
 }
 
 /// Writes the given content to the native handle
