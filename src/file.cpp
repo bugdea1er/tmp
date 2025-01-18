@@ -133,6 +133,12 @@ void write(entry::native_handle_type handle, std::string_view content,
 
     content = content.substr(written);
   } while (!content.empty());
+
+#ifndef _WIN32
+  if (fsync(handle) == -1) {
+    ec = std::error_code(errno, std::system_category());
+  }
+#endif
   ec.clear();
 }
 }    // namespace
