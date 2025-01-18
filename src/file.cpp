@@ -134,7 +134,11 @@ void write(entry::native_handle_type handle, std::string_view content,
     content = content.substr(written);
   } while (!content.empty());
 
-#ifndef _WIN32
+#ifdef _WIN32
+  if (!FlushFileBuffers(handle)) {
+    ec = std::error_code(GetLastError(), std::system_category());
+  }
+#else
   if (fsync(handle) == -1) {
     ec = std::error_code(errno, std::system_category());
   }
