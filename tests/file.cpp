@@ -194,10 +194,13 @@ TEST(file, write_text) {
 /// Tests file writing error reporting
 TEST(file, write_error) {
   file tmpfile = file();
-  fs::permissions(tmpfile.path(), fs::perms::none);
+#ifdef _WIN32
+  CloseHandle(tmpfile.native_handle());
+#else
+  ::close(tmpfile.native_handle());
+#endif
 
   EXPECT_THROW(tmpfile.write("Hello!"), fs::filesystem_error);
-  fs::permissions(tmpfile.path(), fs::perms::all);
 }
 
 /// Tests binary file appending

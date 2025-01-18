@@ -217,7 +217,19 @@ void file::write(std::string_view content) const {
 }
 
 void file::write(std::string_view content, std::error_code& ec) const {
-  fs::resize_file(path(), 0, ec);
+  native_handle_type handle = native_handle();
+
+#ifdef _WIN32
+  if (SetFilePointer(handle, 0, NULL, FILE_END) == INVALID_SET_FILE_POINTER ||
+      !SetEndOfFile(handle)) {
+    ec = std::error_code(GetLastError(), std::system_category());
+  }
+#else
+  if (ftruncate(handle, 0) == -1) {
+    ec = std::error_code(errno, std::system_category());
+  }
+#endif
+
   if (!ec) {
     append(content, ec);
   }
