@@ -133,6 +133,7 @@ void write(entry::native_handle_type handle, std::string_view content,
 
     content = content.substr(written);
   } while (!content.empty());
+  ec.clear();
 
 #ifdef _WIN32
   if (!FlushFileBuffers(handle)) {
@@ -143,7 +144,6 @@ void write(entry::native_handle_type handle, std::string_view content,
     ec = std::error_code(errno, std::system_category());
   }
 #endif
-  ec.clear();
 }
 }    // namespace
 
