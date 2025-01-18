@@ -5,11 +5,11 @@
 
 #include <array>
 #include <cstddef>
-#include <sstream>
 #include <filesystem>
 #include <fstream>
 #include <ios>
 #include <limits>
+#include <sstream>
 #include <string_view>
 #include <system_error>
 #include <utility>
@@ -30,7 +30,7 @@ namespace {
 constexpr std::string_view::size_type io_max = std::numeric_limits<int>::max();
 
 /// A block size for file reading
-constexpr std::size_t file_block_size = 4096;
+constexpr std::size_t block_size = 4096;
 
 /// Creates a temporary file with the given prefix in the system's
 /// temporary directory, and opens it for reading and writing
@@ -80,20 +80,17 @@ create_file(std::string_view label, std::string_view extension) {
 /// @throws std::bad_alloc if memory allocation fails
 std::string read(entry::native_handle_type handle, std::error_code& ec) {
   std::ostringstream stream;
-
-  std::array<std::string::value_type, file_block_size> buffer;
+  std::array<std::string::value_type, block_size> buffer;
 
   while (true) {
-    constexpr int readable = std::min(file_block_size, io_max);
-
 #ifdef _WIN32
     DWORD read;
-    if (!ReadFile(handle, buffer.data(), readable, &read, nullptr)) {
+    if (!ReadFile(handle, buffer.data(), block_size, &read, nullptr)) {
       ec = std::error_code(GetLastError(), std::system_category());
       return std::string();
     }
 #else
-    ssize_t read = ::read(handle, buffer.data(), readable);
+    ssize_t read = ::read(handle, buffer.data(), block_size);
     if (read < 0) {
       ec = std::error_code(errno, std::system_category());
       return std::string();
