@@ -103,7 +103,7 @@ std::string read(entry::native_handle_type handle, std::error_code& ec) {
     content.write(buffer.data(), read);
   }
 
-  ec = std::error_code();
+  ec.clear();
   return std::move(content).str();
 }
 
@@ -133,7 +133,7 @@ void write(entry::native_handle_type handle, std::string_view content,
 
     content = content.substr(written);
   } while (!content.empty());
-  ec = std::error_code();
+  ec.clear();
 }
 }    // namespace
 
