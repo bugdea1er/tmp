@@ -1,7 +1,6 @@
 #include <tmp/entry>
 
 #include "create.hpp"
-#include "utils.hpp"
 
 #include <cstddef>
 #include <filesystem>
@@ -33,6 +32,10 @@ const entry::native_handle_type invalid_handle = INVALID_HANDLE_VALUE;
 #else
 constexpr entry::native_handle_type invalid_handle = -1;
 #endif
+
+/// Options for recursive overwriting copying
+constexpr fs::copy_options copy_options =
+    fs::copy_options::recursive | fs::copy_options::overwrite_existing;
 
 /// Deletes the given path recursively, ignoring any errors
 /// @param[in] path The path to delete

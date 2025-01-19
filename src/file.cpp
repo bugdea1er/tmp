@@ -2,7 +2,6 @@
 #include <tmp/file>
 
 #include "create.hpp"
-#include "utils.hpp"
 
 #include <array>
 #include <cstddef>
@@ -124,7 +123,7 @@ file file::copy(const fs::path& path, std::string_view label,
   file tmpfile = file(label, extension);
 
   std::error_code ec;
-  fs::copy_file(path, tmpfile, copy_options, ec);
+  fs::copy_file(path, tmpfile, fs::copy_options::overwrite_existing, ec);
 
   if (ec) {
     throw fs::filesystem_error("Cannot create a temporary copy", path, ec);

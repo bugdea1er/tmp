@@ -2,7 +2,6 @@
 #include <tmp/entry>
 
 #include "create.hpp"
-#include "utils.hpp"
 
 #include <cstddef>
 #include <filesystem>
@@ -10,6 +9,12 @@
 #include <system_error>
 
 namespace tmp {
+namespace {
+
+/// Options for recursive overwriting copying
+constexpr fs::copy_options copy_options =
+    fs::copy_options::recursive | fs::copy_options::overwrite_existing;
+}    // namespace
 
 directory::directory(std::string_view label)
     : entry(create_directory(label)) {}

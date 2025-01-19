@@ -81,8 +81,8 @@ fs::path make_path(std::string_view label, std::string_view extension) {
   return pattern;
 }
 #else
-/// Placeholder in temporary path templates to be replaced with random
-/// characters
+/// Placeholder in temporary path templates to be replaced
+/// with random characters
 constexpr std::string_view placeholder = "XXXXXX";
 
 /// Creates a temporary path pattern with the given label and extension
