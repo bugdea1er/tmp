@@ -27,6 +27,31 @@ static_assert(std::is_trivially_copyable_v<entry::native_handle_type>);
 static_assert(std::is_same_v<HANDLE, entry::native_handle_type>);
 #endif
 
+/// Implementation-defined invalid handle to the entry
+#ifdef _WIN32
+const entry::native_handle_type invalid_handle = INVALID_HANDLE_VALUE;
+#else
+constexpr entry::native_handle_type invalid_handle = -1;
+#endif
+
+/// Deletes the given path recursively, ignoring any errors
+/// @param[in] path The path to delete
+void remove(const fs::path& path) noexcept {
+  if (!path.empty()) {
+    try {
+      std::error_code ec;
+      fs::remove_all(path, ec);
+
+      fs::path parent = path.parent_path();
+      if (!fs::equivalent(parent, fs::temp_directory_path(), ec)) {
+        fs::remove(parent, ec);
+      }
+    } catch (const std::bad_alloc& ex) {
+      static_cast<void>(ex);
+    }
+  }
+}
+
 /// Closes the given entry, ignoring any errors
 /// @note Also deletes the managed path
 /// @param[in] entry The entry to close

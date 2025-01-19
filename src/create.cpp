@@ -8,6 +8,7 @@
 #include <system_error>
 
 #ifdef _WIN32
+#define UNICODE
 #include <Windows.h>
 #include <cwchar>
 #else
@@ -57,6 +58,11 @@ void validate_extension(std::string_view extension) {
 }
 
 #ifdef _WIN32
+/// Creates a temporary path with the given label and extension
+/// @note label and extension must be valid
+/// @param[in] label     A label to attach to the path pattern
+/// @param[in] extension An extension of the temporary file path
+/// @returns A unique temporary path
 fs::path make_path(std::string_view label, std::string_view extension) {
   constexpr static std::size_t CHARS_IN_GUID = 39;
   GUID guid;
@@ -93,14 +99,6 @@ fs::path make_pattern(std::string_view label, std::string_view extension) {
 #endif
 }    // namespace
 
-std::error_code get_last_error() noexcept {
-#ifdef _WIN32
-  return std::error_code(GetLastError(), std::system_category());
-#else
-  return std::error_code(errno, std::system_category());
-#endif
-}
-
 bool create_parent(const fs::path& path, std::error_code& ec) {
   return fs::create_directories(path.parent_path(), ec);
 }
@@ -128,7 +126,11 @@ create_file(std::string_view label, std::string_view extension,
     return std::pair<fs::path, entry::native_handle_type>();
   }
 
+#ifdef _WIN32
+  fs::path::string_type path = make_path(label, extension);
+#else
   fs::path::string_type path = make_pattern(label, extension);
+#endif
   create_parent(path, ec);
   if (ec) {
     return std::pair<fs::path, entry::native_handle_type>();
@@ -146,7 +148,7 @@ create_file(std::string_view label, std::string_view extension,
 #else
   int handle = mkstemps(path.data(), static_cast<int>(extension.size()));
   if (handle == -1) {
-    ec = get_last_error();
+    ec = std::error_code(errno, std::system_category());
     return std::pair<fs::path, entry::native_handle_type>();
   }
 #endif
@@ -176,7 +178,11 @@ create_directory(std::string_view label, std::error_code& ec) {
     return std::pair<fs::path, entry::native_handle_type>();
   }
 
+#ifdef _WIN32
+  fs::path::string_type path = make_path(label, "");
+#else
   fs::path::string_type path = make_pattern(label, "");
+#endif
   create_parent(path, ec);
   if (ec) {
     return std::pair<fs::path, entry::native_handle_type>();
@@ -184,12 +190,12 @@ create_directory(std::string_view label, std::error_code& ec) {
 
 #ifdef _WIN32
   if (!CreateDirectory(path.c_str(), nullptr)) {
-    ec = get_last_error();
+    ec = std::error_code(GetLastError(), std::system_category());
     return std::pair<fs::path, entry::native_handle_type>();
   }
 #else
   if (mkdtemp(path.data()) == nullptr) {
-    ec = get_last_error();
+    ec = std::error_code(errno, std::system_category());
     return std::pair<fs::path, entry::native_handle_type>();
   }
 #endif
@@ -200,31 +206,10 @@ create_directory(std::string_view label, std::error_code& ec) {
                  FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
                  nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
 #else
-  int handle = open(path.data(), O_SEARCH);
+  int handle = open(path.data(), O_DIRECTORY);
 #endif
 
-  if (handle == invalid_handle) {
-    ec = get_last_error();
-    remove(path);
-    return std::pair<fs::path, entry::native_handle_type>();
-  }
-
+  // FIXME: last `open` call could fail, directory should be deleted
   return std::pair(path, handle);
-}
-
-void remove(const fs::path& path) noexcept {
-  if (!path.empty()) {
-    try {
-      std::error_code ec;
-      fs::remove_all(path, ec);
-
-      fs::path parent = path.parent_path();
-      if (!fs::equivalent(parent, fs::temp_directory_path(), ec)) {
-        fs::remove(parent, ec);
-      }
-    } catch (const std::bad_alloc& ex) {
-      static_cast<void>(ex);
-    }
-  }
 }
 }    // namespace tmp
