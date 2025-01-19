@@ -6,21 +6,17 @@
 #include <random>
 #include <string_view>
 #include <system_error>
-#include <unistd.h>
 
-#ifndef _WIN32
-#include <fcntl.h>
-#else
+#ifdef _WIN32
 #include <Windows.h>
 #include <cwchar>
+#else
+#include <fcntl.h>
+#include <unistd.h>
 #endif
 
 namespace tmp {
 namespace {
-
-/// Placeholder in temporary path templates to be replaced with random
-/// characters
-constexpr std::string_view placeholder = "XXXXXX";
 
 /// Checks that the given label is valid to attach to a temporary entry path
 /// @param[in] label The label to check validity for
@@ -60,6 +56,29 @@ void validate_extension(std::string_view extension) {
   }
 }
 
+#ifdef _WIN32
+fs::path make_path(std::string_view label, std::string_view extension) {
+  constexpr static std::size_t CHARS_IN_GUID = 39;
+  GUID guid;
+  CoCreateGuid(&guid);
+
+  wchar_t name[CHARS_IN_GUID];
+  swprintf(name, CHARS_IN_GUID,
+           L"%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X", guid.Data1,
+           guid.Data2, guid.Data3, guid.Data4[0], guid.Data4[1], guid.Data4[2],
+           guid.Data4[3], guid.Data4[4], guid.Data4[5], guid.Data4[6],
+           guid.Data4[7]);
+
+  fs::path pattern = fs::temp_directory_path() / label / name;
+  pattern += extension;
+
+  return pattern;
+}
+#else
+/// Placeholder in temporary path templates to be replaced with random
+/// characters
+constexpr std::string_view placeholder = "XXXXXX";
+
 /// Creates a temporary path pattern with the given label and extension
 /// @note label and extension must be valid
 /// @param[in] label     A label to attach to the path pattern
@@ -71,7 +90,16 @@ fs::path make_pattern(std::string_view label, std::string_view extension) {
 
   return pattern;
 }
+#endif
 }    // namespace
+
+std::error_code get_last_error() noexcept {
+#ifdef _WIN32
+  return std::error_code(GetLastError(), std::system_category());
+#else
+  return std::error_code(errno, std::system_category());
+#endif
+}
 
 bool create_parent(const fs::path& path, std::error_code& ec) {
   return fs::create_directories(path.parent_path(), ec);
@@ -106,11 +134,22 @@ create_file(std::string_view label, std::string_view extension,
     return std::pair<fs::path, entry::native_handle_type>();
   }
 
-  int handle = mkstemps(path.data(), static_cast<int>(extension.size()));
-  if (handle == -1) {
-    ec = std::error_code(errno, std::system_category());
+#ifdef _WIN32
+  HANDLE handle =
+      CreateFile(path.c_str(), GENERIC_READ | GENERIC_WRITE,
+                 FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                 nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
+  if (handle == INVALID_HANDLE_VALUE) {
+    ec = std::error_code(GetLastError(), std::system_category());
     return std::pair<fs::path, entry::native_handle_type>();
   }
+#else
+  int handle = mkstemps(path.data(), static_cast<int>(extension.size()));
+  if (handle == -1) {
+    ec = get_last_error();
+    return std::pair<fs::path, entry::native_handle_type>();
+  }
+#endif
 
   ec.clear();
   return std::make_pair(path, handle);
@@ -143,17 +182,49 @@ create_directory(std::string_view label, std::error_code& ec) {
     return std::pair<fs::path, entry::native_handle_type>();
   }
 
-  if (mkdtemp(path.data()) == nullptr) {
-    ec = std::error_code(errno, std::system_category());
+#ifdef _WIN32
+  if (!CreateDirectory(path.c_str(), nullptr)) {
+    ec = get_last_error();
     return std::pair<fs::path, entry::native_handle_type>();
   }
+#else
+  if (mkdtemp(path.data()) == nullptr) {
+    ec = get_last_error();
+    return std::pair<fs::path, entry::native_handle_type>();
+  }
+#endif
 
+#ifdef _WIN32
+  HANDLE handle =
+      CreateFile(path.c_str(), GENERIC_READ | GENERIC_WRITE,
+                 FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                 nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+#else
   int handle = open(path.data(), O_SEARCH);
-  if (handle == -1) {
-    ec = std::error_code(errno, std::system_category());
+#endif
+
+  if (handle == invalid_handle) {
+    ec = get_last_error();
+    remove(path);
     return std::pair<fs::path, entry::native_handle_type>();
   }
 
   return std::pair(path, handle);
+}
+
+void remove(const fs::path& path) noexcept {
+  if (!path.empty()) {
+    try {
+      std::error_code ec;
+      fs::remove_all(path, ec);
+
+      fs::path parent = path.parent_path();
+      if (!fs::equivalent(parent, fs::temp_directory_path(), ec)) {
+        fs::remove(parent, ec);
+      }
+    } catch (const std::bad_alloc& ex) {
+      static_cast<void>(ex);
+    }
+  }
 }
 }    // namespace tmp

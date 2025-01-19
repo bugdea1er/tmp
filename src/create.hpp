@@ -4,12 +4,21 @@
 #include <tmp/entry>
 
 #include <filesystem>
-#include <system_error>
 #include <string_view>
+#include <system_error>
 
 namespace tmp {
-
 namespace fs = std::filesystem;
+
+/// Implementation-defined invalid handle to the entry
+#ifdef _WIN32
+const entry::native_handle_type invalid_handle = INVALID_HANDLE_VALUE;
+#else
+constexpr entry::native_handle_type invalid_handle = -1;
+#endif
+
+/// Returns the last system error as an error code
+std::error_code get_last_error() noexcept;
 
 /// Creates the parent directory of the given path if it does not exist
 /// @param[in]  path The path for which the parent directory needs to be created
@@ -53,6 +62,10 @@ create_directory(std::string_view label);
 /// @returns A path to the created temporary directory and a handle to it
 std::pair<fs::path, entry::native_handle_type>
 create_directory(std::string_view label, std::error_code& ec);
-}    // namespace tmp::system
+
+/// Deletes the given path recursively, ignoring any errors
+/// @param[in] path The path to delete
+void remove(const fs::path& path) noexcept;
+}    // namespace tmp
 
 #endif    // TMP_SYSTEM_H
