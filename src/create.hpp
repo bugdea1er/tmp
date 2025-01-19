@@ -14,7 +14,7 @@ namespace fs = std::filesystem;
 /// Creates the parent directory of the given path if it does not exist
 /// @param[in]  path The path for which the parent directory needs to be created
 /// @param[out] ec   Parameter for error reporting
-/// @returns @c true if a parent directory was newly created, @c false otherwise
+/// @returns `true` if a parent directory was newly created, `false` otherwise
 bool create_parent(const fs::path& path, std::error_code& ec);
 
 /// Creates a temporary file with the given label and extension in the system's

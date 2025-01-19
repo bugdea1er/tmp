@@ -22,7 +22,7 @@ namespace {
 
 /// Checks that the given label is valid to attach to a temporary entry path
 /// @param[in] label The label to check validity for
-/// @returns @c true if the label is valid, @c false otherwise
+/// @returns `true` if the label is valid, `false` otherwise
 bool is_label_valid(const fs::path& label) {
   return label.empty() || (++label.begin() == label.end() &&
                            label.is_relative() && !label.has_root_path() &&
@@ -42,7 +42,7 @@ void validate_label(const fs::path& label) {
 
 /// Checks that the given extension is valid to be an extension of a file path
 /// @param[in] extension The extension to check validity for
-/// @returns @c true if the extension is valid, @c false otherwise
+/// @returns `true` if the extension is valid, `false` otherwise
 bool is_extension_valid(const fs::path& extension) {
   return extension.empty() || ++extension.begin() == extension.end();
 }
