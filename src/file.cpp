@@ -12,7 +12,6 @@
 #include <sstream>
 #include <string_view>
 #include <system_error>
-#include <utility>
 
 #ifdef _WIN32
 #define NOMINMAX

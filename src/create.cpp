@@ -3,9 +3,10 @@
 #include <tmp/entry>
 
 #include <filesystem>
-#include <random>
+#include <stdexcept>
 #include <string_view>
 #include <system_error>
+#include <utility>
 
 #ifdef _WIN32
 #define UNICODE
