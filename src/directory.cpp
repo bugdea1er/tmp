@@ -1,67 +1,19 @@
 #include <tmp/directory>
 #include <tmp/entry>
 
-#include "utils.hpp"
+#include "create.hpp"
 
 #include <cstddef>
 #include <filesystem>
 #include <string_view>
 #include <system_error>
-#include <utility>
-
-#ifdef _WIN32
-#define UNICODE
-#include <Windows.h>
-#else
-#include <cerrno>
-#include <fcntl.h>
-#include <unistd.h>
-#endif
 
 namespace tmp {
 namespace {
 
-/// Creates a temporary directory with the given prefix in the system's
-/// temporary directory, and returns its path
-/// @param label    A label to attach to the temporary directory path
-/// @returns A path to the created temporary file and a handle to it
-/// @throws fs::filesystem_error  if cannot create a temporary directory
-/// @throws std::invalid_argument if the label is ill-formatted
-std::pair<fs::path, entry::native_handle_type>
-create_directory(std::string_view label) {
-  fs::path::string_type path = make_pattern(label, "");
-
-  std::error_code ec;
-  create_parent(path, ec);
-  if (ec) {
-    throw fs::filesystem_error("Cannot create a temporary directory", ec);
-  }
-
-#ifdef _WIN32
-  if (!CreateDirectory(path.c_str(), nullptr)) {
-    ec = std::error_code(GetLastError(), std::system_category());
-  }
-#else
-  if (mkdtemp(path.data()) == nullptr) {
-    ec = std::error_code(errno, std::system_category());
-  }
-#endif
-
-  if (ec) {
-    throw fs::filesystem_error("Cannot create a temporary directory", ec);
-  }
-
-#ifdef _WIN32
-  HANDLE handle =
-      CreateFile(path.c_str(), GENERIC_READ | GENERIC_WRITE,
-                 FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                 nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
-#else
-  int handle = open(path.data(), O_DIRECTORY);
-#endif
-
-  return std::pair(path, handle);
-}
+/// Options for recursive overwriting copying
+constexpr fs::copy_options copy_options =
+    fs::copy_options::recursive | fs::copy_options::overwrite_existing;
 }    // namespace
 
 directory::directory(std::string_view label)

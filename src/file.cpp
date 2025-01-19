@@ -1,7 +1,7 @@
 #include <tmp/entry>
 #include <tmp/file>
 
-#include "utils.hpp"
+#include "create.hpp"
 
 #include <array>
 #include <cstddef>
@@ -12,7 +12,6 @@
 #include <sstream>
 #include <string_view>
 #include <system_error>
-#include <utility>
 
 #ifdef _WIN32
 #define NOMINMAX
@@ -31,46 +30,6 @@ constexpr std::string_view::size_type io_max = std::numeric_limits<int>::max();
 
 /// A block size for file reading
 constexpr std::size_t block_size = 4096;
-
-/// Creates a temporary file with the given prefix in the system's
-/// temporary directory, and opens it for reading and writing
-/// @param label     A label to attach to the temporary file path
-/// @param extension An extension of the temporary file path
-/// @returns A path to the created temporary file and a handle to it
-/// @throws fs::filesystem_error  if cannot create a temporary file
-/// @throws std::invalid_argument if the label or extension is ill-formatted
-std::pair<fs::path, entry::native_handle_type>
-create_file(std::string_view label, std::string_view extension) {
-  fs::path::string_type path = make_pattern(label, extension);
-
-  std::error_code ec;
-  create_parent(path, ec);
-  if (ec) {
-    throw fs::filesystem_error("Cannot create a temporary file", ec);
-  }
-
-#ifdef _WIN32
-  HANDLE handle =
-      CreateFile(path.c_str(), GENERIC_READ | GENERIC_WRITE,
-                 FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                 nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
-
-  if (handle == INVALID_HANDLE_VALUE) {
-    ec = std::error_code(GetLastError(), std::system_category());
-  }
-#else
-  int handle = mkstemps(path.data(), static_cast<int>(extension.size()));
-  if (handle == -1) {
-    ec = std::error_code(errno, std::system_category());
-  }
-#endif
-
-  if (ec) {
-    throw fs::filesystem_error("Cannot create temporary file", ec);
-  }
-
-  return std::pair(path, handle);
-}
 
 /// Reads the content from the given native handle
 /// @note uses handle current offset for reading
@@ -163,7 +122,7 @@ file file::copy(const fs::path& path, std::string_view label,
   file tmpfile = file(label, extension);
 
   std::error_code ec;
-  fs::copy_file(path, tmpfile, copy_options, ec);
+  fs::copy_file(path, tmpfile, fs::copy_options::overwrite_existing, ec);
 
   if (ec) {
     throw fs::filesystem_error("Cannot create a temporary copy", path, ec);
