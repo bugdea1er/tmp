@@ -147,6 +147,7 @@ create_file(std::string_view label, std::string_view extension,
     return std::pair<fs::path, entry::native_handle_type>();
   }
 #else
+  // FIXME: `mkstemps` function does not conform to any standard
   int handle = mkstemps(path.data(), static_cast<int>(extension.size()));
   if (handle == -1) {
     ec = std::error_code(errno, std::system_category());
