@@ -147,7 +147,7 @@ create_file(std::string_view label, std::string_view extension,
     return std::pair<fs::path, entry::native_handle_type>();
   }
 #else
-  // FIXME: `mkstemps` function does not conform to any standard
+  // FIXME: `mkstemps` function is not a part of POSIX standard
   int handle = mkstemps(path.data(), static_cast<int>(extension.size()));
   if (handle == -1) {
     ec = std::error_code(errno, std::system_category());
@@ -212,6 +212,6 @@ create_directory(std::string_view label, std::error_code& ec) {
 #endif
 
   // FIXME: last `open` call could fail, directory should be deleted
-  return std::pair(path, handle);
+  return std::make_pair(path, handle);
 }
 }    // namespace tmp
