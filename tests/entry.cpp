@@ -2,7 +2,7 @@
 #include <tmp/entry>
 #include <tmp/file>
 
-#include "utils.hpp"
+#include "checks.hpp"
 
 #include <gtest/gtest.h>
 

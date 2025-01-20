@@ -1,5 +1,5 @@
-#ifndef TMP_TESTS_UTILS_H
-#define TMP_TESTS_UTILS_H
+#ifndef TMP_TESTS_CHECKS_H
+#define TMP_TESTS_CHECKS_H
 
 #include <tmp/entry>
 
@@ -24,4 +24,4 @@ inline bool native_handle_is_valid(entry::native_handle_type handle) {
 }
 }    // namespace tmp
 
-#endif    // TMP_TESTS_UTILS_H
+#endif    // TMP_TESTS_CHECKS_H
