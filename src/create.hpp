@@ -1,5 +1,5 @@
-#ifndef TMP_SYSTEM_H
-#define TMP_SYSTEM_H
+#ifndef TMP_CREATE_H
+#define TMP_CREATE_H
 
 #include <tmp/entry>
 
@@ -55,4 +55,4 @@ std::pair<fs::path, entry::native_handle_type>
 create_directory(std::string_view label, std::error_code& ec);
 }    // namespace tmp
 
-#endif    // TMP_SYSTEM_H
+#endif    // TMP_CREATE_H
