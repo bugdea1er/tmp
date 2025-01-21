@@ -39,10 +39,19 @@ namespace tmp {
 class TMP_EXPORT directory : public entry {
 public:
   /// Creates a unique temporary directory
-  /// @param label     A label to attach to the temporary directory path
+  /// @param[in] label A label to attach to the temporary directory path
   /// @throws std::filesystem::filesystem_error if cannot create a directory
   /// @throws std::invalid_argument             if the label is ill-formatted
   explicit directory(std::string_view label = "");
+
+  /// Creates a unique temporary directory
+  /// @param[out] ec Parameter for error reporting
+  explicit directory(std::error_code& ec);
+
+  /// Creates a unique temporary directory
+  /// @param[in]  label A label to attach to the temporary directory path
+  /// @param[out] ec    Parameter for error reporting
+  explicit directory(std::string_view label, std::error_code& ec);
 
   /// Creates a unique temporary copy recursively from the given path
   /// @param path      A path to make a temporary copy from
