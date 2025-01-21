@@ -145,13 +145,14 @@ std::uintmax_t file::size() const {
 
 std::uintmax_t file::size(std::error_code& ec) const noexcept {
 #ifdef _WIN32
-  LARGE_INTERGER size;
-  if (!GetFileSize(native_handle(), &size)) {
+  FILE_STANDARD_INFO info;
+  if (!GetFileInformationByHandleEx(native_handle(), FileStandardInfo, &info,
+                                    sizeof(info))) {
     ec = std::error_code(GetLastError(), std::system_category());
     return static_cast<std::uintmax_t>(-1);
   }
 
-  return size;
+  return info.EndOfFile.QuadPart;
 #else
   struct stat stat;
   if (fstat(native_handle(), &stat) == -1) {
