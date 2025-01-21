@@ -46,7 +46,7 @@ public:
 
   /// Creates a unique temporary directory
   /// @param[out] ec Parameter for error reporting
-  explicit directory(std::error_code &ec);
+  explicit directory(std::error_code& ec);
 
   /// Creates a unique temporary directory
   /// @param[in]  label A label to attach to the temporary directory path
