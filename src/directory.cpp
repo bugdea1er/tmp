@@ -19,6 +19,12 @@ constexpr fs::copy_options copy_options =
 directory::directory(std::string_view label)
     : entry(create_directory(label)) {}
 
+directory::directory(std::error_code& ec)
+    : entry(create_directory("", ec)) {}
+
+directory::directory(std::string_view label, std::error_code& ec)
+    : entry(create_directory(label, ec)) {}
+
 directory directory::copy(const fs::path& path, std::string_view label) {
   directory tmpdir = directory(label);
 
