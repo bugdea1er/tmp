@@ -111,8 +111,37 @@ file::file(std::string_view label, std::string_view extension)
     : entry(create_file(label, extension)),
       binary(true) {}
 
+file::file(std::error_code& ec)
+    : entry(create_file("", "", ec)),
+      binary(true) {}
+
+file::file(std::string_view label, std::error_code& ec)
+    : entry(create_file(label, "", ec)),
+      binary(true) {}
+
+file::file(std::string_view label, std::string_view extension,
+           std::error_code& ec)
+    : entry(create_file(label, extension, ec)),
+      binary(true) {}
+
 file file::text(std::string_view label, std::string_view extension) {
   file result = file(label, extension);
+  result.binary = false;
+
+  return result;
+}
+
+file file::text(std::error_code& ec) {
+  return text("", ec);
+}
+
+file file::text(std::string_view label, std::error_code& ec) {
+  return text(label, "", ec);
+}
+
+file file::text(std::string_view label, std::string_view extension,
+                std::error_code& ec) {
+  file result = file(label, extension, ec);
   result.binary = false;
 
   return result;
