@@ -46,11 +46,29 @@ class TMP_EXPORT file : public entry {
 public:
   /// Creates a unique temporary file and opens it for reading and writing
   /// in binary mode
-  /// @param label     A label to attach to the temporary file path
-  /// @param extension An extension of the temporary file path
+  /// @param[in] label     A label to attach to the temporary file path
+  /// @param[in] extension An extension of the temporary file path
   /// @throws std::filesystem::filesystem_error if cannot create a file
   /// @throws std::invalid_argument             if arguments are ill-formatted
   explicit file(std::string_view label = "", std::string_view extension = "");
+
+  /// Creates a unique temporary file and opens it for reading and writing
+  /// in binary mode
+  /// @param[out] ec Parameter for error reporting
+  explicit file(std::error_code& ec);
+
+  /// Creates a unique temporary file and opens it for reading and writing
+  /// in binary mode
+  /// @param[in]  label A label to attach to the temporary file path
+  /// @param[out] ec    Parameter for error reporting
+  file(std::string_view label, std::error_code& ec);
+
+  /// Creates a unique temporary file and opens it for reading and writing
+  /// in binary mode
+  /// @param[in]  label     A label to attach to the temporary file path
+  /// @param[in]  extension An extension of the temporary file path
+  /// @param[out] ec        Parameter for error reporting
+  file(std::string_view label, std::string_view extension, std::error_code& ec);
 
   /// Creates a unique temporary file and opens it for reading and writing
   /// in text mode
@@ -60,6 +78,25 @@ public:
   /// @throws std::invalid_argument             if arguments are ill-formatted
   static file text(std::string_view label = "",
                    std::string_view extension = "");
+
+  /// Creates a unique temporary file and opens it for reading and writing
+  /// in text mode
+  /// @param[out] ec Parameter for error reporting
+  static file text(std::error_code& ec);
+
+  /// Creates a unique temporary file and opens it for reading and writing
+  /// in text mode
+  /// @param[in]  label A label to attach to the temporary file path
+  /// @param[out] ec    Parameter for error reporting
+  static file text(std::string_view label, std::error_code& ec);
+
+  /// Creates a unique temporary file and opens it for reading and writing
+  /// in text mode
+  /// @param[in]  label     A label to attach to the temporary file path
+  /// @param[in]  extension An extension of the temporary file path
+  /// @param[out] ec        Parameter for error reporting
+  static file text(std::string_view label, std::string_view extension,
+                   std::error_code& ec);
 
   /// Creates a unique temporary copy from the given path
   /// @param path      A path to make a temporary copy from
