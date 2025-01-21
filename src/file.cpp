@@ -143,7 +143,7 @@ std::uintmax_t file::size() const {
   return result;
 }
 
-std::uintmax_t file::size(std::error_code& ec) const {
+std::uintmax_t file::size(std::error_code& ec) const noexcept {
 #ifdef _WIN32
   LARGE_INTERGER size;
   if (!GetFileSize(native_handle(), &size)) {

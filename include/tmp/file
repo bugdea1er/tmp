@@ -80,8 +80,7 @@ public:
   /// Returns the size of this file
   /// @param[out] ec Parameter for error reporting
   /// @returns the size of this file, in bytes
-  /// @throws std::filesystem::filesystem_error if cannot get a file size
-  std::uintmax_t size(std::error_code& ec) const;
+  std::uintmax_t size(std::error_code& ec) const noexcept;
 
   /// Reads the entire contents of this file
   /// @returns A string with this file contents
