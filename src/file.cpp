@@ -19,6 +19,7 @@
 #include <Windows.h>
 #else
 #include <cerrno>
+#include <sys/stat.h>
 #include <unistd.h>
 #endif
 
@@ -129,6 +130,39 @@ file file::copy(const fs::path& path, std::string_view label,
   }
 
   return tmpfile;
+}
+
+std::uintmax_t file::size() const {
+  std::error_code ec;
+  std::uintmax_t result = size(ec);
+
+  if (ec) {
+    throw fs::filesystem_error("Cannot get a temporary file size", path(), ec);
+  }
+
+  return result;
+}
+
+std::uintmax_t file::size(std::error_code& ec) const noexcept {
+#ifdef _WIN32
+  DWORD size_upper;
+  DWORD size_lower = GetFileSize(native_handle(), &size_upper);
+  if (size_upper == INVALID_FILE_SIZE) {
+    ec = std::error_code(GetLastError(), std::system_category());
+    return static_cast<std::uintmax_t>(-1);
+  }
+
+  std::uintmax_t size = size_upper;
+  return size << sizeof(DWORD) * CHAR_BIT | size_lower;
+#else
+  struct stat stat;
+  if (fstat(native_handle(), &stat) == -1) {
+    ec = std::error_code(errno, std::system_category());
+    return static_cast<std::uintmax_t>(-1);
+  }
+
+  return stat.st_size;
+#endif
 }
 
 std::string file::read() const {
