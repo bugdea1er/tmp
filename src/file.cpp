@@ -145,14 +145,15 @@ std::uintmax_t file::size() const {
 
 std::uintmax_t file::size(std::error_code& ec) const noexcept {
 #ifdef _WIN32
-  FILE_STANDARD_INFO info;
-  if (!GetFileInformationByHandleEx(native_handle(), FileStandardInfo, &info,
-                                    sizeof(info))) {
+  DWORD size_upper;
+  DWORD size_lower = GetFileSize(native_handle(), &size_upper);
+  if (size_upper == INVALID_FILE_SIZE) {
     ec = std::error_code(GetLastError(), std::system_category());
     return static_cast<std::uintmax_t>(-1);
   }
 
-  return info.EndOfFile.QuadPart;
+  std::uintmax_t size = size_upper;
+  return size << sizeof(DWORD) * CHAR_BIT | size_lower;
 #else
   struct stat stat;
   if (fstat(native_handle(), &stat) == -1) {
