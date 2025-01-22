@@ -2,6 +2,7 @@
 
 #include "create.hpp"
 
+#include <cstddef>
 #include <filesystem>
 #include <new>
 #include <system_error>
@@ -203,3 +204,9 @@ bool entry::operator>=(const entry& rhs) const noexcept {
   return path() >= rhs.path();
 }
 }    // namespace tmp
+
+std::size_t
+std::hash<tmp::entry>::operator()(const tmp::entry& entry) const noexcept {
+  // `std::hash<std::filesystem::path>` was not included in the C++17 standard
+  return filesystem::hash_value(entry);
+}
