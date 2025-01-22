@@ -4,7 +4,6 @@
 #include <tmp/entry>
 #include <tmp/export>
 
-#include <cstddef>
 #include <filesystem>
 #include <fstream>
 #include <ios>
@@ -173,8 +172,6 @@ private:
 }    // namespace tmp
 
 /// The template specialization of `std::hash` for `tmp::file`
-template<> struct TMP_EXPORT std::hash<tmp::file> {
-  std::size_t operator()(const tmp::file& file) const noexcept;
-};
+template<> struct std::hash<tmp::file> : std::hash<tmp::entry> {};
 
 #endif    // TMP_FILE_H

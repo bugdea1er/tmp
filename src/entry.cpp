@@ -207,5 +207,6 @@ bool entry::operator>=(const entry& rhs) const noexcept {
 
 std::size_t
 std::hash<tmp::entry>::operator()(const tmp::entry& entry) const noexcept {
-  return tmp::fs::hash_value(entry);
+  // `std::hash<std::filesystem::path>` was not included in the C++17 standard
+  return filesystem::hash_value(entry);
 }
