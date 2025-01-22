@@ -2,7 +2,6 @@
 
 #include "create.hpp"
 
-#include <cstddef>
 #include <filesystem>
 #include <new>
 #include <system_error>
@@ -204,8 +203,3 @@ bool entry::operator>=(const entry& rhs) const noexcept {
   return path() >= rhs.path();
 }
 }    // namespace tmp
-
-std::size_t
-std::hash<tmp::entry>::operator()(const tmp::entry& entry) const noexcept {
-  return tmp::fs::hash_value(entry);
-}
