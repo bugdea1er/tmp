@@ -3,7 +3,6 @@
 
 #include <tmp/export>
 
-#include <cstddef>
 #include <filesystem>
 #include <system_error>
 #include <utility>
