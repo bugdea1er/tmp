@@ -194,7 +194,7 @@ file file::copy(const fs::path& path, std::string_view label,
     return copy;
   }
 
-  native_handle_type handle = open(path.c_str(), ec);
+  native_handle_type handle = open(path.c_str(), ec);    // FIXME: close it
   if (ec) {
     return copy;
   }
