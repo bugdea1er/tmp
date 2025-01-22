@@ -118,8 +118,8 @@ public:
   /// @param[in]  label A label to attach to the temporary file path
   /// @param[out] ec    Parameter for error reporting
   /// @returns The new temporary file
-  static file copy(const std::filesystem::path& path,
-                   std::string_view label, std::error_code& ec);
+  static file copy(const std::filesystem::path& path, std::string_view label,
+                   std::error_code& ec);
 
   /// Returns the size of this file
   /// @returns the size of this file, in bytes
