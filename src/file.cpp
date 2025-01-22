@@ -199,6 +199,7 @@ file file::copy(const fs::path& path, std::string_view label,
     return copy;
   }
 
+  // FIXME: can be optimized by block reading and writing
   std::string content = tmp::read(handle, ec);
   if (!ec) {
     tmp::write(copy.native_handle(), content, ec);
