@@ -99,15 +99,27 @@ public:
                    std::error_code& ec);
 
   /// Creates a unique temporary copy from the given path
-  /// @param path      A path to make a temporary copy from
-  /// @param label     A label to attach to the temporary file path
-  /// @param extension An extension of the temporary file path
+  /// @param[in] path  A path to make a temporary copy from
+  /// @param[in] label A label to attach to the temporary file path
   /// @returns The new temporary file
   /// @throws std::filesystem::filesystem_error if given path is not a file
   /// @throws std::invalid_argument             if arguments are ill-formatted
   static file copy(const std::filesystem::path& path,
-                   std::string_view label = "",
-                   std::string_view extension = "");
+                   std::string_view label = "");
+
+  /// Creates a unique temporary copy from the given path
+  /// @param[in]  path A path to make a temporary copy from
+  /// @param[out] ec   Parameter for error reporting
+  /// @returns The new temporary file
+  static file copy(const std::filesystem::path& path, std::error_code& ec);
+
+  /// Creates a unique temporary copy from the given path
+  /// @param[in]  path  A path to make a temporary copy from
+  /// @param[in]  label A label to attach to the temporary file path
+  /// @param[out] ec    Parameter for error reporting
+  /// @returns The new temporary file
+  static file copy(const std::filesystem::path& path,
+                   std::string_view label, std::error_code& ec);
 
   /// Returns the size of this file
   /// @returns the size of this file, in bytes

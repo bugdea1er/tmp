@@ -19,6 +19,7 @@
 #include <Windows.h>
 #else
 #include <cerrno>
+#include <fcntl.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #endif
@@ -105,6 +106,30 @@ void write(entry::native_handle_type handle, std::string_view content,
   }
 #endif
 }
+
+/// Opens a file for reading
+/// @param [in]  path The file path
+/// @param [out] ec   Parameter for error reporting
+/// @returns A native handle to the opened file
+entry::native_handle_type open(const fs::path& path, std::error_code& ec) {
+#ifdef _WIN32
+  HANDLE handle = CreateFile(path.c_str(), GENERIC_READ, 0, NULL, OPEN_EXISTING,
+                             FILE_ATTRIBUTE_NORMAL, NULL);
+  if (handle == INVALID_HANDLE_VALUE) {
+    ec = std::error_code(GetLastError(), std::system_category());
+    return entry::native_handle_type();
+  }
+#else
+  int handle = ::open(path.c_str(), O_RDONLY);
+  if (handle == -1) {
+    ec = std::error_code(errno, std::system_category());
+    return entry::native_handle_type();
+  }
+#endif
+
+  ec.clear();
+  return handle;
+}
 }    // namespace
 
 file::file(std::string_view label, std::string_view extension)
@@ -147,18 +172,39 @@ file file::text(std::string_view label, std::string_view extension,
   return result;
 }
 
-file file::copy(const fs::path& path, std::string_view label,
-                std::string_view extension) {
-  file tmpfile = file(label, extension);
-
+file file::copy(const fs::path& path, std::string_view label) {
   std::error_code ec;
-  fs::copy_file(path, tmpfile, fs::copy_options::overwrite_existing, ec);
+  file copy = file::copy(path, label, ec);
 
   if (ec) {
     throw fs::filesystem_error("Cannot create a temporary copy", path, ec);
   }
 
-  return tmpfile;
+  return copy;
+}
+
+file file::copy(const fs::path& path, std::error_code& ec) {
+  return copy(path, "", ec);
+}
+
+file file::copy(const fs::path& path, std::string_view label,
+                std::error_code& ec) {
+  file copy = file(label, path.extension().native(), ec);
+  if (ec) {
+    return copy;
+  }
+
+  native_handle_type handle = open(path.c_str(), ec);
+  if (ec) {
+    return copy;
+  }
+
+  std::string content = tmp::read(handle, ec);
+  if (!ec) {
+    tmp::write(copy.native_handle(), content, ec);
+  }
+
+  return copy;
 }
 
 std::uintmax_t file::size() const {
