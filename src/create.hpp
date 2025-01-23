@@ -25,7 +25,7 @@ create_file(std::string_view label, std::string_view extension, bool binary);
 /// temporary directory, and opens it for reading and writing
 /// @param[in]  label     A label to attach to the temporary file path
 /// @param[in]  extension An extension of the temporary file path
-/// @param[in] binary     Whether to open the file in binary mode
+/// @param[in]  binary    Whether to open the file in binary mode
 /// @param[out] ec        Parameter for error reporting
 /// @returns A path to the created temporary file and a handle to it
 std::pair<fs::path, std::filebuf> create_file(std::string_view label,
