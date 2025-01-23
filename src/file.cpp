@@ -70,7 +70,7 @@ void file::move(const std::filesystem::path& to, std::error_code& ec) {
 
 file::~file() noexcept = default;
 
-// C++ doesn't let me use `=default` for this constructor
+// Cannot be defaulted since we need to reset rdbuf for iostream
 // NOLINTBEGIN(*-use-after-move)
 file::file(file&& other)
     : entry(std::move(other)),
