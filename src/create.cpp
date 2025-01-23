@@ -144,7 +144,7 @@ create_file(std::string_view label, std::string_view extension,
                  nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
   if (handle == INVALID_HANDLE_VALUE) {
     ec = std::error_code(GetLastError(), std::system_category());
-    return std::pair<fs::path, entry::native_handle_type>();
+    return std::pair<fs::path, file::native_handle_type>();
   }
 #else
   // FIXME: `mkstemps` function is not a part of POSIX standard

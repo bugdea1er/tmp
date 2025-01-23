@@ -355,9 +355,10 @@ file::~file() noexcept {
 
 file::file(file&& other) noexcept
     : entry(std::move(other)),
-      binary(other.binary),
-      handle(other.handle) {
-  other.handle = invalid_handle;
+      binary(other.binary),    // NOLINT(bugprone-use-after-move)
+      handle(other.handle)     // NOLINT(bugprone-use-after-move)
+{
+  other.handle = invalid_handle;    // NOLINT(bugprone-use-after-move)
 }
 
 file& file::operator=(file&& other) noexcept {
