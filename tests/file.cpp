@@ -16,6 +16,17 @@
 namespace tmp {
 namespace {
 
+/// Closes the given handle, ignoring any errors
+/// @note Also deletes the managed path
+/// @param[in] handle The handle to close
+void close(file::native_handle_type handle) noexcept {
+#ifdef _WIN32
+  CloseHandle(handle);
+#else
+  ::close(handle);
+#endif
+}
+
 namespace fs = std::filesystem;
 
 /// Tests file creation with label
@@ -115,11 +126,30 @@ TEST(file, size) {
   file empty = file();
   EXPECT_EQ(empty.size(), 0);
 
+  std::error_code ec = std::make_error_code(std::errc::invalid_argument);
+  EXPECT_EQ(empty.size(ec), 0);
+  EXPECT_EQ(ec.value(), 0);
+
   std::string_view content = "Hello, world!";
 
   file nonempty = file();
   nonempty.write(content);
   EXPECT_EQ(nonempty.size(), content.size());
+
+  ec = std::make_error_code(std::errc::invalid_argument);
+  EXPECT_EQ(empty.size(ec), 0);
+  EXPECT_EQ(ec.value(), 0);
+
+  close(empty.native_handle());
+  EXPECT_THROW(empty.size(), fs::filesystem_error);
+
+  ec.clear();
+  EXPECT_EQ(empty.size(ec), -1);
+#ifdef _WIN32
+  EXPECT_EQ(ec, std::errc::invalid_argument);
+#else
+  EXPECT_EQ(ec, std::errc::bad_file_descriptor);
+#endif
 }
 
 /// Tests binary file reading

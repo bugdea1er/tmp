@@ -176,11 +176,12 @@ std::uintmax_t file::size(std::error_code& ec) const noexcept {
 #ifdef _WIN32
   DWORD size_upper;
   DWORD size_lower = GetFileSize(native_handle(), &size_upper);
-  if (size_upper == INVALID_FILE_SIZE) {
+  if (size_lower == INVALID_FILE_SIZE) {
     ec = std::error_code(GetLastError(), std::system_category());
     return static_cast<std::uintmax_t>(-1);
   }
 
+  ec.clear();
   std::uintmax_t size = size_upper;
   return size << sizeof(DWORD) * CHAR_BIT | size_lower;
 #else
@@ -190,6 +191,7 @@ std::uintmax_t file::size(std::error_code& ec) const noexcept {
     return static_cast<std::uintmax_t>(-1);
   }
 
+  ec.clear();
   return stat.st_size;
 #endif
 }
