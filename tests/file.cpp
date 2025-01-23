@@ -488,7 +488,7 @@ TEST(file, output_stream_append_text_binary) {
 /// Tests that destructor removes a file
 TEST(file, destructor) {
   fs::path path;
-  entry::native_handle_type handle;
+  file::native_handle_type handle;
   {
     file tmpfile = file();
     path = tmpfile;
@@ -520,8 +520,8 @@ TEST(file, move_assignment) {
     fs::path path1 = fst;
     fs::path path2 = snd;
 
-    entry::native_handle_type fst_handle = fst.native_handle();
-    entry::native_handle_type snd_handle = snd.native_handle();
+    file::native_handle_type fst_handle = fst.native_handle();
+    file::native_handle_type snd_handle = snd.native_handle();
 
     fst = std::move(snd);
 
@@ -546,8 +546,8 @@ TEST(file, swap) {
 
   fs::path fst_path = fst.path();
   fs::path snd_path = snd.path();
-  entry::native_handle_type fst_handle = fst.native_handle();
-  entry::native_handle_type snd_handle = snd.native_handle();
+  file::native_handle_type fst_handle = fst.native_handle();
+  file::native_handle_type snd_handle = snd.native_handle();
 
   std::swap(fst, snd);
 

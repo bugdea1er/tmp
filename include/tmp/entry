@@ -17,19 +17,10 @@ namespace tmp {
 /// - the managing tmp::entry object is destroyed
 /// - the managing tmp::entry object is assigned another path via operator=
 ///
-/// Subclasses must provide a path and an open handle to the entry constructor;
-/// entry closes the handle before deleting the managed path
+/// Subclasses should provide a path to manage for this class;
+/// any opening or closing operations should be managed by subclasses
 class TMP_EXPORT entry {
 public:
-/// Implementation-defined handle type to the temporary entry
-#if defined(_WIN32)
-  using native_handle_type = void*;    // HANDLE
-#elif __has_include(<unistd.h>)
-  using native_handle_type = int;    // POSIX file descriptor
-#else
-#error "Target platform not supported"
-#endif
-
   /// Returns the managed path
   /// @returns The full path this entry manages
   operator const std::filesystem::path&() const noexcept;
@@ -37,10 +28,6 @@ public:
   /// Returns the managed path
   /// @returns The full path this entry manages
   const std::filesystem::path& path() const noexcept;
-
-  /// Returns an implementation-defined handle to this entry
-  /// @returns The underlying implementation-defined handle
-  native_handle_type native_handle() const noexcept;
 
   /// Moves the managed path recursively to a given target, releasing
   /// ownership of the managed path; behaves like `std::filesystem::rename`
@@ -58,7 +45,7 @@ public:
   /// @param[out] ec Parameter for error reporting
   void move(const std::filesystem::path& to, std::error_code& ec);
 
-  /// Deletes the managed path recursively and closes its handle
+  /// Deletes the managed path recursively
   virtual ~entry() noexcept;
 
   entry(const entry&) = delete;               ///< not CopyConstructible
@@ -72,14 +59,9 @@ public:
   bool operator>=(const entry& rhs) const noexcept;
 
 protected:
-  /// Creates a temporary entry which owns the given path and handle
-  /// @param[in] path   A path to manage
-  /// @param[in] handle An implementation-defined handle to this entry
-  explicit entry(std::filesystem::path path, native_handle_type handle);
-
-  /// Creates a temporary entry which owns the given path and handle
-  /// @param[in] handle A pair of a path and a handle to manage
-  explicit entry(std::pair<std::filesystem::path, native_handle_type> handle);
+  /// Creates a temporary entry which owns the given path
+  /// @param[in] path A path to manage
+  explicit entry(std::filesystem::path path) noexcept;
 
   entry(entry&&) noexcept;               ///< MoveConstructible
   entry& operator=(entry&&) noexcept;    ///< MoveAssignable
@@ -87,9 +69,6 @@ protected:
 private:
   /// The managed path
   std::filesystem::path pathobject;
-
-  /// Implementation-defined handle to this entry
-  native_handle_type handle;
 };
 }    // namespace tmp
 
