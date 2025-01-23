@@ -71,6 +71,6 @@ file::~file() noexcept = default;
 
 file::file(file&& other) noexcept    // FIXME: this doesn't look right at all
     : entry(std::move(static_cast<entry&&>(other))),
-      std::fstream(std::move(static_cast<entry&&>(other))) {}
+      std::fstream(std::move(static_cast<std::fstream&&>(other))) {}
 file& file::operator=(file&&) noexcept = default;
 }    // namespace tmp
