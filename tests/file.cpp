@@ -15,6 +15,12 @@ namespace {
 
 namespace fs = std::filesystem;
 
+/// Returns whether the underlying raw file device object is open
+bool is_open(const file& file) {
+  std::filebuf* filebuf = dynamic_cast<std::filebuf*>(file.rdbuf());
+  return filebuf != nullptr && filebuf->is_open();
+}
+
 /// Tests file creation with label
 TEST(file, create_with_label) {
   file tmpfile = file(LABEL);
@@ -23,6 +29,7 @@ TEST(file, create_with_label) {
   EXPECT_TRUE(fs::exists(tmpfile));
   EXPECT_TRUE(fs::is_regular_file(tmpfile));
   EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path() / LABEL));
+  EXPECT_TRUE(is_open(tmpfile));
 
   fs::perms permissions = fs::status(tmpfile).permissions();
 #ifdef _WIN32
@@ -42,6 +49,7 @@ TEST(file, create_without_label) {
   EXPECT_TRUE(fs::exists(tmpfile));
   EXPECT_TRUE(fs::is_regular_file(tmpfile));
   EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path()));
+  EXPECT_TRUE(is_open(tmpfile));
 }
 
 /// Tests file creation with extension
@@ -51,6 +59,7 @@ TEST(file, create_with_extension) {
   EXPECT_TRUE(fs::exists(tmpfile));
   EXPECT_TRUE(fs::is_regular_file(tmpfile));
   EXPECT_EQ(tmpfile.path().extension(), ".test");
+  EXPECT_TRUE(is_open(tmpfile));
 }
 
 /// Tests multiple file creation with the same label
@@ -126,6 +135,7 @@ TEST(file, move_constructor) {
 
   EXPECT_FALSE(snd.path().empty());
   EXPECT_TRUE(fs::exists(snd));
+  EXPECT_TRUE(is_open(snd));
 }
 
 /// Tests file move assignment operator
@@ -161,6 +171,8 @@ TEST(file, swap) {
 
   EXPECT_EQ(fst.path(), snd_path);
   EXPECT_EQ(snd.path(), fst_path);
+  EXPECT_TRUE(is_open(fst));
+  EXPECT_TRUE(is_open(snd));
 }
 
 /// Tests file hashing
