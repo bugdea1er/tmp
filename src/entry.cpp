@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <new>
 #include <system_error>
+#include <utility>
 
 namespace tmp {
 namespace {

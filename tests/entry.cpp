@@ -1,8 +1,5 @@
 #include <tmp/directory>
-#include <tmp/entry>
 #include <tmp/file>
-
-#include "checks.hpp"
 
 #include <gtest/gtest.h>
 
@@ -19,7 +16,7 @@ namespace fs = std::filesystem;
 /// Returns a temporary file containing `Hello world!`
 file test_file() {
   file tmpfile = file();
-  tmpfile.write("Hello, world!");
+  tmpfile << "Hello, world!";
 
   return tmpfile;
 }
@@ -36,18 +33,15 @@ directory test_directory() {
 /// Tests that moving a temporary file to itself does nothing
 TEST(entry, move_file_to_self) {
   fs::path path;
-  file::native_handle_type handle;
 
   {
     file tmpfile = test_file();
     path = tmpfile;
-    handle = tmpfile.native_handle();
 
     tmpfile.move(tmpfile);
   }
 
   EXPECT_TRUE(fs::exists(path));
-  EXPECT_FALSE(native_handle_is_valid(handle));
 
   {
     auto stream = std::ifstream(path);
@@ -61,7 +55,6 @@ TEST(entry, move_file_to_self) {
 /// Tests moving a temporary file to existing non-directory file
 TEST(entry, move_file_to_existing_file) {
   fs::path path;
-  file::native_handle_type handle;
 
   fs::path to = fs::path(BUILD_DIR) / "move_file_to_existing_test";
   std::ofstream(to / "file") << "Goodbye, world!";
@@ -69,14 +62,12 @@ TEST(entry, move_file_to_existing_file) {
   {
     file tmpfile = test_file();
     path = tmpfile;
-    handle = tmpfile.native_handle();
 
     tmpfile.move(to);
   }
 
   EXPECT_TRUE(fs::exists(to));
   EXPECT_FALSE(fs::exists(path));
-  EXPECT_FALSE(native_handle_is_valid(handle));
 
   {
     auto stream = std::ifstream(to);
@@ -100,7 +91,6 @@ TEST(entry, move_file_to_existing_directory) {
 /// Tests moving a temporary file to a non-existing file
 TEST(entry, move_file_to_non_existing_file) {
   fs::path path;
-  file::native_handle_type handle;
 
   fs::path parent = fs::path(BUILD_DIR) / "non-existing1";
   fs::path to = parent / "path";
@@ -108,14 +98,12 @@ TEST(entry, move_file_to_non_existing_file) {
   {
     file tmpfile = test_file();
     path = tmpfile;
-    handle = tmpfile.native_handle();
 
     tmpfile.move(to);
   }
 
   EXPECT_TRUE(fs::exists(to));
   EXPECT_FALSE(fs::exists(path));
-  EXPECT_FALSE(native_handle_is_valid(handle));
 
   {
     auto stream = std::ifstream(to);

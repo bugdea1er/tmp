@@ -6,8 +6,6 @@
 
 #include <filesystem>
 #include <fstream>
-#include <ios>
-#include <string>
 #include <string_view>
 
 namespace tmp {
@@ -38,17 +36,8 @@ namespace tmp {
 ///     // tmp::file object goes out of scope and is destroyed
 ///   }
 /// @endcode
-class TMP_EXPORT file : public entry {
+class TMP_EXPORT file : public entry, public std::fstream {
 public:
-  /// Implementation-defined handle type to the temporary entry
-#if defined(_WIN32)
-  using native_handle_type = void*;    // HANDLE
-#elif __has_include(<unistd.h>)
-  using native_handle_type = int;    // POSIX file descriptor
-#else
-#error "Target platform not supported"
-#endif
-
   /// Creates a unique temporary file and opens it for reading and writing
   /// in binary mode
   /// @param[in] label     A label to attach to the temporary file path
@@ -114,20 +103,23 @@ public:
                    std::string_view label = "",
                    std::string_view extension = "");
 
-  /// Returns an implementation-defined handle to this entry
-  /// @returns The underlying implementation-defined handle
-  native_handle_type native_handle() const noexcept;
+  /// Moves the managed path recursively to a given target, releasing
+  /// ownership of the managed path; behaves like `std::filesystem::rename`
+  /// even when moving between filesystems
+  /// @note The target path parent is created when this function is called
+  /// @param[in] to A path to the target file or directory
+  /// @throws std::filesystem::filesystem_error if cannot move the owned path
+  void move(const std::filesystem::path& to);
 
-  /// Returns the input stream to this file
-  /// @returns An opened stream for input operations
-  std::ifstream input_stream() const;
+  /// Moves the managed path recursively to a given target, releasing
+  /// ownership of the managed path; behaves like `std::filesystem::rename`
+  /// even when moving between filesystems
+  /// @note The target path parent is created when this function is called
+  /// @param[in]  to A path to the target file or directory
+  /// @param[out] ec Parameter for error reporting
+  void move(const std::filesystem::path& to, std::error_code& ec);
 
-  /// Returns the output stream to this file
-  /// @param mode      A stream open mode, `std::ios::trunc` or `std::ios::app`
-  /// @returns An opened stream for output operations
-  std::ofstream output_stream(std::ios::openmode mode = std::ios::trunc) const;
-
-  /// Deletes the managed file
+  /// Deletes and closes the managed file
   ~file() noexcept override;
 
   file(file&&) noexcept;                    ///< MoveConstructible
@@ -136,17 +128,10 @@ public:
   file& operator=(const file&) = delete;    ///< not CopyAssignable
 
 private:
-  /// Whether the managed file is opened in binary write mode
-  bool binary;
-
-  /// Implementation-defined handle to this entry
-  native_handle_type handle;
-
   /// Creates a unique temporary file
-  /// @param handle    A path to the created temporary file and its handle
-  /// @param binary    Whether the managed file is opened in binary write mode
-  file(std::pair<std::filesystem::path, native_handle_type> handle,
-       bool binary) noexcept TMP_NO_EXPORT;
+  /// @param handle    A path to the created temporary file and a handle to it
+  explicit file(std::pair<std::filesystem::path, std::fstream> handle) noexcept
+      TMP_NO_EXPORT;
 };
 }    // namespace tmp
 

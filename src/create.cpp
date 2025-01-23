@@ -1,8 +1,8 @@
 #include "create.hpp"
 
-#include <tmp/file>
-
 #include <filesystem>
+#include <fstream>
+#include <ios>
 #include <stdexcept>
 #include <string_view>
 #include <system_error>
@@ -13,6 +13,7 @@
 #include <Windows.h>
 #include <cwchar>
 #else
+#include <cerrno>
 #include <fcntl.h>
 #include <unistd.h>
 #endif
@@ -104,13 +105,13 @@ bool create_parent(const fs::path& path, std::error_code& ec) {
   return fs::create_directories(path.parent_path(), ec);
 }
 
-std::pair<fs::path, file::native_handle_type>
-create_file(std::string_view label, std::string_view extension) {
+std::pair<fs::path, std::fstream>
+create_file(std::string_view label, std::string_view extension, bool binary) {
   validate_label(label);    // throws std::invalid_argument with a proper text
   validate_extension(extension);
 
   std::error_code ec;
-  auto file = create_file(label, extension, ec);
+  auto file = create_file(label, extension, binary, ec);
 
   if (ec) {
     throw fs::filesystem_error("Cannot create a temporary file", ec);
@@ -119,12 +120,13 @@ create_file(std::string_view label, std::string_view extension) {
   return file;
 }
 
-std::pair<fs::path, file::native_handle_type>
-create_file(std::string_view label, std::string_view extension,
-            std::error_code& ec) {
+std::pair<fs::path, std::fstream> create_file(std::string_view label,
+                                              std::string_view extension,
+                                              bool binary,
+                                              std::error_code& ec) {
   if (!is_label_valid(label) || !is_extension_valid(extension)) {
     ec = std::make_error_code(std::errc::invalid_argument);
-    return std::pair<fs::path, file::native_handle_type>();
+    return {};
   }
 
 #ifdef _WIN32
@@ -134,7 +136,7 @@ create_file(std::string_view label, std::string_view extension,
 #endif
   create_parent(path, ec);
   if (ec) {
-    return std::pair<fs::path, file::native_handle_type>();
+    return {};
   }
 
 #ifdef _WIN32
@@ -144,19 +146,30 @@ create_file(std::string_view label, std::string_view extension,
                  nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
   if (handle == INVALID_HANDLE_VALUE) {
     ec = std::error_code(GetLastError(), std::system_category());
-    return std::pair<fs::path, file::native_handle_type>();
+    return {};
   }
 #else
   // FIXME: `mkstemps` function is not a part of POSIX standard
   int handle = mkstemps(path.data(), static_cast<int>(extension.size()));
   if (handle == -1) {
     ec = std::error_code(errno, std::system_category());
-    return std::pair<fs::path, file::native_handle_type>();
+    return {};
   }
 #endif
 
+  std::ios::openmode mode = binary ? std::ios::binary : std::ios::openmode();
+  mode |= std::ios::in | std::ios::out;
+
+  std::fstream stream = std::fstream(path, mode);
+  if (!stream) {
+    // TODO: better to ask the stream about `errc`
+    ec = std::make_error_code(std::io_errc::stream);
+    fs::remove(path);
+  }
+
   ec.clear();
-  return std::make_pair(path, handle);
+  // FIXME: opened handle for the file won't be closed
+  return std::make_pair(path, std::move(stream));
 }
 
 fs::path create_directory(std::string_view label) {
