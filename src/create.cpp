@@ -99,11 +99,15 @@ fs::path make_pattern(std::string_view label, std::string_view extension) {
   return pattern;
 }
 #endif
-}    // namespace
 
+/// Creates the parent directory of the given path if it does not exist
+/// @param[in]  path The path for which the parent directory needs to be created
+/// @param[out] ec   Parameter for error reporting
+/// @returns `true` if a parent directory was newly created, `false` otherwise
 bool create_parent(const fs::path& path, std::error_code& ec) {
   return fs::create_directories(path.parent_path(), ec);
 }
+}    // namespace
 
 std::pair<fs::path, std::filebuf>
 create_file(std::string_view label, std::string_view extension, bool binary) {

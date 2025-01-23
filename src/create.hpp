@@ -10,12 +10,6 @@
 namespace tmp {
 namespace fs = std::filesystem;
 
-/// Creates the parent directory of the given path if it does not exist
-/// @param[in]  path The path for which the parent directory needs to be created
-/// @param[out] ec   Parameter for error reporting
-/// @returns `true` if a parent directory was newly created, `false` otherwise
-bool create_parent(const fs::path& path, std::error_code& ec);
-
 /// Creates a temporary file with the given label and extension in the system's
 /// temporary directory, and opens it for reading and writing
 /// @param[in] label     A label to attach to the temporary file path
