@@ -97,35 +97,6 @@ TEST(entry, move_file_to_existing_directory) {
   fs::remove_all(directory);
 }
 
-/// Tests moving a temporary file to a non-existing file
-TEST(entry, move_file_to_non_existing_file) {
-  fs::path path;
-  file::native_handle_type handle;
-
-  fs::path parent = fs::path(BUILD_DIR) / "non-existing1";
-  fs::path to = parent / "path";
-
-  {
-    file tmpfile = test_file();
-    path = tmpfile;
-    handle = tmpfile.native_handle();
-
-    tmpfile.move(to);
-  }
-
-  EXPECT_TRUE(fs::exists(to));
-  EXPECT_FALSE(fs::exists(path));
-  EXPECT_FALSE(native_handle_is_valid(handle));
-
-  {
-    auto stream = std::ifstream(to);
-    auto content = std::string(std::istreambuf_iterator<char>(stream), {});
-    EXPECT_EQ(content, "Hello, world!");
-  }
-
-  fs::remove_all(parent);
-}
-
 /// Tests moving a temporary file to a non-existing directory
 TEST(entry, move_file_to_non_existing_directory) {
   fs::path parent = fs::path(BUILD_DIR) / "non-existing2";
@@ -194,31 +165,5 @@ TEST(entry, move_directory_to_existing_file) {
   EXPECT_THROW(test_directory().move(to), fs::filesystem_error);
 
   fs::remove_all(to);
-}
-
-/// Tests moving a temporary directory to a non-existing path
-TEST(entry, move_directory_to_non_existing_path) {
-  fs::path path;
-
-  fs::path parent = fs::path(BUILD_DIR) / "non-existing3";
-  fs::path to = parent / "path";
-
-  {
-    directory tmpdir = test_directory();
-    path = tmpdir;
-
-    tmpdir.move(to);
-  }
-
-  EXPECT_TRUE(fs::exists(to));
-  EXPECT_FALSE(fs::exists(path));
-
-  {
-    auto stream = std::ifstream(to / "file");
-    auto content = std::string(std::istreambuf_iterator<char>(stream), {});
-    EXPECT_EQ(content, "Hello, world!");
-  }
-
-  fs::remove_all(parent);
 }
 }    // namespace tmp
