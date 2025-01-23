@@ -24,7 +24,7 @@ bool create_parent(const fs::path& path, std::error_code& ec);
 /// @returns A path to the created temporary file and a handle to it
 /// @throws fs::filesystem_error  if cannot create a temporary file
 /// @throws std::invalid_argument if the label or extension is ill-formatted
-std::pair<fs::path, std::fstream>
+std::pair<fs::path, std::filebuf>
 create_file(std::string_view label, std::string_view extension, bool binary);
 
 /// Creates a temporary file with the given label and extension in the system's
@@ -34,7 +34,7 @@ create_file(std::string_view label, std::string_view extension, bool binary);
 /// @param[in] binary     Whether to open the file in binary mode
 /// @param[out] ec        Parameter for error reporting
 /// @returns A path to the created temporary file and a handle to it
-std::pair<fs::path, std::fstream> create_file(std::string_view label,
+std::pair<fs::path, std::filebuf> create_file(std::string_view label,
                                               std::string_view extension,
                                               bool binary, std::error_code& ec);
 

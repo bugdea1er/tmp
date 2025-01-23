@@ -11,9 +11,10 @@
 
 namespace tmp {
 
-file::file(std::pair<std::filesystem::path, std::fstream> handle) noexcept
+file::file(std::pair<std::filesystem::path, std::filebuf> handle) noexcept
     : entry(std::move(handle.first)),
-      std::fstream(std::move(handle.second)) {}
+      std::iostream(&filebuf),
+      filebuf(std::move(handle.second)) {}
 
 file::file(std::string_view label, std::string_view extension)
     : file(create_file(label, extension, /*binary=*/true)) {}
@@ -69,8 +70,13 @@ void file::move(const std::filesystem::path& to, std::error_code& ec) {
 
 file::~file() noexcept = default;
 
-file::file(file&& other) noexcept    // FIXME: this doesn't look right at all
-    : entry(std::move(static_cast<entry&&>(other))),
-      std::fstream(std::move(static_cast<std::fstream&&>(other))) {}
+// C++ doesn't let me use `=default` for this constructor
+// NOLINTBEGIN(*-use-after-move)
+file::file(file&& other) noexcept
+    : entry(std::move(other)),
+      std::iostream(std::move(other)),
+      filebuf(std::move(other.filebuf)) {}
+// NOLINTEND(*-use-after-move)
+
 file& file::operator=(file&&) noexcept = default;
 }    // namespace tmp

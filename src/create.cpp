@@ -105,7 +105,7 @@ bool create_parent(const fs::path& path, std::error_code& ec) {
   return fs::create_directories(path.parent_path(), ec);
 }
 
-std::pair<fs::path, std::fstream>
+std::pair<fs::path, std::filebuf>
 create_file(std::string_view label, std::string_view extension, bool binary) {
   validate_label(label);    // throws std::invalid_argument with a proper text
   validate_extension(extension);
@@ -120,7 +120,7 @@ create_file(std::string_view label, std::string_view extension, bool binary) {
   return file;
 }
 
-std::pair<fs::path, std::fstream> create_file(std::string_view label,
+std::pair<fs::path, std::filebuf> create_file(std::string_view label,
                                               std::string_view extension,
                                               bool binary,
                                               std::error_code& ec) {
@@ -160,16 +160,17 @@ std::pair<fs::path, std::fstream> create_file(std::string_view label,
   std::ios::openmode mode = binary ? std::ios::binary : std::ios::openmode();
   mode |= std::ios::in | std::ios::out;
 
-  std::fstream stream = std::fstream(path, mode);
-  if (!stream) {
-    // TODO: better to ask the stream about `errc`
+  std::filebuf filebuf;
+  filebuf.open(path, mode);
+  if (!filebuf.is_open()) {
+    // TODO: better to ask the filebuf about `errc`
     ec = std::make_error_code(std::io_errc::stream);
     fs::remove(path);
   }
 
   ec.clear();
   // FIXME: opened handle for the file won't be closed
-  return std::make_pair(path, std::move(stream));
+  return std::make_pair(path, std::move(filebuf));
 }
 
 fs::path create_directory(std::string_view label) {

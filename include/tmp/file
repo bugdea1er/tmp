@@ -36,7 +36,7 @@ namespace tmp {
 ///     // tmp::file object goes out of scope and is destroyed
 ///   }
 /// @endcode
-class TMP_EXPORT file : public entry, public std::fstream {
+class TMP_EXPORT file : public entry, public std::iostream {
 public:
   /// Creates a unique temporary file and opens it for reading and writing
   /// in binary mode
@@ -119,6 +119,17 @@ public:
   /// @param[out] ec Parameter for error reporting
   void move(const std::filesystem::path& to, std::error_code& ec);
 
+#if __cpp_lib_fstream_native_handle >= 202306L
+  /// Implementation-defined handle type to the temporary file
+  using native_handle_type = std::fstream::native_handle_type;
+
+  /// Returns an implementation-defined handle to this entry
+  /// @returns The underlying implementation-defined handle
+  native_handle_type native_handle() const noexcept {
+    return filebuf.native_handle();
+  }
+#endif
+
   /// Deletes and closes the managed file
   ~file() noexcept override;
 
@@ -128,9 +139,12 @@ public:
   file& operator=(const file&) = delete;    ///< not CopyAssignable
 
 private:
+  /// The underlying raw file device object
+  std::filebuf filebuf;
+
   /// Creates a unique temporary file
   /// @param handle    A path to the created temporary file and a handle to it
-  explicit file(std::pair<std::filesystem::path, std::fstream> handle) noexcept
+  explicit file(std::pair<std::filesystem::path, std::filebuf> handle) noexcept
       TMP_NO_EXPORT;
 };
 }    // namespace tmp

@@ -23,7 +23,6 @@ TEST(file, create_with_label) {
   EXPECT_TRUE(fs::exists(tmpfile));
   EXPECT_TRUE(fs::is_regular_file(tmpfile));
   EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path() / LABEL));
-  EXPECT_TRUE(tmpfile.is_open());
 
   fs::perms permissions = fs::status(tmpfile).permissions();
 #ifdef _WIN32
@@ -43,7 +42,6 @@ TEST(file, create_without_label) {
   EXPECT_TRUE(fs::exists(tmpfile));
   EXPECT_TRUE(fs::is_regular_file(tmpfile));
   EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path()));
-  EXPECT_TRUE(tmpfile.is_open());
 }
 
 /// Tests file creation with extension
@@ -53,7 +51,6 @@ TEST(file, create_with_extension) {
   EXPECT_TRUE(fs::exists(tmpfile));
   EXPECT_TRUE(fs::is_regular_file(tmpfile));
   EXPECT_EQ(tmpfile.path().extension(), ".test");
-  EXPECT_TRUE(tmpfile.is_open());
 }
 
 /// Tests multiple file creation with the same label
@@ -129,7 +126,6 @@ TEST(file, move_constructor) {
 
   EXPECT_FALSE(snd.path().empty());
   EXPECT_TRUE(fs::exists(snd));
-  EXPECT_TRUE(snd.is_open());
 }
 
 /// Tests file move assignment operator
@@ -165,8 +161,6 @@ TEST(file, swap) {
 
   EXPECT_EQ(fst.path(), snd_path);
   EXPECT_EQ(snd.path(), fst_path);
-  EXPECT_TRUE(fst.is_open());
-  EXPECT_TRUE(snd.is_open());
 }
 
 /// Tests file hashing
