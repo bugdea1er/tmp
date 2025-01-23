@@ -110,18 +110,6 @@ TEST(file, copy_directory) {
   EXPECT_THROW(file::copy(tmpdir), fs::filesystem_error);
 }
 
-/// Tests getting a file size
-TEST(file, size) {
-  file empty = file();
-  EXPECT_EQ(empty.size(), 0);
-
-  std::string_view content = "Hello, world!";
-
-  file nonempty = file();
-  nonempty.write(content);
-  EXPECT_EQ(nonempty.size(), content.size());
-}
-
 /// Tests binary file reading
 TEST(file, read_binary) {
   file tmpfile = file();

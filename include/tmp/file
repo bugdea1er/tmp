@@ -23,9 +23,6 @@ namespace tmp {
 /// - the managing tmp::file object is destroyed
 /// - the managing tmp::file object is assigned another path via operator=
 ///
-/// tmp::file provides additional `write` and `append` methods
-/// which allow writing data to the temporary file
-///
 /// The following example uses a tmp::file object to create a temporary file
 /// and write a string to it; when the function returns, the tmp::file object
 /// goes out of scope and the temporary file is deleted:
@@ -120,46 +117,6 @@ public:
   /// Returns an implementation-defined handle to this entry
   /// @returns The underlying implementation-defined handle
   native_handle_type native_handle() const noexcept;
-
-  /// Returns the size of this file
-  /// @returns the size of this file, in bytes
-  /// @throws std::filesystem::filesystem_error if cannot get a file size
-  std::uintmax_t size() const;
-
-  /// Returns the size of this file
-  /// @param[out] ec Parameter for error reporting
-  /// @returns the size of this file, in bytes
-  std::uintmax_t size(std::error_code& ec) const noexcept;
-
-  /// Reads the entire contents of this file
-  /// @returns A string with this file contents
-  /// @throws std::filesystem::filesystem_error if cannot read the file contents
-  std::string read() const;
-
-  /// Reads the entire contents of this file
-  /// @param[out] ec Parameter for error reporting
-  /// @returns A string with this file contents
-  std::string read(std::error_code& ec) const;
-
-  /// Writes the given content to this file discarding any previous content
-  /// @param[in] content A string to write to this file
-  /// @throws std::filesystem::filesystem_error if cannot write to the file
-  void write(std::string_view content) const;
-
-  /// Writes the given content to this file discarding any previous content
-  /// @param[in]  content A string to write to this file
-  /// @param[out] ec      Parameter for error reporting
-  void write(std::string_view content, std::error_code& ec) const;
-
-  /// Appends the given content to the end of this file
-  /// @param[in] content A string to append to this file
-  /// @throws std::filesystem::filesystem_error if cannot append to the file
-  void append(std::string_view content) const;
-
-  /// Appends the given content to the end of this file
-  /// @param[in]  content A string to append to this file
-  /// @param[out] ec      Parameter for error reporting
-  void append(std::string_view content, std::error_code& ec) const;
 
   /// Returns the input stream to this file
   /// @returns An opened stream for input operations
