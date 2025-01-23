@@ -45,20 +45,6 @@ fs::path directory::operator/(std::string_view source) const {
   return path() / source;
 }
 
-fs::directory_iterator directory::list() const {
-  std::error_code ec;
-  fs::directory_iterator iterator = list(ec);
-  if (ec) {
-    throw fs::filesystem_error("Cannot list a temporary directory", path(), ec);
-  }
-
-  return iterator;
-}
-
-fs::directory_iterator directory::list(std::error_code& ec) const {
-  return fs::directory_iterator(path(), ec);
-}
-
 directory::~directory() noexcept = default;
 
 directory::directory(directory&&) noexcept = default;

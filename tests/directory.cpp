@@ -97,23 +97,6 @@ TEST(directory, subpath) {
   EXPECT_TRUE(fs::equivalent(tmpdir, child.parent_path()));
 }
 
-/// Tests directory listing
-TEST(directory, list) {
-  directory tmpdir = directory();
-  std::ofstream(tmpdir / "file1") << "Hello, world!";
-  std::ofstream(tmpdir / "file2") << "Hello, world!";
-
-  fs::create_directory(tmpdir / "subdir");
-  std::ofstream(tmpdir / "subdir" / "file") << "Hello, world!";
-
-  std::set entries = std::set<fs::path>();
-  for (const auto& entry : tmpdir.list()) {
-    entries.insert(fs::relative(entry, tmpdir));
-  }
-
-  EXPECT_EQ(entries, std::set<fs::path>({"file1", "file2", "subdir"}));
-}
-
 /// Tests that destructor removes a directory
 TEST(directory, destructor) {
   fs::path path;
