@@ -52,11 +52,6 @@ void move(const fs::path& from, const fs::path& to, std::error_code& ec) {
     }
   }
 
-  create_parent(to, ec);
-  if (ec) {
-    return;
-  }
-
   bool copying = false;
 
 #ifdef _WIN32
