@@ -1,8 +1,6 @@
 #include <tmp/directory>
 #include <tmp/file>
 
-#include "checks.hpp"
-
 #include <gtest/gtest.h>
 
 #include <filesystem>
@@ -25,7 +23,6 @@ TEST(directory, create_with_label) {
   EXPECT_TRUE(fs::exists(tmpdir));
   EXPECT_TRUE(fs::is_directory(tmpdir));
   EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path() / LABEL));
-  EXPECT_TRUE(native_handle_is_valid(tmpdir.native_handle()));
 
   fs::perms permissions = fs::status(tmpdir).permissions();
 #ifdef _WIN32
@@ -45,7 +42,6 @@ TEST(directory, create_without_label) {
   EXPECT_TRUE(fs::exists(tmpdir));
   EXPECT_TRUE(fs::is_directory(tmpdir));
   EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path()));
-  EXPECT_TRUE(native_handle_is_valid(tmpdir.native_handle()));
 }
 
 /// Tests multiple directories creation with the same label
@@ -121,15 +117,12 @@ TEST(directory, list) {
 /// Tests that destructor removes a directory
 TEST(directory, destructor) {
   fs::path path;
-  entry::native_handle_type handle;
   {
     directory tmpdir = directory();
     path = tmpdir;
-    handle = tmpdir.native_handle();
   }
 
   EXPECT_FALSE(fs::exists(path));
-  EXPECT_FALSE(native_handle_is_valid(handle));
 }
 
 /// Tests directory move constructor
@@ -141,7 +134,6 @@ TEST(directory, move_constructor) {
 
   EXPECT_FALSE(snd.path().empty());
   EXPECT_TRUE(fs::exists(snd));
-  EXPECT_TRUE(native_handle_is_valid(snd.native_handle()));
 }
 
 /// Tests directory move assignment operator
@@ -153,9 +145,6 @@ TEST(directory, move_assignment) {
     fs::path path1 = fst;
     fs::path path2 = snd;
 
-    entry::native_handle_type fst_handle = fst.native_handle();
-    entry::native_handle_type snd_handle = snd.native_handle();
-
     fst = std::move(snd);
 
     EXPECT_FALSE(fs::exists(path1));
@@ -163,13 +152,9 @@ TEST(directory, move_assignment) {
 
     EXPECT_TRUE(fs::exists(fst));
     EXPECT_TRUE(fs::equivalent(fst, path2));
-
-    EXPECT_FALSE(native_handle_is_valid(fst_handle));
-    EXPECT_TRUE(native_handle_is_valid(snd_handle));
   }
 
   EXPECT_FALSE(fst.path().empty());
-  EXPECT_TRUE(native_handle_is_valid(fst.native_handle()));
 }
 
 /// Tests directory swapping
@@ -179,15 +164,11 @@ TEST(directory, swap) {
 
   fs::path fst_path = fst.path();
   fs::path snd_path = snd.path();
-  entry::native_handle_type fst_handle = fst.native_handle();
-  entry::native_handle_type snd_handle = snd.native_handle();
 
   std::swap(fst, snd);
 
   EXPECT_EQ(fst.path(), snd_path);
   EXPECT_EQ(snd.path(), fst_path);
-  EXPECT_EQ(fst.native_handle(), snd_handle);
-  EXPECT_EQ(snd.native_handle(), fst_handle);
 }
 
 /// Tests directory hashing

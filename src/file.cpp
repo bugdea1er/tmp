@@ -12,6 +12,7 @@
 #include <sstream>
 #include <string_view>
 #include <system_error>
+#include <type_traits>
 
 #ifdef _WIN32
 #define NOMINMAX
@@ -26,6 +27,21 @@
 namespace tmp {
 namespace {
 
+// Confirm that native_handle_type matches `TriviallyCopyable` named requirement
+static_assert(std::is_trivially_copyable_v<file::native_handle_type>);
+
+#ifdef _WIN32
+// Confirm that `HANDLE` is as implemented in `entry`
+static_assert(std::is_same_v<HANDLE, file::native_handle_type>);
+#endif
+
+/// Implementation-defined invalid handle to the file
+#ifdef _WIN32
+const file::native_handle_type invalid_handle = INVALID_HANDLE_VALUE;
+#else
+constexpr file::native_handle_type invalid_handle = -1;
+#endif
+
 /// Maximum number of bytes in one read/write operation
 constexpr std::string_view::size_type io_max = std::numeric_limits<int>::max();
 
@@ -38,7 +54,7 @@ constexpr std::size_t block_size = 4096;
 /// @param[out] ec     Parameter for error reporting
 /// @returns A string with read contents
 /// @throws std::bad_alloc if memory allocation fails
-std::string read(entry::native_handle_type handle, std::error_code& ec) {
+std::string read(file::native_handle_type handle, std::error_code& ec) {
   std::array buffer = std::array<std::string::value_type, block_size>();
   std::ostringstream content;
 
@@ -72,7 +88,7 @@ std::string read(entry::native_handle_type handle, std::error_code& ec) {
 /// @param[in]  handle  A native handle to write to
 /// @param[in]  content A string to write to this file
 /// @param[out] ec      Parameter for error reporting
-void write(entry::native_handle_type handle, std::string_view content,
+void write(file::native_handle_type handle, std::string_view content,
            std::error_code& ec) noexcept {
   do {
     int writable = static_cast<int>(std::min(content.size(), io_max));
@@ -105,24 +121,36 @@ void write(entry::native_handle_type handle, std::string_view content,
   }
 #endif
 }
+
+/// Closes the given entry, ignoring any errors
+/// @param[in] file The file to close
+void close(const file& file) noexcept {
+#ifdef _WIN32
+  CloseHandle(file.native_handle());
+#else
+  ::close(file.native_handle());
+#endif
+}
 }    // namespace
 
+file::file(std::pair<std::filesystem::path, file::native_handle_type> handle,
+           bool binary) noexcept
+    : entry(std::move(handle.first)),
+      binary(binary),
+      handle(handle.second) {}
+
 file::file(std::string_view label, std::string_view extension)
-    : entry(create_file(label, extension)),
-      binary(true) {}
+    : file(create_file(label, extension), /*binary=*/true) {}
 
 file::file(std::error_code& ec)
-    : entry(create_file("", "", ec)),
-      binary(true) {}
+    : file(create_file("", "", ec), /*binary=*/true) {}
 
 file::file(std::string_view label, std::error_code& ec)
-    : entry(create_file(label, "", ec)),
-      binary(true) {}
+    : file(create_file(label, "", ec), /*binary=*/true) {}
 
 file::file(std::string_view label, std::string_view extension,
            std::error_code& ec)
-    : entry(create_file(label, extension, ec)),
-      binary(true) {}
+    : file(create_file(label, extension, ec), /*binary=*/true) {}
 
 file file::text(std::string_view label, std::string_view extension) {
   file result = file(label, extension);
@@ -159,6 +187,10 @@ file file::copy(const fs::path& path, std::string_view label,
   }
 
   return tmpfile;
+}
+
+file::native_handle_type file::native_handle() const noexcept {
+  return handle;
 }
 
 std::uintmax_t file::size() const {
@@ -317,8 +349,27 @@ std::ofstream file::output_stream(std::ios::openmode mode) const {
   return std::ofstream(path(), mode);
 }
 
-file::~file() noexcept = default;
+file::~file() noexcept {
+  close(*this);
+}
 
-file::file(file&&) noexcept = default;
-file& file::operator=(file&& other) noexcept = default;
+file::file(file&& other) noexcept
+    : entry(std::move(other)),
+      binary(other.binary),    // NOLINT(bugprone-use-after-move)
+      handle(other.handle)     // NOLINT(bugprone-use-after-move)
+{
+  other.handle = invalid_handle;    // NOLINT(bugprone-use-after-move)
+}
+
+file& file::operator=(file&& other) noexcept {
+  entry::operator=(std::move(other));
+  close(*this);
+
+  binary = other.binary;    // NOLINT(bugprone-use-after-move)
+  handle = other.handle;    // NOLINT(bugprone-use-after-move)
+
+  other.handle = invalid_handle;
+
+  return *this;
+}
 }    // namespace tmp

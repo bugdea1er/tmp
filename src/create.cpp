@@ -1,6 +1,6 @@
 #include "create.hpp"
 
-#include <tmp/entry>
+#include <tmp/file>
 
 #include <filesystem>
 #include <stdexcept>
@@ -104,7 +104,7 @@ bool create_parent(const fs::path& path, std::error_code& ec) {
   return fs::create_directories(path.parent_path(), ec);
 }
 
-std::pair<fs::path, entry::native_handle_type>
+std::pair<fs::path, file::native_handle_type>
 create_file(std::string_view label, std::string_view extension) {
   validate_label(label);    // throws std::invalid_argument with a proper text
   validate_extension(extension);
@@ -119,12 +119,12 @@ create_file(std::string_view label, std::string_view extension) {
   return file;
 }
 
-std::pair<fs::path, entry::native_handle_type>
+std::pair<fs::path, file::native_handle_type>
 create_file(std::string_view label, std::string_view extension,
             std::error_code& ec) {
   if (!is_label_valid(label) || !is_extension_valid(extension)) {
     ec = std::make_error_code(std::errc::invalid_argument);
-    return std::pair<fs::path, entry::native_handle_type>();
+    return std::pair<fs::path, file::native_handle_type>();
   }
 
 #ifdef _WIN32
@@ -134,7 +134,7 @@ create_file(std::string_view label, std::string_view extension,
 #endif
   create_parent(path, ec);
   if (ec) {
-    return std::pair<fs::path, entry::native_handle_type>();
+    return std::pair<fs::path, file::native_handle_type>();
   }
 
 #ifdef _WIN32
@@ -144,14 +144,14 @@ create_file(std::string_view label, std::string_view extension,
                  nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
   if (handle == INVALID_HANDLE_VALUE) {
     ec = std::error_code(GetLastError(), std::system_category());
-    return std::pair<fs::path, entry::native_handle_type>();
+    return std::pair<fs::path, file::native_handle_type>();
   }
 #else
   // FIXME: `mkstemps` function is not a part of POSIX standard
   int handle = mkstemps(path.data(), static_cast<int>(extension.size()));
   if (handle == -1) {
     ec = std::error_code(errno, std::system_category());
-    return std::pair<fs::path, entry::native_handle_type>();
+    return std::pair<fs::path, file::native_handle_type>();
   }
 #endif
 
@@ -159,8 +159,7 @@ create_file(std::string_view label, std::string_view extension,
   return std::make_pair(path, handle);
 }
 
-std::pair<fs::path, entry::native_handle_type>
-create_directory(std::string_view label) {
+fs::path create_directory(std::string_view label) {
   validate_label(label);    // throws std::invalid_argument with a proper text
 
   std::error_code ec;
@@ -173,11 +172,10 @@ create_directory(std::string_view label) {
   return directory;
 }
 
-std::pair<fs::path, entry::native_handle_type>
-create_directory(std::string_view label, std::error_code& ec) {
+fs::path create_directory(std::string_view label, std::error_code& ec) {
   if (!is_label_valid(label)) {
     ec = std::make_error_code(std::errc::invalid_argument);
-    return std::pair<fs::path, entry::native_handle_type>();
+    return fs::path();
   }
 
 #ifdef _WIN32
@@ -187,31 +185,19 @@ create_directory(std::string_view label, std::error_code& ec) {
 #endif
   create_parent(path, ec);
   if (ec) {
-    return std::pair<fs::path, entry::native_handle_type>();
+    return fs::path();
   }
 
 #ifdef _WIN32
   if (!CreateDirectory(path.c_str(), nullptr)) {
     ec = std::error_code(GetLastError(), std::system_category());
-    return std::pair<fs::path, entry::native_handle_type>();
   }
 #else
   if (mkdtemp(path.data()) == nullptr) {
     ec = std::error_code(errno, std::system_category());
-    return std::pair<fs::path, entry::native_handle_type>();
   }
 #endif
 
-#ifdef _WIN32
-  HANDLE handle =
-      CreateFile(path.c_str(), GENERIC_READ | GENERIC_WRITE,
-                 FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                 nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
-#else
-  int handle = open(path.data(), O_DIRECTORY);
-#endif
-
-  // FIXME: last `open` call could fail, directory should be deleted
-  return std::make_pair(path, handle);
+  return path;
 }
 }    // namespace tmp

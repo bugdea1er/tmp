@@ -6,32 +6,9 @@
 #include <filesystem>
 #include <new>
 #include <system_error>
-#include <type_traits>
-#include <utility>
-
-#ifdef _WIN32
-#include <Windows.h>
-#else
-#include <unistd.h>
-#endif
 
 namespace tmp {
 namespace {
-
-// Confirm that native_handle_type matches `TriviallyCopyable` named requirement
-static_assert(std::is_trivially_copyable_v<entry::native_handle_type>);
-
-#ifdef _WIN32
-// Confirm that `HANDLE` is as implemented in `entry`
-static_assert(std::is_same_v<HANDLE, entry::native_handle_type>);
-#endif
-
-/// Implementation-defined invalid handle to the entry
-#ifdef _WIN32
-const entry::native_handle_type invalid_handle = INVALID_HANDLE_VALUE;
-#else
-constexpr entry::native_handle_type invalid_handle = -1;
-#endif
 
 /// Options for recursive overwriting copying
 constexpr fs::copy_options copy_options =
@@ -53,19 +30,6 @@ void remove(const fs::path& path) noexcept {
       static_cast<void>(ex);
     }
   }
-}
-
-/// Closes the given entry, ignoring any errors
-/// @note Also deletes the managed path
-/// @param[in] entry The entry to close
-void close(const entry& entry) noexcept {
-  remove(entry);
-
-#ifdef _WIN32
-  CloseHandle(entry.native_handle());
-#else
-  ::close(entry.native_handle());
-#endif
 }
 
 /// Moves the filesystem object as if by `std::filesystem::rename`
@@ -122,34 +86,25 @@ void move(const fs::path& from, const fs::path& to, std::error_code& ec) {
 }
 }    // namespace
 
-entry::entry(fs::path path, native_handle_type handle)
-    : pathobject(std::move(path)),
-      handle(handle) {}
-
-entry::entry(std::pair<std::filesystem::path, native_handle_type> handle)
-    : entry(std::move(handle.first), handle.second) {}
+entry::entry(fs::path path) noexcept
+    : pathobject(std::move(path)) {}
 
 entry::entry(entry&& other) noexcept
-    : pathobject(std::move(other.pathobject)),
-      handle(other.handle) {
+    : pathobject(std::move(other.pathobject)) {
   other.pathobject.clear();
-  other.handle = invalid_handle;
 }
 
 entry& entry::operator=(entry&& other) noexcept {
-  close(*this);
+  remove(*this);
 
   pathobject = std::move(other.pathobject);
   other.pathobject.clear();
-
-  handle = other.handle;
-  other.handle = invalid_handle;
 
   return *this;
 }
 
 entry::~entry() noexcept {
-  close(*this);
+  remove(*this);
 }
 
 entry::operator const fs::path&() const noexcept {
@@ -158,10 +113,6 @@ entry::operator const fs::path&() const noexcept {
 
 const fs::path& entry::path() const noexcept {
   return *this;
-}
-
-entry::native_handle_type entry::native_handle() const noexcept {
-  return handle;
 }
 
 void entry::move(const fs::path& to) {

@@ -36,7 +36,7 @@ directory test_directory() {
 /// Tests that moving a temporary file to itself does nothing
 TEST(entry, move_file_to_self) {
   fs::path path;
-  entry::native_handle_type handle;
+  file::native_handle_type handle;
 
   {
     file tmpfile = test_file();
@@ -61,7 +61,7 @@ TEST(entry, move_file_to_self) {
 /// Tests moving a temporary file to existing non-directory file
 TEST(entry, move_file_to_existing_file) {
   fs::path path;
-  entry::native_handle_type handle;
+  file::native_handle_type handle;
 
   fs::path to = fs::path(BUILD_DIR) / "move_file_to_existing_test";
   std::ofstream(to / "file") << "Goodbye, world!";
@@ -100,7 +100,7 @@ TEST(entry, move_file_to_existing_directory) {
 /// Tests moving a temporary file to a non-existing file
 TEST(entry, move_file_to_non_existing_file) {
   fs::path path;
-  entry::native_handle_type handle;
+  file::native_handle_type handle;
 
   fs::path parent = fs::path(BUILD_DIR) / "non-existing1";
   fs::path to = parent / "path";
@@ -139,18 +139,15 @@ TEST(entry, move_file_to_non_existing_directory) {
 /// Tests that moving a temporary directory to itself does nothing
 TEST(entry, move_directory_to_self) {
   fs::path path;
-  entry::native_handle_type handle;
 
   {
     directory tmpdir = test_directory();
     path = tmpdir;
-    handle = tmpdir.native_handle();
 
     tmpdir.move(tmpdir);
   }
 
   EXPECT_TRUE(fs::exists(path));
-  EXPECT_FALSE(native_handle_is_valid(handle));
 
   {
     auto stream = std::ifstream(path / "file");
@@ -164,7 +161,6 @@ TEST(entry, move_directory_to_self) {
 /// Tests moving a temporary directory to existing directory
 TEST(entry, move_directory_to_existing_directory) {
   fs::path path;
-  entry::native_handle_type handle;
 
   fs::path to = fs::path(BUILD_DIR) / "move_directory_to_existing_test";
   std::ofstream(to / "file2") << "Goodbye, world!";
@@ -172,14 +168,12 @@ TEST(entry, move_directory_to_existing_directory) {
   {
     directory tmpdir = test_directory();
     path = tmpdir;
-    handle = tmpdir.native_handle();
 
     tmpdir.move(to);
   }
 
   EXPECT_TRUE(fs::exists(to));
   EXPECT_FALSE(fs::exists(path));
-  EXPECT_FALSE(native_handle_is_valid(handle));
 
   {
     auto stream = std::ifstream(to / "file");
@@ -205,7 +199,6 @@ TEST(entry, move_directory_to_existing_file) {
 /// Tests moving a temporary directory to a non-existing path
 TEST(entry, move_directory_to_non_existing_path) {
   fs::path path;
-  entry::native_handle_type handle;
 
   fs::path parent = fs::path(BUILD_DIR) / "non-existing3";
   fs::path to = parent / "path";
@@ -213,14 +206,12 @@ TEST(entry, move_directory_to_non_existing_path) {
   {
     directory tmpdir = test_directory();
     path = tmpdir;
-    handle = tmpdir.native_handle();
 
     tmpdir.move(to);
   }
 
   EXPECT_TRUE(fs::exists(to));
   EXPECT_FALSE(fs::exists(path));
-  EXPECT_FALSE(native_handle_is_valid(handle));
 
   {
     auto stream = std::ifstream(to / "file");
