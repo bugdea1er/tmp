@@ -6,6 +6,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <istream>
 #include <string_view>
 
 namespace tmp {
