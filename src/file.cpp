@@ -3,8 +3,8 @@
 
 #include "create.hpp"
 
-#include <istream>
 #include <filesystem>
+#include <istream>
 #include <string_view>
 #include <system_error>
 #include <utility>
@@ -72,11 +72,11 @@ file::~file() noexcept = default;
 
 // C++ doesn't let me use `=default` for this constructor
 // NOLINTBEGIN(*-use-after-move)
-file::file(file&& other) noexcept
+file::file(file&& other)
     : entry(std::move(other)),
       std::iostream(std::move(other)),
       filebuf(std::move(other.filebuf)) {}
 // NOLINTEND(*-use-after-move)
 
-file& file::operator=(file&&) noexcept = default;
+file& file::operator=(file&&) = default;
 }    // namespace tmp

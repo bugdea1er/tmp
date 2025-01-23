@@ -134,8 +134,8 @@ public:
   /// Deletes and closes the managed file
   ~file() noexcept override;
 
-  file(file&&) noexcept;                    ///< MoveConstructible
-  file& operator=(file&&) noexcept;         ///< MoveAssignable
+  file(file&&);                             ///< MoveConstructible
+  file& operator=(file&&);                  ///< MoveAssignable
   file(const file&) = delete;               ///< not CopyConstructible
   file& operator=(const file&) = delete;    ///< not CopyAssignable
 
