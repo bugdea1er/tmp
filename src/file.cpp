@@ -75,7 +75,9 @@ file::~file() noexcept = default;
 file::file(file&& other)
     : entry(std::move(other)),
       std::iostream(std::move(other)),
-      filebuf(std::move(other.filebuf)) {}
+      filebuf(std::move(other.filebuf)) {
+  set_rdbuf(&filebuf);
+}
 // NOLINTEND(*-use-after-move)
 
 file& file::operator=(file&&) = default;
