@@ -11,7 +11,7 @@ Checks: >
   portability-*,
   readability-*,
   -*-use-default-member-init,
-  -*-noexcept-move-operations,
+  -*-noexcept-move-*,
   -bugprone-easily-swappable-parameters,
   -cppcoreguidelines-avoid-do-while,
   -cppcoreguidelines-init-variables,

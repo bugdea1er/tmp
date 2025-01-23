@@ -1,7 +1,5 @@
 #include <tmp/entry>
 
-#include "create.hpp"
-
 #include <cstddef>
 #include <filesystem>
 #include <new>
@@ -10,6 +8,8 @@
 
 namespace tmp {
 namespace {
+
+namespace fs = std::filesystem;
 
 /// Options for recursive overwriting copying
 constexpr fs::copy_options copy_options =
