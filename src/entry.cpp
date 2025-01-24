@@ -14,14 +14,14 @@ entry::entry(fs::path path) noexcept
 
 entry::entry(entry&& other) noexcept
     : pathobject(std::move(other.pathobject)) {
-  other.pathobject.clear();
+  other.clear();
 }
 
 entry& entry::operator=(entry&& other) noexcept {
   remove(*this);
 
   pathobject = std::move(other.pathobject);
-  other.pathobject.clear();
+  other.clear();
 
   return *this;
 }
