@@ -5,12 +5,21 @@
 #include "move.hpp"
 
 #include <filesystem>
+#include <ios>
 #include <istream>
 #include <string_view>
 #include <system_error>
 #include <utility>
 
 namespace tmp {
+namespace {
+
+/// A mode to open a text file with
+constexpr std::ios::openmode text_mode = std::ios::in | std::ios::out;
+
+/// A mode to open a binary file with
+constexpr std::ios::openmode binary_mode = std::ios::binary | text_mode;
+}    // namespace
 
 file::file(std::pair<std::filesystem::path, std::filebuf> handle) noexcept
     : entry(std::move(handle.first)),
@@ -18,20 +27,20 @@ file::file(std::pair<std::filesystem::path, std::filebuf> handle) noexcept
       filebuf(std::move(handle.second)) {}
 
 file::file(std::string_view label, std::string_view extension)
-    : file(create_file(label, extension, /*binary=*/true)) {}
+    : file(create_file(label, extension, binary_mode)) {}
 
 file::file(std::error_code& ec)
-    : file(create_file("", "", /*binary=*/true, ec)) {}
+    : file(create_file("", "", binary_mode, ec)) {}
 
 file::file(std::string_view label, std::error_code& ec)
-    : file(create_file(label, "", /*binary=*/true, ec)) {}
+    : file(create_file(label, "", binary_mode, ec)) {}
 
 file::file(std::string_view label, std::string_view extension,
            std::error_code& ec)
-    : file(create_file(label, extension, /*binary=*/true, ec)) {}
+    : file(create_file(label, extension, binary_mode, ec)) {}
 
 file file::text(std::string_view label, std::string_view extension) {
-  return file(create_file(label, extension, /*binary=*/false));
+  return file(create_file(label, extension, text_mode));
 }
 
 file file::text(std::error_code& ec) {
@@ -44,7 +53,7 @@ file file::text(std::string_view label, std::error_code& ec) {
 
 file file::text(std::string_view label, std::string_view extension,
                 std::error_code& ec) {
-  return file(create_file(label, extension, /*binary=*/false, ec));
+  return file(create_file(label, extension, text_mode, ec));
 }
 
 file file::copy(const fs::path& path, std::string_view label,

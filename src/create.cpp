@@ -136,13 +136,14 @@ template<typename Handle> void close(Handle handle) noexcept {
 }
 }    // namespace
 
-std::pair<fs::path, std::filebuf>
-create_file(std::string_view label, std::string_view extension, bool binary) {
+std::pair<fs::path, std::filebuf> create_file(std::string_view label,
+                                              std::string_view extension,
+                                              std::ios::openmode mode) {
   validate_label(label);    // throws std::invalid_argument with a proper text
   validate_extension(extension);
 
   std::error_code ec;
-  auto file = create_file(label, extension, binary, ec);
+  auto file = create_file(label, extension, mode, ec);
 
   if (ec) {
     throw fs::filesystem_error("Cannot create a temporary file", ec);
@@ -153,7 +154,7 @@ create_file(std::string_view label, std::string_view extension, bool binary) {
 
 std::pair<fs::path, std::filebuf> create_file(std::string_view label,
                                               std::string_view extension,
-                                              bool binary,
+                                              std::ios::openmode mode,
                                               std::error_code& ec) {
   if (!is_label_valid(label) || !is_extension_valid(extension)) {
     ec = std::make_error_code(std::errc::invalid_argument);
@@ -189,9 +190,6 @@ std::pair<fs::path, std::filebuf> create_file(std::string_view label,
 #endif
 
   scope_guard on_exit = scope_guard([&] { close(handle); });
-
-  std::ios::openmode mode = binary ? std::ios::binary : std::ios::openmode();
-  mode |= std::ios::in | std::ios::out;
 
   std::filebuf filebuf;
   filebuf.open(path, mode);
