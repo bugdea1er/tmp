@@ -40,6 +40,11 @@ void remove(const fs::path& path) noexcept {
 /// @param[out] ec   Parameter for error reporting
 /// @throws std::bad_alloc if memory allocation fails
 void move(const fs::path& from, const fs::path& to, std::error_code& ec) {
+  if (fs::equivalent(from, to, ec)) {
+    ec.clear();
+    return;
+  }
+
   // FIXME: `fs::is_directory can fail here`
   if (fs::exists(to)) {
     if (!fs::is_directory(from) && fs::is_directory(to)) {
