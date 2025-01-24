@@ -103,6 +103,7 @@ public:
   static file copy(const std::filesystem::path& path,
                    std::string_view label = "",
                    std::string_view extension = "");
+
   /// Moves the managed file to a given target, releasing
   /// ownership of the managed file; behaves like `std::filesystem::rename`
   /// even when moving between filesystems
