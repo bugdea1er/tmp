@@ -66,6 +66,20 @@ public:
   /// @returns The result of path concatenation
   std::filesystem::path operator/(std::string_view source) const;
 
+  /// Moves the managed directory recursively to a given target, releasing
+  /// ownership of the managed directory; behaves like `std::filesystem::rename`
+  /// even when moving between filesystems
+  /// @param[in] to A path to the target directory
+  /// @throws std::filesystem::filesystem_error if cannot move the owned path
+  void move(const std::filesystem::path& to);
+
+  /// Moves the managed directory recursively to a given target, releasing
+  /// ownership of the managed directory; behaves like `std::filesystem::rename`
+  /// even when moving between filesystems
+  /// @param[in]  to A path to the target directory
+  /// @param[out] ec Parameter for error reporting
+  void move(const std::filesystem::path& to, std::error_code& ec);
+
   /// Deletes the managed directory recursively
   ~directory() noexcept override;
 
