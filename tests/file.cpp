@@ -131,8 +131,6 @@ TEST(file, move_constructor) {
   file fst = file();
   file snd = file(std::move(fst));
 
-  fst.~file();    // NOLINT(*-use-after-move)
-
   EXPECT_FALSE(snd.path().empty());
   EXPECT_TRUE(fs::exists(snd));
   EXPECT_TRUE(is_open(snd));
