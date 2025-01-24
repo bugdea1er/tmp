@@ -2,6 +2,7 @@
 #include <tmp/file>
 
 #include "create.hpp"
+#include "move.hpp"
 
 #include <filesystem>
 #include <istream>
@@ -58,6 +59,23 @@ file file::copy(const fs::path& path, std::string_view label,
   }
 
   return tmpfile;
+}
+
+void file::move(const fs::path& to) {
+  std::error_code ec;
+  move(to, ec);
+
+  if (ec) {
+    throw fs::filesystem_error("Cannot move a temporary file", path(), to, ec);
+  }
+}
+
+void file::move(const fs::path& to, std::error_code& ec) {
+  filebuf.close();
+  tmp::move(*this, to, ec);
+  if (!ec) {
+    entry::clear();
+  }
 }
 
 file::~file() noexcept = default;

@@ -10,6 +10,12 @@
 #include <stdexcept>
 #include <utility>
 
+#ifdef _WIN32
+#include <Windows.h>
+#else
+#include <fcntl.h>
+#endif
+
 namespace tmp {
 namespace {
 

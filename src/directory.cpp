@@ -2,6 +2,7 @@
 #include <tmp/entry>
 
 #include "create.hpp"
+#include "move.hpp"
 
 #include <filesystem>
 #include <string_view>
@@ -43,6 +44,23 @@ directory directory::copy(const fs::path& path, std::string_view label) {
 
 fs::path directory::operator/(std::string_view source) const {
   return path() / source;
+}
+
+void directory::move(const fs::path& to) {
+  std::error_code ec;
+  move(to, ec);
+
+  if (ec) {
+    throw fs::filesystem_error("Cannot move a temporary directory", path(), to,
+                               ec);
+  }
+}
+
+void directory::move(const fs::path& to, std::error_code& ec) {
+  tmp::move(*this, to, ec);
+  if (!ec) {
+    clear();
+  }
 }
 
 directory::~directory() noexcept = default;

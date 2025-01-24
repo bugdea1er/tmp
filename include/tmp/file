@@ -103,6 +103,19 @@ public:
   static file copy(const std::filesystem::path& path,
                    std::string_view label = "",
                    std::string_view extension = "");
+  /// Moves the managed file to a given target, releasing
+  /// ownership of the managed file; behaves like `std::filesystem::rename`
+  /// even when moving between filesystems
+  /// @param[in] to A path to the target file
+  /// @throws std::filesystem::filesystem_error if cannot move the owned file
+  void move(const std::filesystem::path& to);
+
+  /// Moves the managed file recursively to a given target, releasing
+  /// ownership of the managed file; behaves like `std::filesystem::rename`
+  /// even when moving between filesystems
+  /// @param[in]  to A path to the target file
+  /// @param[out] ec Parameter for error reporting
+  void move(const std::filesystem::path& to, std::error_code& ec);
 
   /// Deletes and closes the managed file
   ~file() noexcept override;
@@ -111,8 +124,6 @@ public:
   file& operator=(file&&);                  ///< MoveAssignable
   file(const file&) = delete;               ///< not CopyConstructible
   file& operator=(const file&) = delete;    ///< not CopyAssignable
-
-  using entry::move;
 
 private:
   /// The underlying raw file device object
