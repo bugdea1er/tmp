@@ -62,14 +62,10 @@ file file::copy(const fs::path& path, std::string_view label,
 
 file::~file() noexcept = default;
 
-// Cannot be defaulted since we need to reset rdbuf for iostream
-// NOLINTBEGIN(*-use-after-move)
 file::file(file&& other)
     : entry(std::move(other)),
       std::iostream(&filebuf),
-      filebuf(std::move(other.filebuf)) {
-}
-// NOLINTEND(*-use-after-move)
+      filebuf(std::move(other.filebuf)) {} // NOLINT(*-use-after-move)
 
 file& file::operator=(file&& other) {
   // `filebuf` must be assigned first to close the file
