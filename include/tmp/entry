@@ -29,20 +29,6 @@ public:
   /// @returns The full path this entry manages
   const std::filesystem::path& path() const noexcept;
 
-  /// Moves the managed path recursively to a given target, releasing
-  /// ownership of the managed path; behaves like `std::filesystem::rename`
-  /// even when moving between filesystems
-  /// @param[in] to A path to the target file or directory
-  /// @throws std::filesystem::filesystem_error if cannot move the owned path
-  void move(const std::filesystem::path& to);
-
-  /// Moves the managed path recursively to a given target, releasing
-  /// ownership of the managed path; behaves like `std::filesystem::rename`
-  /// even when moving between filesystems
-  /// @param[in]  to A path to the target file or directory
-  /// @param[out] ec Parameter for error reporting
-  void move(const std::filesystem::path& to, std::error_code& ec);
-
   /// Deletes the managed path recursively
   virtual ~entry() noexcept;
 
@@ -60,6 +46,9 @@ protected:
   /// Creates a temporary entry which owns the given path
   /// @param[in] path A path to manage
   explicit entry(std::filesystem::path path) noexcept;
+
+  /// Clears the stored pathname
+  void clear() noexcept;
 
   entry(entry&&) noexcept;               ///< MoveConstructible
   entry& operator=(entry&&) noexcept;    ///< MoveAssignable

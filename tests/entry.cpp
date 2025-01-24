@@ -1,5 +1,4 @@
 #include <tmp/directory>
-#include <tmp/entry>
 #include <tmp/file>
 
 #include "checks.hpp"
