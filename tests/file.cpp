@@ -121,6 +121,79 @@ TEST(file, copy_directory) {
   EXPECT_THROW(file::copy(tmpdir), fs::filesystem_error);
 }
 
+/// Tests that moving a temporary file to itself does nothing
+TEST(file, move_to_self) {
+  fs::path path;
+
+  {
+    file tmpfile = file();
+    tmpfile << "Hello, world!" << std::flush;
+
+    path = tmpfile;
+
+    tmpfile.move(tmpfile);
+  }
+
+  EXPECT_TRUE(fs::exists(path));
+
+  {
+    auto stream = std::ifstream(path);
+    auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+    EXPECT_EQ(content, "Hello, world!");
+  }
+
+  fs::remove_all(path);
+}
+
+/// Tests moving a temporary file to existing non-directory file
+TEST(file, move_to_existing_file) {
+  fs::path path;
+
+  fs::path to = fs::path(BUILD_DIR) / "move_file_to_existing_test";
+  std::ofstream(to) << "Goodbye, world!";
+
+  {
+    file tmpfile = file();
+    tmpfile << "Hello, world!" << std::flush;
+
+    path = tmpfile;
+
+    tmpfile.move(to);
+  }
+
+  std::error_code ec;
+  EXPECT_TRUE(fs::exists(to, ec));
+  EXPECT_FALSE(fs::exists(path, ec));
+
+  {
+    auto stream = std::ifstream(to);
+    auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+    EXPECT_EQ(content, "Hello, world!");
+  }
+
+  fs::remove_all(to);
+}
+
+/// Tests moving a temporary file to an existing directory
+TEST(file, move_to_existing_directory) {
+  fs::path directory = fs::path(BUILD_DIR) / "existing_directory";
+  fs::create_directories(directory);
+
+  EXPECT_THROW(file().move(directory), fs::filesystem_error);
+
+  fs::remove_all(directory);
+}
+
+/// Tests moving a temporary file to a non-existing directory
+TEST(file, move_to_non_existing_directory) {
+  fs::path parent = fs::path(BUILD_DIR) / "non-existing2";
+  fs::path to = parent / "path/";
+
+  EXPECT_THROW(file().move(to), fs::filesystem_error);
+
+  fs::remove_all(parent);
+}
+
 /// Tests that destructor removes a file
 TEST(file, destructor) {
   fs::path path;
