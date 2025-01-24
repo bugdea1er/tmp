@@ -66,6 +66,9 @@ TEST(entry, move_file_to_existing_file) {
     tmpfile.move(to);
   }
 
+  std::error_code ec;
+  EXPECT_TRUE(fs::exists(to, ec));
+  EXPECT_FALSE(fs::exists(path, ec));
 
   {
     auto stream = std::ifstream(to);
