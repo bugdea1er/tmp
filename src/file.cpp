@@ -60,14 +60,6 @@ file file::copy(const fs::path& path, std::string_view label,
   return tmpfile;
 }
 
-void file::move(const std::filesystem::path& to) {
-  entry::move(to);
-}
-
-void file::move(const std::filesystem::path& to, std::error_code& ec) {
-  entry::move(to, ec);
-}
-
 file::~file() noexcept = default;
 
 // Cannot be defaulted since we need to reset rdbuf for iostream
