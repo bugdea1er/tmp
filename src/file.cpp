@@ -72,5 +72,12 @@ file::file(file&& other)
 }
 // NOLINTEND(*-use-after-move)
 
-file& file::operator=(file&&) = default;
+file& file::operator=(file&& other) {
+  // `filebuf` must be assigned first to close the file
+  // otherwise `entry` will not be able to remove the file before reassigning
+  filebuf = std::move(other.filebuf);
+  entry::operator=(std::move(other));
+
+  return *this;
+}
 }    // namespace tmp
