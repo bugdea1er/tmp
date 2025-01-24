@@ -11,6 +11,7 @@ Checks: >
   portability-*,
   readability-*,
   -*-use-default-member-init,
+  -*-noexcept-move-*,
   -bugprone-easily-swappable-parameters,
   -cppcoreguidelines-avoid-do-while,
   -cppcoreguidelines-init-variables,
@@ -19,6 +20,7 @@ Checks: >
   -misc-const-correctness,
   -misc-include-cleaner,
   -modernize-return-braced-init-list,
+  -modernize-use-auto,
   -modernize-use-nodiscard,
   -modernize-use-trailing-return-type,
   -readability-named-parameter

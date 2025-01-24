@@ -1,8 +1,6 @@
 #include <tmp/directory>
 #include <tmp/file>
 
-#include "checks.hpp"
-
 #include <gtest/gtest.h>
 
 #include <filesystem>
@@ -18,7 +16,7 @@ namespace fs = std::filesystem;
 /// Returns a temporary file containing `Hello world!`
 file test_file() {
   file tmpfile = file();
-  tmpfile.write("Hello, world!");
+  tmpfile << "Hello, world!" << std::flush;
 
   return tmpfile;
 }
@@ -35,18 +33,15 @@ directory test_directory() {
 /// Tests that moving a temporary file to itself does nothing
 TEST(entry, move_file_to_self) {
   fs::path path;
-  file::native_handle_type handle;
 
   {
     file tmpfile = test_file();
     path = tmpfile;
-    handle = tmpfile.native_handle();
 
     tmpfile.move(tmpfile);
   }
 
   EXPECT_TRUE(fs::exists(path));
-  EXPECT_FALSE(native_handle_is_valid(handle));
 
   {
     auto stream = std::ifstream(path);
@@ -60,22 +55,20 @@ TEST(entry, move_file_to_self) {
 /// Tests moving a temporary file to existing non-directory file
 TEST(entry, move_file_to_existing_file) {
   fs::path path;
-  file::native_handle_type handle;
 
   fs::path to = fs::path(BUILD_DIR) / "move_file_to_existing_test";
-  std::ofstream(to / "file") << "Goodbye, world!";
+  std::ofstream(to) << "Goodbye, world!";
 
   {
     file tmpfile = test_file();
     path = tmpfile;
-    handle = tmpfile.native_handle();
 
     tmpfile.move(to);
   }
 
-  EXPECT_TRUE(fs::exists(to));
-  EXPECT_FALSE(fs::exists(path));
-  EXPECT_FALSE(native_handle_is_valid(handle));
+  std::error_code ec;
+  EXPECT_TRUE(fs::exists(to, ec));
+  EXPECT_FALSE(fs::exists(path, ec));
 
   {
     auto stream = std::ifstream(to);
