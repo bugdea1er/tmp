@@ -57,7 +57,7 @@ TEST(entry, move_file_to_existing_file) {
   fs::path path;
 
   fs::path to = fs::path(BUILD_DIR) / "move_file_to_existing_test";
-  std::ofstream(to / "file") << "Goodbye, world!";
+  std::ofstream(to) << "Goodbye, world!";
 
   {
     file tmpfile = test_file();

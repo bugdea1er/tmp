@@ -65,7 +65,7 @@ file::~file() noexcept = default;
 file::file(file&& other)
     : entry(std::move(other)),
       std::iostream(&filebuf),
-      filebuf(std::move(other.filebuf)) {} // NOLINT(*-use-after-move)
+      filebuf(std::move(other.filebuf)) {}    // NOLINT(*-use-after-move)
 
 file& file::operator=(file&& other) {
   // `filebuf` must be assigned first to close the file
