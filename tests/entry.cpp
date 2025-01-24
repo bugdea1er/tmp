@@ -16,7 +16,7 @@ namespace fs = std::filesystem;
 /// Returns a temporary file containing `Hello world!`
 file test_file() {
   file tmpfile = file();
-  tmpfile << "Hello, world!";
+  tmpfile << "Hello, world!" << std::flush;
 
   return tmpfile;
 }
