@@ -6,8 +6,8 @@
 #include <filesystem>
 #include <fstream>
 #include <iterator>
-#include <ostream>
 #include <stdexcept>
+#include <system_error>
 #include <utility>
 
 #ifdef _WIN32

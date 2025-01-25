@@ -5,6 +5,7 @@
 #include "move.hpp"
 
 #include <filesystem>
+#include <fstream>
 #include <ios>
 #include <istream>
 #include <string_view>
