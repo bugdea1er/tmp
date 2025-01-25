@@ -16,8 +16,8 @@ namespace tmp {
 
 file::file(std::pair<std::filesystem::path, std::filebuf> handle) noexcept
     : entry(std::move(handle.first)),
-      std::iostream(&filebuf),
-      filebuf(std::move(handle.second)) {}
+      std::iostream(&sb),
+      sb(std::move(handle.second)) {}
 
 file::file(std::string_view label, std::string_view extension, openmode mode)
     : file(create_file(label, extension, mode)) {}
@@ -37,7 +37,7 @@ file file::copy(const fs::path& path, std::string_view label,
 }
 
 void file::move(const fs::path& to) {
-  filebuf.close();
+  sb.close();
 
   std::error_code ec;
   tmp::move(*this, to, ec);
@@ -53,13 +53,13 @@ file::~file() noexcept = default;
 
 file::file(file&& other)
     : entry(std::move(other)),
-      std::iostream(&filebuf),
-      filebuf(std::move(other.filebuf)) {}    // NOLINT(*-use-after-move)
+      std::iostream(&sb),
+      sb(std::move(other.sb)) {}    // NOLINT(*-use-after-move)
 
 file& file::operator=(file&& other) {
-  // `filebuf` must be assigned first to close the file
+  // The stream buffer must be assigned first to close the file
   // otherwise `entry` will not be able to remove the file before reassigning
-  filebuf = std::move(other.filebuf);
+  sb = std::move(other.sb);
   entry::operator=(std::move(other));
 
   return *this;

@@ -80,7 +80,7 @@ public:
 
 private:
   /// The underlying raw file device object
-  std::filebuf filebuf;
+  std::filebuf sb;
 
   /// Creates a unique temporary file
   /// @param handle    A path to the created temporary file and a handle to it
