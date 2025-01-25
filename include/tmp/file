@@ -43,29 +43,23 @@ public:
   /// in binary mode
   /// @param[in] label     A label to attach to the temporary file path
   /// @param[in] extension An extension of the temporary file path
+  /// @param[in] mode      Specifies stream open mode
   /// @throws std::filesystem::filesystem_error if cannot create a file
   /// @throws std::invalid_argument             if arguments are ill-formatted
-  explicit file(std::string_view label = "", std::string_view extension = "");
-
-  /// Creates a unique temporary file and opens it for reading and writing
-  /// in text mode
-  /// @param label     A label to attach to the temporary file path
-  /// @param extension An extension of the temporary file path
-  /// @throws std::filesystem::filesystem_error if cannot create a file
-  /// @throws std::invalid_argument             if arguments are ill-formatted
-  static file text(std::string_view label = "",
-                   std::string_view extension = "");
+  explicit file(std::string_view label = "", std::string_view extension = "",
+                std::ios::openmode mode = std::ios::in | std::ios::out);
 
   /// Creates a unique temporary copy from the given path
-  /// @param path      A path to make a temporary copy from
-  /// @param label     A label to attach to the temporary file path
-  /// @param extension An extension of the temporary file path
+  /// @param[in] path      A path to make a temporary copy from
+  /// @param[in] label     A label to attach to the temporary file path
+  /// @param[in] extension An extension of the temporary file path
+  /// @param[in] mode      Specifies stream open mode
   /// @returns The new temporary file
   /// @throws std::filesystem::filesystem_error if given path is not a file
   /// @throws std::invalid_argument             if arguments are ill-formatted
   static file copy(const std::filesystem::path& path,
-                   std::string_view label = "",
-                   std::string_view extension = "");
+                   std::string_view label = "", std::string_view extension = "",
+                   std::ios::openmode mode = std::ios::in | std::ios::out);
 
   /// Moves the managed file to a given target, releasing
   /// ownership of the managed file; behaves like `std::filesystem::rename`

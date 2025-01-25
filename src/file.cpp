@@ -12,30 +12,18 @@
 #include <utility>
 
 namespace tmp {
-namespace {
-
-/// A mode to open a text file with
-constexpr std::ios::openmode text_mode = std::ios::in | std::ios::out;
-
-/// A mode to open a binary file with
-constexpr std::ios::openmode binary_mode = std::ios::binary | text_mode;
-}    // namespace
 
 file::file(std::pair<std::filesystem::path, std::filebuf> handle) noexcept
     : entry(std::move(handle.first)),
       std::iostream(&filebuf),
       filebuf(std::move(handle.second)) {}
 
-file::file(std::string_view label, std::string_view extension)
-    : file(create_file(label, extension, binary_mode)) {}
-
-file file::text(std::string_view label, std::string_view extension) {
-  return file(create_file(label, extension, text_mode));
-}
+file::file(std::string_view label, std::string_view extension, openmode mode)
+    : file(create_file(label, extension, mode)) {}
 
 file file::copy(const fs::path& path, std::string_view label,
-                std::string_view extension) {
-  file tmpfile = file(label, extension);
+                std::string_view extension, openmode mode) {
+  file tmpfile = file(label, extension, mode);
 
   std::error_code ec;
   fs::copy_file(path, tmpfile, fs::copy_options::overwrite_existing, ec);
