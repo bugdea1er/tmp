@@ -36,6 +36,11 @@ file file::copy(const fs::path& path, std::string_view label,
   return tmpfile;
 }
 
+std::filebuf* file::rdbuf() const {
+  // For `std::basic_fstream` C++ standard literally requires using `const_cast`
+  return const_cast<std::filebuf*>(std::addressof(sb));    // NOLINT(*-cast)
+}
+
 void file::move(const fs::path& to) {
   sb.close();
 

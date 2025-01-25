@@ -63,6 +63,10 @@ public:
                    std::string_view label = "", std::string_view extension = "",
                    std::ios::openmode mode = std::ios::in | std::ios::out);
 
+  /// Returns pointer to the underlying raw file device object
+  /// @returns A pointer to the underlying raw file device
+  std::filebuf* rdbuf() const;
+
   /// Moves the managed file to a given target, releasing
   /// ownership of the managed file; behaves like `std::filesystem::rename`
   /// even when moving between filesystems
