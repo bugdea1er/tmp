@@ -37,14 +37,14 @@ namespace tmp {
 class TMP_EXPORT directory : public entry {
 public:
   /// Creates a unique temporary directory
-  /// @param[in] label A label to attach to the temporary directory path
+  /// @param label A label to attach to the temporary directory path
   /// @throws std::filesystem::filesystem_error if cannot create a directory
   /// @throws std::invalid_argument             if the label is ill-formatted
   explicit directory(std::string_view label = "");
 
   /// Creates a unique temporary copy recursively from the given path
-  /// @param path      A path to make a temporary copy from
-  /// @param label     A label to attach to the temporary directory path
+  /// @param path  A path to make a temporary copy from
+  /// @param label A label to attach to the temporary directory path
   /// @returns The new temporary directory
   /// @throws std::filesystem::filesystem_error if given path is not a directory
   /// @throws std::invalid_argument             if the label is ill-formatted
@@ -52,14 +52,14 @@ public:
                         std::string_view label = "");
 
   /// Concatenates this directory path with a given source
-  /// @param[in] source A string which represents a path name
+  /// @param source A string which represents a path name
   /// @returns The result of path concatenation
   std::filesystem::path operator/(std::string_view source) const;
 
   /// Moves the managed directory recursively to a given target, releasing
   /// ownership of the managed directory; behaves like `std::filesystem::rename`
   /// even when moving between filesystems
-  /// @param[in] to A path to the target directory
+  /// @param to A path to the target directory
   /// @throws std::filesystem::filesystem_error if cannot move the owned path
   void move(const std::filesystem::path& to);
 

@@ -42,7 +42,7 @@ public:
 
 protected:
   /// Creates a temporary entry which owns the given path
-  /// @param[in] path A path to manage
+  /// @param path A path to manage
   explicit entry(std::filesystem::path path) noexcept;
 
   /// Clears the stored pathname
