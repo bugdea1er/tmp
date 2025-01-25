@@ -48,24 +48,6 @@ public:
   explicit file(std::string_view label = "", std::string_view extension = "");
 
   /// Creates a unique temporary file and opens it for reading and writing
-  /// in binary mode
-  /// @param[out] ec Parameter for error reporting
-  explicit file(std::error_code& ec);
-
-  /// Creates a unique temporary file and opens it for reading and writing
-  /// in binary mode
-  /// @param[in]  label A label to attach to the temporary file path
-  /// @param[out] ec    Parameter for error reporting
-  file(std::string_view label, std::error_code& ec);
-
-  /// Creates a unique temporary file and opens it for reading and writing
-  /// in binary mode
-  /// @param[in]  label     A label to attach to the temporary file path
-  /// @param[in]  extension An extension of the temporary file path
-  /// @param[out] ec        Parameter for error reporting
-  file(std::string_view label, std::string_view extension, std::error_code& ec);
-
-  /// Creates a unique temporary file and opens it for reading and writing
   /// in text mode
   /// @param label     A label to attach to the temporary file path
   /// @param extension An extension of the temporary file path
@@ -73,25 +55,6 @@ public:
   /// @throws std::invalid_argument             if arguments are ill-formatted
   static file text(std::string_view label = "",
                    std::string_view extension = "");
-
-  /// Creates a unique temporary file and opens it for reading and writing
-  /// in text mode
-  /// @param[out] ec Parameter for error reporting
-  static file text(std::error_code& ec);
-
-  /// Creates a unique temporary file and opens it for reading and writing
-  /// in text mode
-  /// @param[in]  label A label to attach to the temporary file path
-  /// @param[out] ec    Parameter for error reporting
-  static file text(std::string_view label, std::error_code& ec);
-
-  /// Creates a unique temporary file and opens it for reading and writing
-  /// in text mode
-  /// @param[in]  label     A label to attach to the temporary file path
-  /// @param[in]  extension An extension of the temporary file path
-  /// @param[out] ec        Parameter for error reporting
-  static file text(std::string_view label, std::string_view extension,
-                   std::error_code& ec);
 
   /// Creates a unique temporary copy from the given path
   /// @param path      A path to make a temporary copy from
@@ -110,13 +73,6 @@ public:
   /// @param[in] to A path to the target file
   /// @throws std::filesystem::filesystem_error if cannot move the owned file
   void move(const std::filesystem::path& to);
-
-  /// Moves the managed file recursively to a given target, releasing
-  /// ownership of the managed file; behaves like `std::filesystem::rename`
-  /// even when moving between filesystems
-  /// @param[in]  to A path to the target file
-  /// @param[out] ec Parameter for error reporting
-  void move(const std::filesystem::path& to, std::error_code& ec);
 
   /// Deletes and closes the managed file
   ~file() noexcept override;

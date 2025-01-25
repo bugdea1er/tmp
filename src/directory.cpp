@@ -19,12 +19,6 @@ constexpr fs::copy_options copy_options =
 directory::directory(std::string_view label)
     : entry(create_directory(label)) {}
 
-directory::directory(std::error_code& ec)
-    : entry(create_directory("", ec)) {}
-
-directory::directory(std::string_view label, std::error_code& ec)
-    : entry(create_directory(label, ec)) {}
-
 directory directory::copy(const fs::path& path, std::string_view label) {
   directory tmpdir = directory(label);
 
@@ -48,19 +42,14 @@ fs::path directory::operator/(std::string_view source) const {
 
 void directory::move(const fs::path& to) {
   std::error_code ec;
-  move(to, ec);
+  tmp::move(*this, to, ec);
 
   if (ec) {
     throw fs::filesystem_error("Cannot move a temporary directory", path(), to,
                                ec);
   }
-}
 
-void directory::move(const fs::path& to, std::error_code& ec) {
-  tmp::move(*this, to, ec);
-  if (!ec) {
-    clear();
-  }
+  clear();
 }
 
 directory::~directory() noexcept = default;
