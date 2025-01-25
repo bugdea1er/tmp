@@ -29,31 +29,8 @@ file::file(std::pair<std::filesystem::path, std::filebuf> handle) noexcept
 file::file(std::string_view label, std::string_view extension)
     : file(create_file(label, extension, binary_mode)) {}
 
-file::file(std::error_code& ec)
-    : file(create_file("", "", binary_mode, ec)) {}
-
-file::file(std::string_view label, std::error_code& ec)
-    : file(create_file(label, "", binary_mode, ec)) {}
-
-file::file(std::string_view label, std::string_view extension,
-           std::error_code& ec)
-    : file(create_file(label, extension, binary_mode, ec)) {}
-
 file file::text(std::string_view label, std::string_view extension) {
   return file(create_file(label, extension, text_mode));
-}
-
-file file::text(std::error_code& ec) {
-  return text("", ec);
-}
-
-file file::text(std::string_view label, std::error_code& ec) {
-  return text(label, "", ec);
-}
-
-file file::text(std::string_view label, std::string_view extension,
-                std::error_code& ec) {
-  return file(create_file(label, extension, text_mode, ec));
 }
 
 file file::copy(const fs::path& path, std::string_view label,
@@ -71,20 +48,16 @@ file file::copy(const fs::path& path, std::string_view label,
 }
 
 void file::move(const fs::path& to) {
+  filebuf.close();
+
   std::error_code ec;
-  move(to, ec);
+  tmp::move(*this, to, ec);
 
   if (ec) {
     throw fs::filesystem_error("Cannot move a temporary file", path(), to, ec);
   }
-}
 
-void file::move(const fs::path& to, std::error_code& ec) {
-  filebuf.close();
-  tmp::move(*this, to, ec);
-  if (!ec) {
-    entry::clear();
-  }
+  entry::clear();
 }
 
 file::~file() noexcept = default;

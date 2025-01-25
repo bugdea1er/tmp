@@ -6,7 +6,6 @@
 
 #include <filesystem>
 #include <string_view>
-#include <system_error>
 
 namespace tmp {
 
@@ -43,15 +42,6 @@ public:
   /// @throws std::invalid_argument             if the label is ill-formatted
   explicit directory(std::string_view label = "");
 
-  /// Creates a unique temporary directory
-  /// @param[out] ec Parameter for error reporting
-  explicit directory(std::error_code& ec);
-
-  /// Creates a unique temporary directory
-  /// @param[in]  label A label to attach to the temporary directory path
-  /// @param[out] ec    Parameter for error reporting
-  explicit directory(std::string_view label, std::error_code& ec);
-
   /// Creates a unique temporary copy recursively from the given path
   /// @param path      A path to make a temporary copy from
   /// @param label     A label to attach to the temporary directory path
@@ -72,13 +62,6 @@ public:
   /// @param[in] to A path to the target directory
   /// @throws std::filesystem::filesystem_error if cannot move the owned path
   void move(const std::filesystem::path& to);
-
-  /// Moves the managed directory recursively to a given target, releasing
-  /// ownership of the managed directory; behaves like `std::filesystem::rename`
-  /// even when moving between filesystems
-  /// @param[in]  to A path to the target directory
-  /// @param[out] ec Parameter for error reporting
-  void move(const std::filesystem::path& to, std::error_code& ec);
 
   /// Deletes the managed directory recursively
   ~directory() noexcept override;

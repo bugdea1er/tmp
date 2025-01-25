@@ -5,7 +5,6 @@
 
 #include <cstddef>
 #include <filesystem>
-#include <system_error>
 
 namespace tmp {
 
