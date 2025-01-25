@@ -16,7 +16,7 @@ namespace tmp {
 
 file::file(std::pair<std::filesystem::path, std::filebuf> handle) noexcept
     : entry(std::move(handle.first)),
-      std::iostream(&sb),
+      std::iostream(std::addressof(sb)),
       sb(std::move(handle.second)) {}
 
 file::file(std::string_view label, std::string_view extension, openmode mode)
@@ -37,7 +37,7 @@ file file::copy(const fs::path& path, std::string_view label,
 }
 
 std::filebuf* file::rdbuf() const {
-  // For `std::basic_fstream` C++ standard literally requires using `const_cast`
+  // For `std::fstream` the C++ standard literally requires using `const_cast`
   return const_cast<std::filebuf*>(std::addressof(sb));    // NOLINT(*-cast)
 }
 
@@ -56,17 +56,23 @@ void file::move(const fs::path& to) {
 
 file::~file() noexcept = default;
 
+// NOLINTBEGIN(*-use-after-move)
 file::file(file&& other)
     : entry(std::move(other)),
-      std::iostream(&sb),
-      sb(std::move(other.sb)) {}    // NOLINT(*-use-after-move)
+      std::iostream(std::move(other)),
+      sb(std::move(other.sb)) {
+  set_rdbuf(std::addressof(sb));
+}
 
 file& file::operator=(file&& other) {
-  // The stream buffer must be assigned first to close the file
-  // otherwise `entry` will not be able to remove the file before reassigning
+  std::iostream::operator=(std::move(other));
+
+  // The stream buffer must be assigned first to close the file;
+  // otherwise `entry` may not be able to remove the file before reassigning
   sb = std::move(other.sb);
   entry::operator=(std::move(other));
 
   return *this;
 }
+// NOLINTEND(*-use-after-move)
 }    // namespace tmp
