@@ -46,9 +46,15 @@ extern void TMP_EXPORT move(const std::filesystem::path& from,
 ///     // tmp::file object goes out of scope and is destroyed
 ///   }
 /// @endcode
-template<class CharT, class Traits = std::char_traits<CharT>>
-class basic_file : public entry, public std::basic_iostream<CharT, Traits> {
+template<class charT, class traits = std::char_traits<charT>>
+class basic_file : public entry, public std::basic_iostream<charT, traits> {
 public:
+  using char_type = charT;
+  using int_type = typename traits::int_type;
+  using pos_type = typename traits::pos_type;
+  using off_type = typename traits::off_type;
+  using traits_type = traits;
+
   /// Creates a unique temporary file and opens it for reading and writing
   /// in binary mode
   /// @param label     A label to attach to the temporary file path
@@ -89,9 +95,8 @@ public:
 
   /// Returns pointer to the underlying raw file device object
   /// @returns A pointer to the underlying raw file device
-  std::basic_filebuf<CharT, Traits>* rdbuf() const noexcept {
-    // For `std::fstream` the C++ standard literally requires using `const_cast`
-    return const_cast<std::filebuf*>(std::addressof(sb));    // NOLINT(*-cast)
+  std::basic_filebuf<charT, traits>* rdbuf() const noexcept {
+    return const_cast<std::basic_filebuf<charT, traits>*>(std::addressof(sb));
   }
 
   /// Moves the managed file to a given target, releasing
@@ -110,7 +115,7 @@ public:
                                               path(), to, ec);
     }
 
-    clear();
+    entry::clear();
   }
 
   /// Deletes and closes the managed file
@@ -118,13 +123,13 @@ public:
 
   basic_file(basic_file&& other)
       : entry(std::move(other)),
-        std::basic_iostream<CharT, Traits>(std::move(other)),
+        std::basic_iostream<charT, traits>(std::move(other)),
         sb(std::move(other.sb)) {
-    std::basic_iostream<CharT, Traits>::set_rdbuf(std::addressof(sb));
+    std::basic_iostream<charT, traits>::set_rdbuf(std::addressof(sb));
   }
 
   basic_file& operator=(basic_file&& other) {
-    std::iostream::operator=(std::move(other));
+    std::basic_iostream<charT, traits>::operator=(std::move(other));
 
     // The stream buffer must be assigned first to close the file;
     // otherwise `entry` may not be able to remove the file before reassigning
@@ -139,14 +144,15 @@ public:
 
 private:
   /// The underlying raw file device object
-  std::basic_filebuf<CharT, Traits> sb;
+  std::basic_filebuf<charT, traits> sb;
 
   /// Creates a unique temporary file
   /// @param handle    A path to the created temporary file and a handle to it
   explicit basic_file(
-      std::pair<std::filesystem::path, std::basic_filebuf<CharT, Traits>> handle) noexcept
+      std::pair<std::filesystem::path, std::basic_filebuf<charT, traits>>
+          handle) noexcept
       : entry(std::move(handle.first)),
-        std::basic_iostream<CharT, Traits>(std::addressof(sb)),
+        std::basic_iostream<charT, traits>(std::addressof(sb)),
         sb(std::move(handle.second)) {}
 };
 
@@ -155,7 +161,7 @@ using wfile = basic_file<wchar_t>;
 }    // namespace tmp
 
 /// The template specialization of `std::hash` for `tmp::basic_file`
-template<class CharT, class Traits>
-struct std::hash<tmp::basic_file<CharT, Traits>> : std::hash<tmp::entry> {};
+template<class charT, class traits>
+struct std::hash<tmp::basic_file<charT, traits>> : std::hash<tmp::entry> {};
 
 #endif    // TMP_FILE_H
