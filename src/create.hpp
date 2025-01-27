@@ -1,6 +1,8 @@
 #ifndef TMP_CREATE_H
 #define TMP_CREATE_H
 
+#include <tmp/file>
+
 #include <filesystem>
 #include <fstream>
 #include <ios>
