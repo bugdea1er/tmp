@@ -49,10 +49,19 @@ extern void TMP_EXPORT move(const std::filesystem::path& from,
 template<class charT, class traits = std::char_traits<charT>>
 class basic_file : public entry, public std::basic_iostream<charT, traits> {
 public:
+  /// The character type used by the stream
   using char_type = charT;
+
+  /// The type of the character when it is treated as an integer
   using int_type = typename traits::int_type;
+
+  /// The type used to denote the position of a character in a stream
   using pos_type = typename traits::pos_type;
+
+  /// The type used to denote the offset of a character in a stream
   using off_type = typename traits::off_type;
+
+  /// The characters traits used by the stream
   using traits_type = traits;
 
   /// Creates a unique temporary file and opens it for reading and writing
