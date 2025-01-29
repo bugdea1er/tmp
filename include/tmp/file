@@ -13,30 +13,34 @@
 
 namespace tmp {
 
-/// tmp::file is a smart handle that owns and manages a temporary file and
+/// `tmp::file` is a smart handle that owns and manages a temporary file and
 /// deletes it when this handle goes out of scope
 ///
-/// When a tmp::file object is created, it creates a unique temporary file using
-/// the system's default location for temporary files and opens it for reading
-/// and writing
+/// When a `tmp::file` object is created, it creates a unique temporary file
+/// using the system default location for temporary files and opens it
+/// with the given `openmode`
 ///
 /// The managed file is deleted of when either of the following happens:
-/// - the managing tmp::file object is destroyed
-/// - the managing tmp::file object is assigned another path via operator=
+/// - the managing `tmp::file` object is destroyed
+/// - the managing `tmp::file` object is assigned another path via `operator=`
 ///
-/// The following example uses a tmp::file object to create a temporary file
-/// and write a string to it; when the function returns, the tmp::file object
+/// `tmp::file` extends the `std::iostream` class and uses an instance
+/// of `std::filebuf` internally. It is essentially `std::fstream`
+/// without open/close methods
+///
+/// The following example uses a `tmp::file` object to create a temporary file
+/// and write a string to it; when the function returns, the `tmp::file` object
 /// goes out of scope and the temporary file is deleted:
 ///
 /// @code{.cpp}
 ///   #include <tmp/file>
 ///
 ///   auto func(std::string_view content) {
-///     auto tmpfile = tmp::file("org.example.product", ".txt");
-///     tmpfile.write(content);
+///     auto tmpfile = tmp::file("org.example.product", ".bin", std::ios::out);
+///     tmpfile << content << std::flush;
 ///
 ///     // the temporary file is deleted recursively when the
-///     // tmp::file object goes out of scope and is destroyed
+///     // `tmp::file` object goes out of scope and is destroyed
 ///   }
 /// @endcode
 class TMP_EXPORT file : public entry, public std::iostream {

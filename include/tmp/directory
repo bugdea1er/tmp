@@ -9,19 +9,20 @@
 
 namespace tmp {
 
-/// tmp::directory is a smart handle that owns and manages a temporary directory
-/// and deletes it recursively when this handle goes out of scope
+/// `tmp::directory` is a smart handle that owns and manages a temporary
+/// directory and deletes it recursively when this handle goes out of scope
 ///
-/// When a tmp::directory object is created, it creates a unique temporary
-/// directory using the system's default location for temporary files
+/// When a `tmp::directory` object is created, it creates a unique temporary
+/// directory using the system default location for temporary files
 ///
 /// The managed directory is deleted of when either of the following happens:
-/// - the managing tmp::directory object is destroyed
-/// - the managing tmp::directory object is assigned another path via operator=
+/// - the managing `tmp::directory` object is destroyed
+/// - the managing `tmp::directory` object is assigned another path
+///   via `operator=`
 ///
-/// The following example uses a tmp::directory object to create a temporary
-/// directory; when the function returns, the tmp::directory object goes out of
-/// scope and the temporary directory is deleted along with all of its contents:
+/// The following example uses a `tmp::directory` object to create a temporary
+/// directory; when the function returns, the `tmp::directory` object goes out
+/// of scope and the temporary directory is recursively deleted:
 ///
 /// @code{.cpp}
 ///   #include <tmp/directory>
@@ -31,7 +32,7 @@ namespace tmp {
 ///     std::ostream(tmpdir / "file.txt") << "Hello, world!";
 ///
 ///     // the temporary directory is deleted recursively when the
-///     // tmp::directory object goes out of scope and is destroyed
+///     // `tmp::directory` object goes out of scope and is destroyed
 ///   }
 /// @endcode
 class TMP_EXPORT directory : public entry {
