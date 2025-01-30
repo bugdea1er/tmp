@@ -18,6 +18,13 @@
 #include <unistd.h>
 #endif
 
+#if __has_include(<__config>)
+#include <__config>
+#if !defined(_WIN32) && defined(_LIBCPP_VERSION) && _LIBCPP_VERSION >= 70000
+#define OPEN_FILEBUF
+#endif
+#endif
+
 namespace tmp {
 namespace {
 
@@ -108,6 +115,7 @@ bool create_parent(const fs::path& path, std::error_code& ec) {
   return fs::create_directories(path.parent_path(), ec);
 }
 
+#ifndef OPEN_FILEBUF
 /// Executes the given function when this guard goes out of scope
 template<class Cleanup> struct scope_guard {
   explicit scope_guard(const Cleanup& cleanup)
@@ -133,6 +141,22 @@ template<typename Handle> void close(Handle handle) noexcept {
 #else
   ::close(handle);
 #endif
+}
+#endif
+
+template<typename Handle>
+std::filebuf open(const fs::path& path, Handle handle,
+                  std::ios::openmode mode) {
+  std::filebuf filebuf;
+#ifdef OPEN_FILEBUF
+  (void)path;
+  filebuf.__open(handle, mode);
+#else
+  scope_guard on_exit = scope_guard([&] { close(handle); });
+  filebuf.open(path, mode);
+#endif
+
+  return filebuf;
 }
 }    // namespace
 
@@ -189,10 +213,7 @@ std::pair<fs::path, std::filebuf> create_file(std::string_view label,
   }
 #endif
 
-  scope_guard on_exit = scope_guard([&] { close(handle); });
-
-  std::filebuf filebuf;
-  filebuf.open(path, mode);
+  std::filebuf filebuf = open(path, handle, mode);
   if (!filebuf.is_open()) {
     ec = std::make_error_code(std::io_errc::stream);
     fs::remove(path);
