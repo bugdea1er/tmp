@@ -30,3 +30,23 @@ jobs:
         run: cmake --build build
       - name: Run tests
         run: ctest --output-on-failure --test-dir build
+  test-meson:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-24.04
+    steps:
+      - name: Set up `tmpfs` (if supported)
+        run: sudo mount tmpfs -t tmpfs -o size=100m /tmp
+      - name: Install Meson
+        run: sudo apt-get install meson
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Configure Meson
+        run: meson setup build
+      - name: Build tests
+        run: meson compile -C build
+      - name: Run tests
+        run: meson test -C build
