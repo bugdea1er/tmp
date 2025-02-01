@@ -21,11 +21,19 @@ tmp = library(
   cpp_shared_args: ['-DTMP_BUILDING_DLL'],
 )
 
+default_library = get_option('default_library')
+if default_library != 'static'
+  dll_args = ['-DTMP_SHARED']
+else
+  dll_args = []
+endif
+
 tmp_dep = declare_dependency(
   link_with: tmp,
   include_directories: include_directory,
   dependencies: [std_fs_dep],
   version: meson.project_version(),
+  compile_args: dll_args,
 )
 
 install_headers(
@@ -42,9 +50,10 @@ if not meson.is_subproject()
   endif
   pkg = import('pkgconfig')
   pkg.generate(
-    libraries: tmp,
+    tmp,
+    extra_cflags: dll_args,
+    libraries: std_fs_dep,
     version: meson.project_version(),
-    name: meson.project_name(),
     filebase: 'lib' + meson.project_name(),
     description: 'RAII-wrappers for unique temporary files and directories for modern C++',
     url: 'https://github.com/bugdea1er/tmp',
