@@ -1,4 +1,8 @@
-gtest_main_dep = dependency('gtest', main: true)
+gtest_main_dep = dependency('gtest', main: true, required: false)
+if not gtest_main_dep.found()
+  gtest_proj = subproject('gtest')
+  gtest_main_dep = gtest_proj.get_variable('gtest_main_dep')
+endif
 
 unit_test = executable(
   meson.project_name() + '.test',
