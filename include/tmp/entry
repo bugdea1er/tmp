@@ -8,12 +8,12 @@
 
 namespace tmp {
 
-/// tmp::entry is a smart handle that owns and manages a temporary path and
+/// `tmp::entry` is a smart handle that owns and manages a temporary path and
 /// deletes it recursively when this handle goes out of scope
 ///
 /// The managed path is deleted of when either of the following happens:
-/// - the managing tmp::entry object is destroyed
-/// - the managing tmp::entry object is assigned another path via operator=
+/// - the managing `tmp::entry` object is destroyed
+/// - the managing `tmp::entry` object is assigned another path via `operator=`
 ///
 /// Subclasses should provide a path to manage for this class;
 /// any opening or closing operations should be managed by subclasses
