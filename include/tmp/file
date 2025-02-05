@@ -8,13 +8,11 @@
 #include <ios>
 #include <istream>
 #include <string_view>
-#include <utility>
 
 namespace tmp {
 
-extern std::pair<std::filesystem::path, std::filebuf>
-    TMP_EXPORT create_file(std::string_view label, std::string_view extension,
-                           std::ios::openmode mode);
+extern std::filesystem::path TMP_EXPORT create_file(std::string_view label,
+                                                    std::string_view extension);
 
 extern void TMP_EXPORT move(const std::filesystem::path& from,
                             const std::filesystem::path& to,
@@ -51,7 +49,7 @@ extern void TMP_EXPORT move(const std::filesystem::path& from,
 ///   }
 /// @endcode
 template<class charT, class traits = std::char_traits<charT>>
-class basic_file : public entry, public std::basic_iostream<charT, traits> {
+class basic_file : public std::basic_iostream<charT, traits>, public entry {
 public:
   /// The character type used by the stream
   using char_type = charT;
@@ -78,7 +76,12 @@ public:
   explicit basic_file(std::string_view label = "",
                       std::string_view extension = "",
                       std::ios::openmode mode = std::ios::in | std::ios::out)
-      : basic_file(create_file(label, extension, mode)) {}
+      : std::basic_iostream<charT, traits>(std::addressof(sb)),
+        entry(create_file(label, extension)) {
+    if (rdbuf()->open(path(), mode) == nullptr) {
+      this->setstate(std::ios::failbit);
+    }
+  }
 
   /// Creates a unique temporary copy from the given path
   /// @param path      A path to make a temporary copy from
@@ -135,8 +138,8 @@ public:
   ~basic_file() noexcept override = default;
 
   basic_file(basic_file&& other) noexcept
-      : entry(std::move(other)),
-        std::basic_iostream<charT, traits>(std::move(other)),
+      : std::basic_iostream<charT, traits>(std::move(other)),
+        entry(std::move(other)),
         sb(std::move(other.sb)) {
     std::basic_iostream<charT, traits>::set_rdbuf(std::addressof(sb));
   }
@@ -158,15 +161,6 @@ public:
 private:
   /// The underlying raw file device object
   std::basic_filebuf<charT, traits> sb;
-
-  /// Creates a unique temporary file
-  /// @param handle A path to the created temporary file and a handle to it
-  explicit basic_file(
-      std::pair<std::filesystem::path, std::basic_filebuf<charT, traits>>
-          handle) noexcept
-      : entry(std::move(handle.first)),
-        std::basic_iostream<charT, traits>(std::addressof(sb)),
-        sb(std::move(handle.second)) {}
 };
 
 using file = basic_file<char>;
