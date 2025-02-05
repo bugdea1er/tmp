@@ -13,6 +13,7 @@ unit_test = executable(
     '-DLABEL="com.github.bugdea1er.tmp"',
     '-DBUILD_DIR="' + meson.current_build_dir() + '"',
   ],
+  build_by_default: false
 )
 
 test('tmp unit tests', unit_test, args: ['--gtest_color=yes'])
