@@ -1,9 +1,28 @@
-project('tmp', 'cpp', version: '2.0', meson_version: '>=1.3')
+project(
+  'tmp',
+  'cpp',
+  version: '2.0',
+  meson_version: '>=1.3',
+  default_options : ['cpp_std=c++17'],
+)
 
 include_directory = include_directories('include')
 cxx = meson.get_compiler('cpp')
 
 std_fs_dep = cxx.find_library('stdc++fs', required: false)
+
+default_library = get_option('default_library')
+if default_library != 'static'
+  dll_usage_args = ['-DTMP_SHARED']
+  if host_machine.system() == 'windows'
+    dll_build_args = ['-DTMP_BUILDING_DLL']
+  else
+    dll_build_args = []
+  endif
+else
+  dll_usage_args = []
+  dll_build_args = []
+endif
 
 tmp = library(
   'tmp',
@@ -18,22 +37,16 @@ tmp = library(
   gnu_symbol_visibility: 'hidden',
   version: meson.project_version(),
   dependencies: [std_fs_dep],
-  cpp_shared_args: ['-DTMP_BUILDING_DLL'],
+  cpp_shared_args: dll_build_args,
 )
 
-default_library = get_option('default_library')
-if default_library != 'static'
-  dll_args = ['-DTMP_SHARED']
-else
-  dll_args = []
-endif
 
 tmp_dep = declare_dependency(
   link_with: tmp,
   include_directories: include_directory,
   dependencies: [std_fs_dep],
   version: meson.project_version(),
-  compile_args: dll_args,
+  compile_args: dll_usage_args,
 )
 
 install_headers(
@@ -51,7 +64,7 @@ if not meson.is_subproject()
   pkg = import('pkgconfig')
   pkg.generate(
     tmp,
-    extra_cflags: dll_args,
+    extra_cflags: dll_usage_args,
     libraries: std_fs_dep,
     version: meson.project_version(),
     filebase: 'lib' + meson.project_name(),

@@ -10,12 +10,9 @@
 #define TMP_EXPORT
 #endif
 #define TMP_NO_EXPORT
-#elif defined TMP_BUILDING_DLL || defined TMP_SHARED
+#else
 #define TMP_EXPORT __attribute__((visibility("default")))
 #define TMP_NO_EXPORT __attribute__((visibility("hidden")))
-#else
-#define TMP_EXPORT
-#define TMP_NO_EXPORT
 #endif
 
 #endif /* TMP_EXPORT_H */
