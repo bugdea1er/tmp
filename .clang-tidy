@@ -23,8 +23,5 @@ Checks: >
   -modernize-use-auto,
   -modernize-use-nodiscard,
   -modernize-use-trailing-return-type,
+  -readability-identifier-length,
   -readability-named-parameter
-
-CheckOptions:
-  readability-identifier-length.IgnoredParameterNames: 'ec|to'
-  readability-identifier-length.IgnoredVariableNames: 'ec|to'
