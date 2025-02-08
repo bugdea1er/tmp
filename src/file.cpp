@@ -14,13 +14,13 @@
 
 namespace tmp {
 
-file::file(std::pair<std::filesystem::path, std::filebuf> handle) noexcept
+file::file(std::pair<std::filesystem::path, std::FILE*> handle, openmode mode) noexcept
     : entry(std::move(handle.first)),
       std::iostream(std::addressof(sb)),
-      sb(std::move(handle.second)) {}
+      sb(handle.second, mode) {}
 
 file::file(std::string_view label, std::string_view extension, openmode mode)
-    : file(create_file(label, extension, mode)) {}
+    : file(create_file(label, extension, mode), mode) {}
 
 file file::copy(const fs::path& path, std::string_view label,
                 std::string_view extension, openmode mode) {
@@ -36,9 +36,9 @@ file file::copy(const fs::path& path, std::string_view label,
   return tmpfile;
 }
 
-std::filebuf* file::rdbuf() const noexcept {
+filebuf* file::rdbuf() const noexcept {
   // For `std::fstream` the C++ standard literally requires using `const_cast`
-  return const_cast<std::filebuf*>(std::addressof(sb));    // NOLINT(*-cast)
+  return const_cast<filebuf*>(std::addressof(sb));    // NOLINT(*-const-cast)
 }
 
 void file::move(const fs::path& to) {

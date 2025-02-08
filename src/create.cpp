@@ -1,7 +1,7 @@
 #include "create.hpp"
 
+#include <cstdio>
 #include <filesystem>
-#include <fstream>
 #include <ios>
 #include <stdexcept>
 #include <string_view>
@@ -107,38 +107,11 @@ fs::path make_pattern(std::string_view label, std::string_view extension) {
 bool create_parent(const fs::path& path, std::error_code& ec) {
   return fs::create_directories(path.parent_path(), ec);
 }
-
-/// Executes the given function when this guard goes out of scope
-template<class Cleanup> struct scope_guard {
-  explicit scope_guard(const Cleanup& cleanup)
-      : cleanup_(cleanup) {}
-  scope_guard(scope_guard&&) = delete;
-  scope_guard& operator=(scope_guard&&) = delete;
-  scope_guard(const scope_guard&) = delete;
-  scope_guard& operator=(const scope_guard&) = delete;
-
-  ~scope_guard() {
-    cleanup_();
-  }
-
-private:
-  Cleanup cleanup_;
-};
-
-/// Closes the given handle, ignoring any errors
-/// @param[in] handle The handle to close
-template<typename Handle> void close(Handle handle) noexcept {
-#ifdef _WIN32
-  CloseHandle(handle);
-#else
-  ::close(handle);
-#endif
-}
 }    // namespace
 
-std::pair<fs::path, std::filebuf> create_file(std::string_view label,
-                                              std::string_view extension,
-                                              std::ios::openmode mode) {
+std::pair<fs::path, std::FILE*> create_file(std::string_view label,
+                                            std::string_view extension,
+                                            std::ios::openmode mode) {
   validate_label(label);    // throws std::invalid_argument with a proper text
   validate_extension(extension);
 
@@ -152,10 +125,10 @@ std::pair<fs::path, std::filebuf> create_file(std::string_view label,
   return file;
 }
 
-std::pair<fs::path, std::filebuf> create_file(std::string_view label,
-                                              std::string_view extension,
-                                              std::ios::openmode mode,
-                                              std::error_code& ec) {
+std::pair<fs::path, std::FILE*> create_file(std::string_view label,
+                                            std::string_view extension,
+                                            std::ios::openmode mode,
+                                            std::error_code& ec) {
   if (!is_label_valid(label) || !is_extension_valid(extension)) {
     ec = std::make_error_code(std::errc::invalid_argument);
     return {};
@@ -187,19 +160,16 @@ std::pair<fs::path, std::filebuf> create_file(std::string_view label,
     ec = std::error_code(errno, std::system_category());
     return {};
   }
+
+  (void)mode;
+  // FIXME: use `mode` parameter
+  std::FILE* file = fdopen(handle, "r+");
 #endif
 
-  scope_guard on_exit = scope_guard([&] { close(handle); });
-
-  std::filebuf filebuf;
-  filebuf.open(path, mode);
-  if (!filebuf.is_open()) {
-    ec = std::make_error_code(std::io_errc::stream);
-    fs::remove(path);
-  }
+  // FIXME: check fdopen for errors
 
   ec.clear();
-  return std::make_pair(path, std::move(filebuf));
+  return std::make_pair(path, file);
 }
 
 fs::path create_directory(std::string_view label) {

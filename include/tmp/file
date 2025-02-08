@@ -3,6 +3,7 @@
 
 #include <tmp/entry>
 #include <tmp/export>
+#include <tmp/filebuf>
 
 #include <filesystem>
 #include <fstream>
@@ -67,20 +68,18 @@ public:
                    std::string_view label = "", std::string_view extension = "",
                    std::ios::openmode mode = std::ios::in | std::ios::out);
 
-#if __cpp_lib_fstream_native_handle >= 202306L
   /// Implementation-defined handle type to the temporary file
-  using native_handle_type = std::filebuf::native_handle_type;
+  using native_handle_type = filebuf::native_handle_type;
 
   /// Returns an implementation-defined handle to this entry
   /// @returns The underlying implementation-defined handle
   native_handle_type native_handle() const noexcept {
     return rdbuf()->native_handle();
   }
-#endif
 
   /// Returns pointer to the underlying raw file device object
   /// @returns A pointer to the underlying raw file device
-  std::filebuf* rdbuf() const noexcept;
+  filebuf* rdbuf() const noexcept;
 
   /// Moves the managed file to a given target, releasing
   /// ownership of the managed file; behaves like `std::filesystem::rename`
@@ -99,11 +98,11 @@ public:
 
 private:
   /// The underlying raw file device object
-  std::filebuf sb;
+  filebuf sb;
 
   /// Creates a unique temporary file
   /// @param handle A path to the created temporary file and a handle to it
-  explicit file(std::pair<std::filesystem::path, std::filebuf> handle) noexcept
+  explicit file(std::pair<std::filesystem::path, std::FILE*> handle, std::ios::openmode) noexcept
       TMP_NO_EXPORT;
 };
 }    // namespace tmp
