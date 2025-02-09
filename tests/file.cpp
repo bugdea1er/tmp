@@ -138,7 +138,7 @@ TEST(file, move_to_self) {
 
   {
     file tmpfile = file();
-    tmpfile << "Hello, world!" << std::flush;
+    tmpfile << "Hello, world!";
 
     path = tmpfile;
 
@@ -165,7 +165,7 @@ TEST(file, move_to_existing_file) {
 
   {
     file tmpfile = file();
-    tmpfile << "Hello, world!" << std::flush;
+    tmpfile << "Hello, world!";
 
     path = tmpfile;
 
