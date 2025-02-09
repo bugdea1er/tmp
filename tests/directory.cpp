@@ -78,7 +78,7 @@ TEST(directory, copy_directory) {
   EXPECT_TRUE(fs::is_directory(copy));
 
   std::ifstream stream = std::ifstream(copy / "file");
-  auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+  std::string content = std::string(std::istreambuf_iterator(stream), {});
   EXPECT_EQ(content, "Hello, world!");
 }
 
@@ -112,8 +112,8 @@ TEST(directory, move_to_self) {
   EXPECT_TRUE(fs::exists(path));
 
   {
-    auto stream = std::ifstream(path / "file");
-    auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+    std::ifstream stream = std::ifstream(path / "file");
+    std::string content = std::string(std::istreambuf_iterator(stream), {});
     EXPECT_EQ(content, "Hello, world!");
   }
 
@@ -140,8 +140,8 @@ TEST(directory, move_to_existing_directory) {
   EXPECT_FALSE(fs::exists(path));
 
   {
-    auto stream = std::ifstream(to / "file");
-    auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+    std::ifstream stream = std::ifstream(to / "file");
+    std::string content = std::string(std::istreambuf_iterator(stream), {});
     EXPECT_EQ(content, "Hello, world!");
   }
 
