@@ -139,8 +139,8 @@ public:
 
   basic_file(basic_file&& other) noexcept
       : std::basic_iostream<charT, traits>(std::move(other)),
-        entry(std::move(other)),
-        sb(std::move(other.sb)) {
+        entry(std::move(other)),     // NOLINT(*-use-after-move)
+        sb(std::move(other.sb)) {    // NOLINT(*-use-after-move)
     std::basic_iostream<charT, traits>::set_rdbuf(std::addressof(sb));
   }
 
@@ -149,7 +149,7 @@ public:
 
     // The stream buffer must be assigned first to close the file;
     // otherwise `entry` may not be able to remove the file before reassigning
-    sb = std::move(other.sb);
+    sb = std::move(other.sb);    // NOLINT(*-use-after-move)
     entry::operator=(std::move(other));
 
     return *this;
