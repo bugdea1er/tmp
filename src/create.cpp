@@ -206,7 +206,7 @@ fs::path create_directory(std::string_view label) {
   validate_label(label);    // throws std::invalid_argument with a proper text
 
   std::error_code ec;
-  auto directory = create_directory(label, ec);
+  fs::path directory = create_directory(label, ec);
 
   if (ec) {
     throw fs::filesystem_error("Cannot create a temporary directory", ec);
