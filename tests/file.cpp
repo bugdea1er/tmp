@@ -26,6 +26,18 @@ bool is_open(const file& file) {
   return file.rdbuf()->is_open();
 }
 
+/// Tests file type traits and member types
+TEST(file, type_traits) {
+  using traits = std::char_traits<char>;
+
+  static_assert(std::is_base_of_v<std::basic_iostream<char>, file>);
+  static_assert(std::is_same_v<file::char_type, char>);
+  static_assert(std::is_same_v<file::traits_type, traits>);
+  static_assert(std::is_same_v<file::int_type, traits::int_type>);
+  static_assert(std::is_same_v<file::pos_type, traits::pos_type>);
+  static_assert(std::is_same_v<file::off_type, traits::off_type>);
+}
+
 /// Tests file creation with label
 TEST(file, create_with_label) {
   file tmpfile = file(LABEL);
