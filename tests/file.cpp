@@ -121,8 +121,8 @@ TEST(file, copy_file) {
 
   EXPECT_TRUE(fs::is_regular_file(tmpfile));
 
-  auto stream = std::ifstream(copy.path());
-  auto content = std::string(std::istreambuf_iterator(stream), {});
+  std::ifstream stream = std::ifstream(copy.path());
+  std::string content = std::string(std::istreambuf_iterator(stream), {});
   EXPECT_EQ(content, "Hello, world!");
 }
 
@@ -148,8 +148,8 @@ TEST(file, move_to_self) {
   EXPECT_TRUE(fs::exists(path));
 
   {
-    auto stream = std::ifstream(path);
-    auto content = std::string(std::istreambuf_iterator(stream), {});
+    std::ifstream stream = std::ifstream(path);
+    std::string content = std::string(std::istreambuf_iterator(stream), {});
     EXPECT_EQ(content, "Hello, world!");
   }
 
@@ -177,8 +177,8 @@ TEST(file, move_to_existing_file) {
   EXPECT_FALSE(fs::exists(path, ec));
 
   {
-    auto stream = std::ifstream(to);
-    auto content = std::string(std::istreambuf_iterator(stream), {});
+    std::ifstream stream = std::ifstream(to);
+    std::string content = std::string(std::istreambuf_iterator(stream), {});
     EXPECT_EQ(content, "Hello, world!");
   }
 
