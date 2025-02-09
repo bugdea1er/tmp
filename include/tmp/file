@@ -67,6 +67,17 @@ public:
                    std::string_view label = "", std::string_view extension = "",
                    std::ios::openmode mode = std::ios::in | std::ios::out);
 
+#if __cpp_lib_fstream_native_handle >= 202306L
+  /// Implementation-defined handle type to the temporary file
+  using native_handle_type = std::filebuf::native_handle_type;
+
+  /// Returns an implementation-defined handle to this entry
+  /// @returns The underlying implementation-defined handle
+  native_handle_type native_handle() const noexcept {
+    return rdbuf()->native_handle();
+  }
+#endif
+
   /// Returns pointer to the underlying raw file device object
   /// @returns A pointer to the underlying raw file device
   std::filebuf* rdbuf() const noexcept;

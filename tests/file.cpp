@@ -26,6 +26,20 @@ bool is_open(const file& file) {
   return file.rdbuf()->is_open();
 }
 
+#if __cpp_lib_fstream_native_handle >= 202306L
+/// Checks if the given file handle is valid
+/// @param handle handle to check
+/// @returns whether the handle is valid
+bool is_open(file::native_handle_type handle) {
+#ifdef _WIN32
+  BY_HANDLE_FILE_INFORMATION info;
+  return GetFileInformationByHandle(handle, &info);
+#else
+  return fcntl(handle, F_GETFD) != -1;
+#endif
+}
+#endif
+
 /// Tests file type traits and member types
 TEST(file, type_traits) {
   using traits = std::char_traits<char>;
@@ -47,6 +61,10 @@ TEST(file, create_with_label) {
   EXPECT_TRUE(fs::is_regular_file(tmpfile));
   EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path() / LABEL));
   EXPECT_TRUE(is_open(tmpfile));
+
+#if __cpp_lib_fstream_native_handle >= 202306L
+  EXPECT_TRUE(is_open(tmpfile.native_handle()));
+#endif
 
   fs::perms permissions = fs::status(tmpfile).permissions();
 #ifdef _WIN32
@@ -208,12 +226,22 @@ TEST(file, move_to_non_existing_directory) {
 /// Tests that destructor removes a file
 TEST(file, destructor) {
   fs::path path;
+#if __cpp_lib_fstream_native_handle >= 202306L
+  file::native_handle_type handle;
+#endif
+
   {
     file tmpfile = file();
     path = tmpfile;
+#if __cpp_lib_fstream_native_handle >= 202306L
+    handle = tmpfile.native_handle();
+#endif
   }
 
   EXPECT_FALSE(fs::exists(path));
+#if __cpp_lib_fstream_native_handle >= 202306L
+  EXPECT_FALSE(is_open(handle));
+#endif
 }
 
 /// Tests file move constructor
