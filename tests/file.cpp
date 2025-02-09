@@ -26,6 +26,18 @@ bool is_open(const file& file) {
   return file.rdbuf()->is_open();
 }
 
+/// Tests file type traits and member types
+TEST(file, type_traits) {
+  using traits = std::char_traits<char>;
+
+  static_assert(std::is_base_of_v<std::basic_iostream<char>, file>);
+  static_assert(std::is_same_v<file::char_type, char>);
+  static_assert(std::is_same_v<file::traits_type, traits>);
+  static_assert(std::is_same_v<file::int_type, traits::int_type>);
+  static_assert(std::is_same_v<file::pos_type, traits::pos_type>);
+  static_assert(std::is_same_v<file::off_type, traits::off_type>);
+}
+
 /// Tests file creation with label
 TEST(file, create_with_label) {
   file tmpfile = file(LABEL);
@@ -109,8 +121,8 @@ TEST(file, copy_file) {
 
   EXPECT_TRUE(fs::is_regular_file(tmpfile));
 
-  auto stream = std::ifstream(copy.path());
-  auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+  std::ifstream stream = std::ifstream(copy.path());
+  std::string content = std::string(std::istreambuf_iterator(stream), {});
   EXPECT_EQ(content, "Hello, world!");
 }
 
@@ -136,8 +148,8 @@ TEST(file, move_to_self) {
   EXPECT_TRUE(fs::exists(path));
 
   {
-    auto stream = std::ifstream(path);
-    auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+    std::ifstream stream = std::ifstream(path);
+    std::string content = std::string(std::istreambuf_iterator(stream), {});
     EXPECT_EQ(content, "Hello, world!");
   }
 
@@ -165,8 +177,8 @@ TEST(file, move_to_existing_file) {
   EXPECT_FALSE(fs::exists(path, ec));
 
   {
-    auto stream = std::ifstream(to);
-    auto content = std::string(std::istreambuf_iterator<char>(stream), {});
+    std::ifstream stream = std::ifstream(to);
+    std::string content = std::string(std::istreambuf_iterator(stream), {});
     EXPECT_EQ(content, "Hello, world!");
   }
 
@@ -207,18 +219,27 @@ TEST(file, destructor) {
 /// Tests file move constructor
 TEST(file, move_constructor) {
   file fst = file();
+  fst << "Hello!";
+
   file snd = file(std::move(fst));
 
   EXPECT_FALSE(snd.path().empty());
   EXPECT_TRUE(fs::exists(snd));
   EXPECT_TRUE(is_open(snd));
+
+  snd.seekg(0);
+  std::string content;
+  snd >> content;
+  EXPECT_EQ(content, "Hello!");
 }
 
 /// Tests file move assignment operator
 TEST(file, move_assignment) {
   file fst = file();
+
   {
     file snd = file();
+    snd << "Hello!";
 
     fs::path path1 = fst;
     fs::path path2 = snd;
@@ -233,6 +254,11 @@ TEST(file, move_assignment) {
   }
 
   EXPECT_FALSE(fst.path().empty());
+
+  fst.seekg(0);
+  std::string content;
+  fst >> content;
+  EXPECT_EQ(content, "Hello!");
 }
 
 /// Tests file swapping
