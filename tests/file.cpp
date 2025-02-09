@@ -219,18 +219,27 @@ TEST(file, destructor) {
 /// Tests file move constructor
 TEST(file, move_constructor) {
   file fst = file();
+  fst << "Hello!";
+
   file snd = file(std::move(fst));
 
   EXPECT_FALSE(snd.path().empty());
   EXPECT_TRUE(fs::exists(snd));
   EXPECT_TRUE(is_open(snd));
+
+  snd.seekg(0);
+  std::string content;
+  snd >> content;
+  EXPECT_EQ(content, "Hello!");
 }
 
 /// Tests file move assignment operator
 TEST(file, move_assignment) {
   file fst = file();
+
   {
     file snd = file();
+    snd << "Hello!";
 
     fs::path path1 = fst;
     fs::path path2 = snd;
@@ -245,6 +254,11 @@ TEST(file, move_assignment) {
   }
 
   EXPECT_FALSE(fst.path().empty());
+
+  fst.seekg(0);
+  std::string content;
+  fst >> content;
+  EXPECT_EQ(content, "Hello!");
 }
 
 /// Tests file swapping
