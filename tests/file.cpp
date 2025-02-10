@@ -26,6 +26,20 @@ template<typename charT> bool is_open(const basic_file<charT>& file) {
   return file.rdbuf()->is_open();
 }
 
+#if __cpp_lib_fstream_native_handle >= 202306L
+/// Checks if the given file handle is valid
+/// @param handle handle to check
+/// @returns whether the handle is valid
+bool is_open(file::native_handle_type handle) {
+#ifdef _WIN32
+  BY_HANDLE_FILE_INFORMATION info;
+  return GetFileInformationByHandle(handle, &info);
+#else
+  return fcntl(handle, F_GETFD) != -1;
+#endif
+}
+#endif
+
 template<typename charT>
 constexpr std::basic_string<charT> convert_string(const char* string) {
   if constexpr (std::is_same_v<charT, char>) {
@@ -45,9 +59,7 @@ constexpr std::basic_string<charT> convert_string(const char* string) {
   throw std::invalid_argument("Unknown character type");
 }
 
-template<typename charT> class file : public testing::Test {
-public:
-};
+template<typename charT> class file : public testing::Test {};
 
 using char_types = testing::Types<char, wchar_t>;
 TYPED_TEST_SUITE(file, char_types);
@@ -73,6 +85,10 @@ TYPED_TEST(file, create_with_label) {
   EXPECT_TRUE(fs::is_regular_file(tmpfile));
   EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path() / LABEL));
   EXPECT_TRUE(is_open(tmpfile));
+
+#if __cpp_lib_fstream_native_handle >= 202306L
+  EXPECT_TRUE(is_open(tmpfile.native_handle()));
+#endif
 
   fs::perms permissions = fs::status(tmpfile).permissions();
 #ifdef _WIN32
@@ -164,7 +180,7 @@ TYPED_TEST(file, move_to_self) {
 
   {
     basic_file<TypeParam> tmpfile = basic_file<TypeParam>();
-    tmpfile << "Hello, world!" << std::flush;
+    tmpfile << "Hello, world!";
 
     path = tmpfile;
 
@@ -191,7 +207,7 @@ TYPED_TEST(file, move_to_existing_file) {
 
   {
     basic_file<TypeParam> tmpfile = basic_file<TypeParam>();
-    tmpfile << "Hello, world!" << std::flush;
+    tmpfile << "Hello, world!";
 
     path = tmpfile;
 
@@ -234,12 +250,22 @@ TYPED_TEST(file, move_to_non_existing_directory) {
 /// Tests that destructor removes a file
 TYPED_TEST(file, destructor) {
   fs::path path;
+#if __cpp_lib_fstream_native_handle >= 202306L
+  file::native_handle_type handle;
+#endif
+
   {
     basic_file<TypeParam> tmpfile = basic_file<TypeParam>();
     path = tmpfile;
+#if __cpp_lib_fstream_native_handle >= 202306L
+    handle = tmpfile.native_handle();
+#endif
   }
 
   EXPECT_FALSE(fs::exists(path));
+#if __cpp_lib_fstream_native_handle >= 202306L
+  EXPECT_FALSE(is_open(handle));
+#endif
 }
 
 /// Tests file move constructor

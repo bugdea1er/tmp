@@ -109,6 +109,17 @@ public:
     return tmpfile;
   }
 
+#if __cpp_lib_fstream_native_handle >= 202306L
+  /// Implementation-defined handle type to the temporary file
+  using native_handle_type = std::filebuf::native_handle_type;
+
+  /// Returns an implementation-defined handle to this entry
+  /// @returns The underlying implementation-defined handle
+  native_handle_type native_handle() const noexcept {
+    return rdbuf()->native_handle();
+  }
+#endif
+
   /// Returns pointer to the underlying raw file device object
   /// @returns A pointer to the underlying raw file device
   std::basic_filebuf<charT, traits>* rdbuf() const noexcept {
