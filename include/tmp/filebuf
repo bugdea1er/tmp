@@ -10,6 +10,10 @@
 #ifndef TMP_FILEBUF_H
 #define TMP_FILEBUF_H
 
+#include <cstring>
+#include <ios>
+#include <locale>
+#include <memory>
 #include <streambuf>
 #include <string>
 
@@ -116,7 +120,7 @@ protected:
   /// @returns The resulting file position, or `pos_type(off_type(-1))` on
   /// failure
   pos_type seekoff(off_type off, std::ios::seekdir dir,
-                   std::ios::openmode which) override;
+                   std::ios::openmode which = std::ios::in | std::ios::out) override;
 
   /// Repositions the file pointer, if possible, using absolute addressing
   /// @param sp    The file position obtained earlier on the same file
@@ -178,8 +182,8 @@ basic_filebuf<charT, traits>::basic_filebuf(std::FILE* file,
       __cv_(nullptr),
       __st_(),
       __st_last_(),
-      __om_(0),
-      __cm_(0),
+      __om_(std::ios::openmode()),
+      __cm_(std::ios::openmode()),
       __owns_eb_(false),
       __owns_ib_(false),
       __always_noconv_(false) {
@@ -225,7 +229,7 @@ basic_filebuf<charT, traits>::basic_filebuf(basic_filebuf&& __rhs) noexcept
       this->setp((char_type*)__extbuf_,
                  (char_type*)__extbuf_ + (__rhs.epptr() - __rhs.pbase()));
     }
-    this->__pbump(__rhs.pptr() - __rhs.pbase());
+    this->pbump(__rhs.pptr() - __rhs.pbase());
   } else if (__rhs.eback()) {
     if (__rhs.eback() == __rhs.__intbuf_) {
       this->setg(__intbuf_, __intbuf_ + (__rhs.gptr() - __rhs.eback()),
@@ -245,8 +249,8 @@ basic_filebuf<charT, traits>::basic_filebuf(basic_filebuf&& __rhs) noexcept
   __rhs.__file_ = nullptr;
   __rhs.__st_ = state_type();
   __rhs.__st_last_ = state_type();
-  __rhs.__om_ = 0;
-  __rhs.__cm_ = 0;
+  __rhs.__om_ = std::ios::openmode();
+  __rhs.__cm_ = std::ios::openmode();
   __rhs.__owns_eb_ = false;
   __rhs.__owns_ib_ = false;
   __rhs.setg(0, 0, 0);
@@ -336,7 +340,7 @@ void basic_filebuf<charT, traits>::swap(basic_filebuf& __rhs) {
     ptrdiff_t __n = this->pptr() - this->pbase();
     ptrdiff_t __e = this->epptr() - this->pbase();
     this->setp((char_type*)__extbuf_min_, (char_type*)__extbuf_min_ + __e);
-    this->__pbump(__n);
+    this->pbump(__n);
   }
   if (__rhs.eback() == (char_type*)__extbuf_min_) {
     ptrdiff_t __n = __rhs.gptr() - __rhs.eback();
@@ -349,12 +353,12 @@ void basic_filebuf<charT, traits>::swap(basic_filebuf& __rhs) {
     ptrdiff_t __e = __rhs.epptr() - __rhs.pbase();
     __rhs.setp((char_type*)__rhs.__extbuf_min_,
                (char_type*)__rhs.__extbuf_min_ + __e);
-    __rhs.__pbump(__n);
+    __rhs.pbump(__n);
   }
 }
 
 template<class charT, class traits>
-inline _LIBCPP_HIDE_FROM_ABI void swap(basic_filebuf<charT, traits>& __x,
+inline void swap(basic_filebuf<charT, traits>& __x,
                                        basic_filebuf<charT, traits>& __y) {
   __x.swap(__y);
 }
@@ -433,10 +437,6 @@ basic_filebuf<charT, traits>::underflow() {
       }
     } else {
       if (__extbufend_ != __extbufnext_) {
-        _LIBCPP_ASSERT_NON_NULL(__extbufnext_ != nullptr,
-                                "underflow moving from nullptr");
-        _LIBCPP_ASSERT_NON_NULL(__extbuf_ != nullptr,
-                                "underflow moving into nullptr");
         std::memmove(__extbuf_, __extbufnext_, __extbufend_ - __extbufnext_);
       }
       __extbufnext_ = __extbuf_ + (__extbufend_ - __extbufnext_);
@@ -548,7 +548,7 @@ basic_filebuf<charT, traits>::overflow(int_type c) {
           }
           if (__r == std::codecvt_base::partial) {
             this->setp(const_cast<char_type*>(__e), this->pptr());
-            this->__pbump(this->epptr() - this->pbase());
+            this->pbump(this->epptr() - this->pbase());
           }
         } else {
           return traits_type::eof();
@@ -734,7 +734,7 @@ template<class charT, class traits> int basic_filebuf<charT, traits>::sync() {
     }
     __extbufnext_ = __extbufend_ = __extbuf_;
     this->setg(nullptr, nullptr, nullptr);
-    __cm_ = 0;
+    __cm_ = std::ios::openmode();
   }
   return 0;
 }
