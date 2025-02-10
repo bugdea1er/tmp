@@ -2,16 +2,21 @@
 #define TMP_FILE_H
 
 #include <tmp/entry>
-#include <tmp/export>
 
 #include <filesystem>
 #include <fstream>
 #include <ios>
 #include <istream>
 #include <string_view>
-#include <utility>
 
 namespace tmp {
+
+extern std::filesystem::path TMP_EXPORT create_file(std::string_view label,
+                                                    std::string_view extension);
+
+extern void TMP_EXPORT move(const std::filesystem::path& from,
+                            const std::filesystem::path& to,
+                            std::error_code& ec);
 
 /// `tmp::file` is a smart handle that owns and manages a temporary file and
 /// deletes it when this handle goes out of scope
@@ -43,8 +48,24 @@ namespace tmp {
 ///     // `tmp::file` object goes out of scope and is destroyed
 ///   }
 /// @endcode
-class TMP_EXPORT file : public entry, public std::iostream {
+template<class charT, class traits = std::char_traits<charT>>
+class basic_file : public std::basic_iostream<charT, traits>, public entry {
 public:
+  /// The character type used by the stream
+  using char_type = charT;
+
+  /// The type of the character when it is treated as an integer
+  using int_type = typename traits::int_type;
+
+  /// The type used to denote the position of a character in a stream
+  using pos_type = typename traits::pos_type;
+
+  /// The type used to denote the offset of a character in a stream
+  using off_type = typename traits::off_type;
+
+  /// The characters traits used by the stream
+  using traits_type = traits;
+
   /// Creates a unique temporary file and opens it for reading and writing
   /// in binary mode
   /// @param label     A label to attach to the temporary file path
@@ -52,8 +73,15 @@ public:
   /// @param mode      Specifies stream open mode
   /// @throws std::filesystem::filesystem_error if cannot create a file
   /// @throws std::invalid_argument             if arguments are ill-formatted
-  explicit file(std::string_view label = "", std::string_view extension = "",
-                std::ios::openmode mode = std::ios::in | std::ios::out);
+  explicit basic_file(std::string_view label = "",
+                      std::string_view extension = "",
+                      std::ios::openmode mode = std::ios::in | std::ios::out)
+      : std::basic_iostream<charT, traits>(std::addressof(sb)),
+        entry(create_file(label, extension)) {
+    if (rdbuf()->open(path(), mode) == nullptr) {
+      this->setstate(std::ios::failbit);
+    }
+  }
 
   /// Creates a unique temporary copy from the given path
   /// @param path      A path to make a temporary copy from
@@ -63,9 +91,23 @@ public:
   /// @returns The new temporary file
   /// @throws std::filesystem::filesystem_error if given path is not a file
   /// @throws std::invalid_argument             if arguments are ill-formatted
-  static file copy(const std::filesystem::path& path,
-                   std::string_view label = "", std::string_view extension = "",
-                   std::ios::openmode mode = std::ios::in | std::ios::out);
+  static basic_file
+  copy(const std::filesystem::path& path, std::string_view label = "",
+       std::string_view extension = "",
+       std::ios::openmode mode = std::ios::in | std::ios::out) {
+    basic_file tmpfile = basic_file(label, extension, mode);
+
+    std::error_code ec;
+    std::filesystem::copy_file(
+        path, tmpfile, std::filesystem::copy_options::overwrite_existing, ec);
+
+    if (ec) {
+      throw std::filesystem::filesystem_error("Cannot create a temporary copy",
+                                              path, ec);
+    }
+
+    return tmpfile;
+  }
 
 #if __cpp_lib_fstream_native_handle >= 202306L
   /// Implementation-defined handle type to the temporary file
@@ -80,35 +122,64 @@ public:
 
   /// Returns pointer to the underlying raw file device object
   /// @returns A pointer to the underlying raw file device
-  std::filebuf* rdbuf() const noexcept;
+  std::basic_filebuf<charT, traits>* rdbuf() const noexcept {
+    return const_cast<std::basic_filebuf<charT, traits>*>(std::addressof(sb));
+  }
 
   /// Moves the managed file to a given target, releasing
   /// ownership of the managed file; behaves like `std::filesystem::rename`
   /// even when moving between filesystems
   /// @param to A path to the target file
   /// @throws std::filesystem::filesystem_error if cannot move the owned file
-  void move(const std::filesystem::path& to);
+  void move(const std::filesystem::path& to) {
+    sb.close();
+
+    std::error_code ec;
+    tmp::move(*this, to, ec);
+
+    if (ec) {
+      throw std::filesystem::filesystem_error("Cannot move a temporary file",
+                                              path(), to, ec);
+    }
+
+    entry::clear();
+  }
 
   /// Deletes and closes the managed file
-  ~file() noexcept override;
+  ~basic_file() noexcept override = default;
 
-  file(file&&) noexcept;                    ///< MoveConstructible
-  file& operator=(file&&);                  ///< MoveAssignable
-  file(const file&) = delete;               ///< not CopyConstructible
-  file& operator=(const file&) = delete;    ///< not CopyAssignable
+  basic_file(basic_file&& other) noexcept
+      : std::basic_iostream<charT, traits>(std::move(other)),
+        entry(std::move(other)),     // NOLINT(*-use-after-move)
+        sb(std::move(other.sb)) {    // NOLINT(*-use-after-move)
+    std::basic_iostream<charT, traits>::set_rdbuf(std::addressof(sb));
+  }
+
+  basic_file& operator=(basic_file&& other) {
+    std::basic_iostream<charT, traits>::operator=(std::move(other));
+
+    // The stream buffer must be assigned first to close the file;
+    // otherwise `entry` may not be able to remove the file before reassigning
+    sb = std::move(other.sb);    // NOLINT(*-use-after-move)
+    entry::operator=(std::move(other));
+
+    return *this;
+  }
+
+  basic_file(const basic_file&) = delete;    ///< not CopyConstructible
+  basic_file& operator=(const basic_file&) = delete;    ///< not CopyAssignable
 
 private:
   /// The underlying raw file device object
-  std::filebuf sb;
-
-  /// Creates a unique temporary file
-  /// @param handle A path to the created temporary file and a handle to it
-  explicit file(std::pair<std::filesystem::path, std::filebuf> handle) noexcept
-      TMP_NO_EXPORT;
+  std::basic_filebuf<charT, traits> sb;
 };
+
+using file = basic_file<char>;
+using wfile = basic_file<wchar_t>;
 }    // namespace tmp
 
-/// The template specialization of `std::hash` for `tmp::file`
-template<> struct std::hash<tmp::file> : std::hash<tmp::entry> {};
+/// The template specialization of `std::hash` for `tmp::basic_file`
+template<class charT, class traits>
+struct std::hash<tmp::basic_file<charT, traits>> : std::hash<tmp::entry> {};
 
 #endif    // TMP_FILE_H

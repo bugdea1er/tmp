@@ -1,6 +1,8 @@
 #ifndef TMP_MOVE_H
 #define TMP_MOVE_H
 
+#include <tmp/file>
+
 #include <filesystem>
 #include <system_error>
 
