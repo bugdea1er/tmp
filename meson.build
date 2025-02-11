@@ -2,8 +2,7 @@ project(
   'tmp',
   'cpp',
   version: '2.0',
-  meson_version: '>=1.3',
-  default_options : ['cpp_std=c++17'],
+  default_options: ['cpp_std=c++17'],
 )
 
 include_directory = include_directories('include')
@@ -37,9 +36,8 @@ tmp = library(
   gnu_symbol_visibility: 'hidden',
   version: meson.project_version(),
   dependencies: [std_fs_dep],
-  cpp_shared_args: dll_build_args,
+  cpp_args: dll_build_args,
 )
-
 
 tmp_dep = declare_dependency(
   link_with: tmp,
