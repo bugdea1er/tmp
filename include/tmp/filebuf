@@ -1,0 +1,25 @@
+#ifndef TMP_FILEBUF_H
+#define TMP_FILEBUF_H
+
+#include <fstream>
+#include <ios>
+#include <string>
+
+namespace tmp {
+
+class filebuf : public std::filebuf {
+public:
+  /// Implementation-defined handle type to the file
+#if defined(_WIN32)
+  using native_handle_type = void*;    // HANDLE
+#elif __has_include(<unistd.h>)
+  using native_handle_type = int;    // POSIX file descriptor
+#else
+#error "Target platform not supported"
+#endif
+
+  filebuf* open(native_handle_type handle, std::ios::openmode mode);
+};
+}    // namespace tmp
+
+#endif    // TMP_FILEBUF_H

@@ -3,6 +3,7 @@
 
 #include <tmp/entry>
 #include <tmp/export>
+#include <tmp/filebuf>
 
 #include <filesystem>
 #include <fstream>
@@ -99,11 +100,12 @@ public:
 
 private:
   /// The underlying raw file device object
-  std::filebuf sb;
+  filebuf sb;
 
   /// Creates a unique temporary file
   /// @param handle A path to the created temporary file and a handle to it
-  explicit file(std::pair<std::filesystem::path, std::filebuf> handle) noexcept
+  /// @param mode
+  explicit file(std::pair<std::filesystem::path, filebuf::native_handle_type> handle, std::ios::openmode mode) noexcept
       TMP_NO_EXPORT;
 };
 }    // namespace tmp

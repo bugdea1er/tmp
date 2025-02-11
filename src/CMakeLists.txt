@@ -1,7 +1,7 @@
 find_package(Filesystem REQUIRED)
 include(GenerateExportHeader)
 
-add_library(${PROJECT_NAME} create.cpp entry.cpp file.cpp directory.cpp move.cpp)
+add_library(${PROJECT_NAME} create.cpp entry.cpp file.cpp directory.cpp move.cpp filebuf.cpp)
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 target_link_libraries(${PROJECT_NAME} PUBLIC std::filesystem)
 
