@@ -42,12 +42,11 @@ void validate_label(const fs::path& label) {
 }
 
 #ifdef _WIN32
-/// Creates a temporary path with the given label and extension
-/// @note label and extension must be valid
-/// @param[in] label     A label to attach to the path pattern
-/// @param[in] extension An extension of the temporary file path
+/// Creates a temporary path with the given label
+/// @note label must be valid
+/// @param[in] label A label to attach to the path pattern
 /// @returns A unique temporary path
-fs::path make_path(std::string_view label, std::string_view extension) {
+fs::path make_path(std::string_view label) {
   constexpr static std::size_t CHARS_IN_GUID = 39;
   GUID guid;
   CoCreateGuid(&guid);
@@ -59,26 +58,15 @@ fs::path make_path(std::string_view label, std::string_view extension) {
            guid.Data4[3], guid.Data4[4], guid.Data4[5], guid.Data4[6],
            guid.Data4[7]);
 
-  fs::path pattern = fs::temp_directory_path() / label / name;
-  pattern += extension;
-
-  return pattern;
+  return fs::temp_directory_path() / label / name;
 }
 #else
-/// Placeholder in temporary path templates to be replaced
-/// with random characters
-constexpr std::string_view placeholder = "XXXXXX";
-
-/// Creates a temporary path pattern with the given label and extension
-/// @note label and extension must be valid
-/// @param[in] label     A label to attach to the path pattern
-/// @param[in] extension An extension of the temporary file path
+/// Creates a temporary path pattern with the given label
+/// @note label must be valid
+/// @param[in] label A label to attach to the path pattern
 /// @returns A path pattern for the unique temporary path
-fs::path make_pattern(std::string_view label, std::string_view extension) {
-  fs::path pattern = fs::temp_directory_path() / label / placeholder;
-  pattern += extension;
-
-  return pattern;
+fs::path make_pattern(std::string_view label) {
+  return fs::temp_directory_path() / label / "XXXXXX";
 }
 #endif
 
@@ -111,9 +99,9 @@ fs::path create_directory(std::string_view label, std::error_code& ec) {
   }
 
 #ifdef _WIN32
-  fs::path::string_type path = make_path(label, "");
+  fs::path::string_type path = make_path(label);
 #else
-  fs::path::string_type path = make_pattern(label, "");
+  fs::path::string_type path = make_pattern(label);
 #endif
   create_parent(path, ec);
   if (ec) {
@@ -145,7 +133,9 @@ int create_file() {
 }
 
 int create_file(std::error_code& ec) {
-  fs::path::string_type path = make_pattern("", "");
+  fs::path::string_type path = make_pattern("");
+
+  // FIXME: remove, since std::temp_directory_path requires p to exist
   create_parent(path, ec);
   if (ec) {
     return {};
