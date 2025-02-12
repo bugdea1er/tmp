@@ -41,24 +41,6 @@ void validate_label(const fs::path& label) {
   }
 }
 
-/// Checks that the given extension is valid to be an extension of a file path
-/// @param[in] extension The extension to check validity for
-/// @returns `true` if the extension is valid, `false` otherwise
-bool is_extension_valid(const fs::path& extension) {
-  return extension.empty() || ++extension.begin() == extension.end();
-}
-
-/// Checks that the given extension is valid to be an extension of a file path
-/// @param extension The extension to check validity for
-/// @throws std::invalid_argument if the extension cannot be used in a file path
-void validate_extension(std::string_view extension) {
-  if (!is_extension_valid(extension)) {
-    throw std::invalid_argument(
-        "Cannot create a temporary file: extension must be empty or a valid "
-        "single-segmented pathname");
-  }
-}
-
 #ifdef _WIN32
 /// Creates a temporary path with the given label and extension
 /// @note label and extension must be valid
@@ -107,120 +89,7 @@ fs::path make_pattern(std::string_view label, std::string_view extension) {
 bool create_parent(const fs::path& path, std::error_code& ec) {
   return fs::create_directories(path.parent_path(), ec);
 }
-
-#ifdef _WIN32
-/// Makes a mode string for the `_wfdopen` function
-/// @param mode The file opening mode
-/// @returns A suitable mode string
-const wchar_t* make_mdstring(std::ios::openmode mode) noexcept {
-  switch (mode & ~std::ios::ate) {
-  case std::ios::out:
-  case std::ios::out | std::ios::trunc:
-    return L"wx";
-  case std::ios::out | std::ios::app:
-  case std::ios::app:
-    return L"a";
-  case std::ios::in:
-    return L"r";
-  case std::ios::in | std::ios::out:
-  case std::ios::in | std::ios::out | std::ios::trunc:
-    return L"w+x";
-  case std::ios::in | std::ios::out | std::ios::app:
-  case std::ios::in | std::ios::app:
-    return L"a+";
-  case std::ios::out | std::ios::binary:
-  case std::ios::out | std::ios::trunc | std::ios::binary:
-    return L"wbx";
-  case std::ios::out | std::ios::app | std::ios::binary:
-  case std::ios::app | std::ios::binary:
-    return L"ab";
-  case std::ios::in | std::ios::binary:
-    return L"rb";
-  case std::ios::in | std::ios::out | std::ios::binary:
-    return L"r+b";
-  case std::ios::in | std::ios::out | std::ios::trunc | std::ios::binary:
-    return L"w+bx";
-  case std::ios::in | std::ios::out | std::ios::app | std::ios::binary:
-  case std::ios::in | std::ios::app | std::ios::binary:
-    return L"a+b";
-  default:
-    return nullptr;
-  }
-}
-#endif
-
-/// Closes the given handle, ignoring any errors
-/// @param[in] handle The handle to close
-void close(filebuf::handle_type handle) noexcept {
-#ifdef _WIN32
-  fclose(handle);
-#else
-  ::close(handle);
-#endif
-}
 }    // namespace
-
-std::pair<fs::path, filebuf> create_file(std::string_view label,
-                                         std::string_view extension,
-                                         std::ios::openmode mode) {
-  validate_label(label);    // throws std::invalid_argument with a proper text
-  validate_extension(extension);
-
-  std::error_code ec;
-  auto file = create_file(label, extension, mode, ec);
-
-  if (ec) {
-    throw fs::filesystem_error("Cannot create a temporary file", ec);
-  }
-
-  return file;
-}
-
-std::pair<fs::path, filebuf> create_file(std::string_view label,
-                                         std::string_view extension,
-                                         std::ios::openmode mode,
-                                         std::error_code& ec) {
-  if (!is_label_valid(label) || !is_extension_valid(extension)) {
-    ec = std::make_error_code(std::errc::invalid_argument);
-    return {};
-  }
-
-#ifdef _WIN32
-  fs::path::string_type path = make_path(label, extension);
-#else
-  fs::path::string_type path = make_pattern(label, extension);
-#endif
-  create_parent(path, ec);
-  if (ec) {
-    return {};
-  }
-
-#ifdef _WIN32
-  // FIXME: use _wfopen_s
-  std::FILE* handle = _wfopen(path.c_str(), make_mdstring(mode));
-  if (handle == nullptr) {
-    ec = std::error_code(errno, std::system_category());
-    return {};
-  }
-#else
-  // FIXME: `mkstemps` function is not a part of POSIX standard
-  int handle = mkstemps(path.data(), static_cast<int>(extension.size()));
-  if (handle == -1) {
-    ec = std::error_code(errno, std::system_category());
-    return {};
-  }
-#endif
-
-  filebuf filebuf;
-  if (filebuf.open(handle, mode) == nullptr) {
-    close(handle);
-    ec = std::make_error_code(std::io_errc::stream);
-    fs::remove(path);
-  }
-
-  ec.clear();
-  return std::make_pair(path, std::move(filebuf));
-}
 
 fs::path create_directory(std::string_view label) {
   validate_label(label);    // throws std::invalid_argument with a proper text
