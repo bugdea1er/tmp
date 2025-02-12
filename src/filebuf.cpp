@@ -13,48 +13,6 @@
 
 namespace tmp {
 namespace {
-
-#ifdef _WIN32
-/// Makes a mode string for the `fdopen` function
-/// @param mode The file opening mode
-/// @returns A suitable mode string
-const char* make_mdstring(std::ios::openmode mode) noexcept {
-  switch (mode & ~std::ios::ate) {
-  case std::ios::out:
-  case std::ios::out | std::ios::trunc:
-    return "w";
-  case std::ios::out | std::ios::app:
-  case std::ios::app:
-    return "a";
-  case std::ios::in:
-    return "r";
-  case std::ios::in | std::ios::out:
-    return "r+";
-  case std::ios::in | std::ios::out | std::ios::trunc:
-    return "w+";
-  case std::ios::in | std::ios::out | std::ios::app:
-  case std::ios::in | std::ios::app:
-    return "a+";
-  case std::ios::out | std::ios::binary:
-  case std::ios::out | std::ios::trunc | std::ios::binary:
-    return "wb";
-  case std::ios::out | std::ios::app | std::ios::binary:
-  case std::ios::app | std::ios::binary:
-    return "ab";
-  case std::ios::in | std::ios::binary:
-    return "rb";
-  case std::ios::in | std::ios::out | std::ios::binary:
-    return "r+b";
-  case std::ios::in | std::ios::out | std::ios::trunc | std::ios::binary:
-    return "w+b";
-  case std::ios::in | std::ios::out | std::ios::app | std::ios::binary:
-  case std::ios::in | std::ios::app | std::ios::binary:
-    return "a+b";
-  default:
-    return nullptr;
-  }
-}
-#endif
 }
 
 filebuf* filebuf::open(native_handle_type handle, std::ios::openmode mode) {
@@ -87,14 +45,11 @@ filebuf* filebuf::open(native_handle_type handle, std::ios::openmode mode) {
 #endif
 
 #if defined(_MSC_VER) && _MSC_VER >= 1914
-  // MSVC STL supports filesystem library since version 19.14 (VS 2017 15.7)
-  int fd = _open_osfhandle(reinterpret_cast<intptr_t>(handle), 0);
-  std::FILE* file = _fdopen(fd, make_mdstring(mode));
-  if (file == nullptr) {
+  if (handle == nullptr) {
     return nullptr;
   }
 
-  _Init(file, _Newfl);
+  _Init(handle, _Newfl);
   return this;
 #endif
 

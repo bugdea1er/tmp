@@ -54,7 +54,9 @@ void file::move(const fs::path& to) {
   entry::clear();
 }
 
-file::~file() noexcept = default;
+file::~file() noexcept {
+  sb.close();
+}
 
 // NOLINTBEGIN(*-use-after-move)
 file::file(file&& other) noexcept

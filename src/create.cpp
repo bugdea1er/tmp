@@ -107,6 +107,47 @@ fs::path make_pattern(std::string_view label, std::string_view extension) {
 bool create_parent(const fs::path& path, std::error_code& ec) {
   return fs::create_directories(path.parent_path(), ec);
 }
+
+#ifdef _WIN32
+/// Makes a mode string for the `_wfdopen` function
+/// @param mode The file opening mode
+/// @returns A suitable mode string
+const wchar_t* make_mdstring(std::ios::openmode mode) noexcept {
+  switch (mode & ~std::ios::ate) {
+  case std::ios::out:
+  case std::ios::out | std::ios::trunc:
+    return L"wx";
+  case std::ios::out | std::ios::app:
+  case std::ios::app:
+    return L"a";
+  case std::ios::in:
+    return L"r";
+  case std::ios::in | std::ios::out:
+  case std::ios::in | std::ios::out | std::ios::trunc:
+    return L"w+x";
+  case std::ios::in | std::ios::out | std::ios::app:
+  case std::ios::in | std::ios::app:
+    return L"a+";
+  case std::ios::out | std::ios::binary:
+  case std::ios::out | std::ios::trunc | std::ios::binary:
+    return L"wbx";
+  case std::ios::out | std::ios::app | std::ios::binary:
+  case std::ios::app | std::ios::binary:
+    return L"ab";
+  case std::ios::in | std::ios::binary:
+    return L"rb";
+  case std::ios::in | std::ios::out | std::ios::binary:
+    return L"r+b";
+  case std::ios::in | std::ios::out | std::ios::trunc | std::ios::binary:
+    return L"w+bx";
+  case std::ios::in | std::ios::out | std::ios::app | std::ios::binary:
+  case std::ios::in | std::ios::app | std::ios::binary:
+    return L"a+b";
+  default:
+    return nullptr;
+  }
+}
+#endif
 }    // namespace
 
 std::pair<fs::path, filebuf::native_handle_type> create_file(std::string_view label,
@@ -143,12 +184,9 @@ std::pair<fs::path, filebuf::native_handle_type> create_file(std::string_view la
   }
 
 #ifdef _WIN32
-  HANDLE handle =
-      CreateFile(path.c_str(), GENERIC_READ | GENERIC_WRITE,
-                 FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                 nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
-  if (handle == INVALID_HANDLE_VALUE) {
-    ec = std::error_code(GetLastError(), std::system_category());
+  std::FILE* handle = _wfopen(path.c_str(), make_mdstring(std::ios::in | std::ios::out));
+  if (handle == nullptr) {
+    ec = std::error_code(errno, std::system_category());
     return {};
   }
 #else

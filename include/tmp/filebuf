@@ -11,7 +11,7 @@ class filebuf : public std::filebuf {
 public:
   /// Implementation-defined handle type to the file
 #if defined(_WIN32)
-  using native_handle_type = void*;    // HANDLE
+  using native_handle_type = std::FILE*;
 #elif __has_include(<unistd.h>)
   using native_handle_type = int;    // POSIX file descriptor
 #else
