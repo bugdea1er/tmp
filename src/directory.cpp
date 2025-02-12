@@ -1,5 +1,4 @@
 #include <tmp/directory>
-#include <tmp/entry>
 
 #include "create.hpp"
 #include "move.hpp"

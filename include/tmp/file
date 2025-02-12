@@ -1,7 +1,6 @@
 #ifndef TMP_FILE_H
 #define TMP_FILE_H
 
-#include <tmp/entry>
 #include <tmp/export>
 #include <tmp/filebuf>
 

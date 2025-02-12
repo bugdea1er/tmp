@@ -1,4 +1,3 @@
-#include <tmp/entry>
 #include <tmp/file>
 
 #include "create.hpp"
