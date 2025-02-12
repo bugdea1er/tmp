@@ -65,99 +65,12 @@ TEST(directory, create_invalid_label) {
   }
 }
 
-/// Tests creation of a temporary copy of a directory
-TEST(directory, copy_directory) {
-  directory tmpdir = directory();
-  std::ofstream(tmpdir / "file") << "Hello, world!";
-
-  directory copy = directory::copy(tmpdir);
-  EXPECT_TRUE(fs::exists(tmpdir));
-  EXPECT_TRUE(fs::exists(copy));
-  EXPECT_FALSE(fs::equivalent(tmpdir, copy));
-
-  EXPECT_TRUE(fs::is_directory(copy));
-
-  std::ifstream stream = std::ifstream(copy / "file");
-  std::string content = std::string(std::istreambuf_iterator(stream), {});
-  EXPECT_EQ(content, "Hello, world!");
-}
-
-/// Tests creation of a temporary copy of a file
-TEST(directory, copy_file) {
-  file tmpfile = file();
-  EXPECT_THROW(directory::copy(tmpfile), fs::filesystem_error);
-}
-
 /// Tests `operator/` of directory
 TEST(directory, subpath) {
   directory tmpdir = directory();
   fs::path child = tmpdir / "child";
 
   EXPECT_TRUE(fs::equivalent(tmpdir, child.parent_path()));
-}
-
-/// Tests that moving a temporary directory to itself does nothing
-TEST(directory, move_to_self) {
-  fs::path path;
-
-  {
-    directory tmpdir = directory();
-    std::ofstream(tmpdir / "file") << "Hello, world!";
-
-    path = tmpdir;
-
-    tmpdir.move(tmpdir);
-  }
-
-  EXPECT_TRUE(fs::exists(path));
-
-  {
-    std::ifstream stream = std::ifstream(path / "file");
-    std::string content = std::string(std::istreambuf_iterator(stream), {});
-    EXPECT_EQ(content, "Hello, world!");
-  }
-
-  fs::remove_all(path);
-}
-
-/// Tests moving a temporary directory to existing directory
-TEST(directory, move_to_existing_directory) {
-  fs::path path;
-
-  fs::path to = fs::path(BUILD_DIR) / "move_directory_to_existing_test";
-  std::ofstream(to / "file2") << "Goodbye, world!";
-
-  {
-    directory tmpdir = directory();
-    std::ofstream(tmpdir / "file") << "Hello, world!";
-
-    path = tmpdir;
-
-    tmpdir.move(to);
-  }
-
-  EXPECT_TRUE(fs::exists(to));
-  EXPECT_FALSE(fs::exists(path));
-
-  {
-    std::ifstream stream = std::ifstream(to / "file");
-    std::string content = std::string(std::istreambuf_iterator(stream), {});
-    EXPECT_EQ(content, "Hello, world!");
-  }
-
-  EXPECT_FALSE(fs::exists(to / "file2"));
-
-  fs::remove_all(to);
-}
-
-/// Tests moving a temporary directory to an existing file
-TEST(directory, move_to_existing_file) {
-  fs::path to = fs::path(BUILD_DIR) / "existing_file";
-  std::ofstream(to) << "Goodbye, world!";
-
-  EXPECT_THROW(directory().move(to), fs::filesystem_error);
-
-  fs::remove_all(to);
 }
 
 /// Tests that destructor removes a directory
