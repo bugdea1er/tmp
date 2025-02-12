@@ -1,6 +1,8 @@
 #ifndef TMP_FILEBUF_H
 #define TMP_FILEBUF_H
 
+#include <tmp/export>
+
 #include <fstream>
 #include <ios>
 
@@ -14,7 +16,7 @@ namespace tmp {
 /// `std::filebuf` is that the standard does not provide a way to use
 /// an existing open file in a file buffer, and does not even report errors when
 /// opening a file fails
-class filebuf : public std::filebuf {
+class TMP_EXPORT filebuf : public std::filebuf {
 public:
   /// Implementation-defined handle type to the file
 #if defined(_WIN32)
