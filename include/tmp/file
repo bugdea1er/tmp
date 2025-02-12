@@ -44,17 +44,14 @@ namespace tmp {
 ///     // `tmp::file` object goes out of scope and is destroyed
 ///   }
 /// @endcode
-class TMP_EXPORT file : public entry, public std::iostream {
+class TMP_EXPORT file : public std::iostream {
 public:
   /// Creates a unique temporary file and opens it for reading and writing
   /// in binary mode
-  /// @param label     A label to attach to the temporary file path
-  /// @param extension An extension of the temporary file path
   /// @param mode      Specifies stream open mode
   /// @throws std::filesystem::filesystem_error if cannot create a file
   /// @throws std::invalid_argument             if arguments are ill-formatted
-  explicit file(std::string_view label = "", std::string_view extension = "",
-                std::ios::openmode mode = std::ios::in | std::ios::out);
+  explicit file(std::ios::openmode mode = std::ios::in | std::ios::out);
 
   /// Implementation-defined handle type to the temporary file
   using native_handle_type = filebuf::native_handle_type;
@@ -80,15 +77,7 @@ public:
 private:
   /// The underlying raw file device object
   filebuf sb;
-
-  /// Creates a unique temporary file
-  /// @param handle A path to the created temporary file and a handle to it
-  explicit file(std::pair<std::filesystem::path, filebuf> handle) noexcept
-      TMP_NO_EXPORT;
 };
 }    // namespace tmp
-
-/// The template specialization of `std::hash` for `tmp::file`
-template<> struct std::hash<tmp::file> : std::hash<tmp::entry> {};
 
 #endif    // TMP_FILE_H

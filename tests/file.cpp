@@ -50,90 +50,23 @@ TEST(file, type_traits) {
   static_assert(std::is_same_v<file::off_type, traits::off_type>);
 }
 
-/// Tests file creation with label
-TEST(file, create_with_label) {
-  file tmpfile = file(LABEL);
-  fs::path parent = tmpfile.path().parent_path();
+/// Tests file creation
+TEST(file, create) {
+  file tmpfile = file();
 
-  EXPECT_TRUE(fs::exists(tmpfile));
-  EXPECT_TRUE(fs::is_regular_file(tmpfile));
-  EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path() / LABEL));
   EXPECT_TRUE(is_open(tmpfile));
   EXPECT_TRUE(is_open(tmpfile.native_handle()));
-
-  fs::perms permissions = fs::status(tmpfile).permissions();
-#ifdef _WIN32
-  // GetTempFileNameW creates a file with all permissions
-  EXPECT_EQ(permissions, fs::perms::all);
-#else
-  // mkstemp creates a file that can only be read and written by the owner
-  EXPECT_EQ(permissions, fs::perms::owner_read | fs::perms::owner_write);
-#endif
 }
 
-/// Tests file creation without label
-TEST(file, create_without_label) {
-  file tmpfile = file();
-  fs::path parent = tmpfile.path().parent_path();
-
-  EXPECT_TRUE(fs::exists(tmpfile));
-  EXPECT_TRUE(fs::is_regular_file(tmpfile));
-  EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path()));
-  EXPECT_TRUE(is_open(tmpfile));
-}
-
-/// Tests file creation with extension
-TEST(file, create_with_extension) {
-  file tmpfile = file("", ".test");
-
-  EXPECT_TRUE(fs::exists(tmpfile));
-  EXPECT_TRUE(fs::is_regular_file(tmpfile));
-  EXPECT_EQ(tmpfile.path().extension(), ".test");
-  EXPECT_TRUE(is_open(tmpfile));
-}
-
-/// Tests multiple file creation with the same label
-TEST(file, create_multiple) {
-  file fst = file(LABEL);
-  file snd = file(LABEL);
-
-  EXPECT_FALSE(fs::equivalent(fst, snd));
-}
-
-/// Tests error handling with invalid labels
-TEST(file, create_invalid_label) {
-  EXPECT_THROW(file("multi/segment"), std::invalid_argument);
-  EXPECT_THROW(file("/root"), std::invalid_argument);
-  EXPECT_THROW(file(".."), std::invalid_argument);
-  EXPECT_THROW(file("."), std::invalid_argument);
-
-  fs::path root = fs::temp_directory_path().root_name();
-  if (!root.empty()) {
-    EXPECT_THROW(file(root.string() + "relative"), std::invalid_argument);
-    EXPECT_THROW(file(root.string() + "/root"), std::invalid_argument);
-  }
-}
-
-/// Tests error handling with invalid extensions
-TEST(file, create_invalid_extension) {
-  EXPECT_THROW(file("", "multi/segment"), std::invalid_argument);
-  EXPECT_THROW(file("", "/root"), std::invalid_argument);
-  EXPECT_THROW(file("", "/.."), std::invalid_argument);
-  EXPECT_THROW(file("", "/."), std::invalid_argument);
-}
-
-/// Tests that destructor removes a file
+/// Tests that destructor closes a file
 TEST(file, destructor) {
-  fs::path path;
   file::native_handle_type handle;
 
   {
     file tmpfile = file();
-    path = tmpfile;
     handle = tmpfile.native_handle();
   }
 
-  EXPECT_FALSE(fs::exists(path));
   EXPECT_FALSE(is_open(handle));
 }
 
@@ -143,10 +76,8 @@ TEST(file, move_constructor) {
   fst << "Hello!";
 
   file snd = file(std::move(fst));
-
-  EXPECT_FALSE(snd.path().empty());
-  EXPECT_TRUE(fs::exists(snd));
   EXPECT_TRUE(is_open(snd));
+  EXPECT_FALSE(is_open(fst));
 
   snd.seekg(0);
   std::string content;
@@ -162,19 +93,21 @@ TEST(file, move_assignment) {
     file snd = file();
     snd << "Hello!";
 
-    fs::path path1 = fst;
-    fs::path path2 = snd;
+    file::native_handle_type handle1 = fst.native_handle();
+    file::native_handle_type handle2 = snd.native_handle();
 
     fst = std::move(snd);
 
-    EXPECT_FALSE(fs::exists(path1));
-    EXPECT_TRUE(fs::exists(path2));
+    EXPECT_TRUE(is_open(fst));
 
-    EXPECT_TRUE(fs::exists(fst));
-    EXPECT_TRUE(fs::equivalent(fst, path2));
+    EXPECT_FALSE(is_open(handle1));
+    EXPECT_TRUE(is_open(handle2));
+
+    EXPECT_TRUE(is_open(fst));
+    EXPECT_EQ(fst.native_handle(), handle2);
   }
 
-  EXPECT_FALSE(fst.path().empty());
+  EXPECT_TRUE(is_open(fst));
 
   fst.seekg(0);
   std::string content;
@@ -187,31 +120,15 @@ TEST(file, swap) {
   file fst = file();
   file snd = file();
 
-  fs::path fst_path = fst.path();
-  fs::path snd_path = snd.path();
+  file::native_handle_type fst_handle = fst.native_handle();
+  file::native_handle_type snd_handle = snd.native_handle();
 
   std::swap(fst, snd);
 
-  EXPECT_EQ(fst.path(), snd_path);
-  EXPECT_EQ(snd.path(), fst_path);
+  EXPECT_EQ(fst.native_handle(), snd_handle);
+  EXPECT_EQ(snd.native_handle(), fst_handle);
   EXPECT_TRUE(is_open(fst));
   EXPECT_TRUE(is_open(snd));
-}
-
-/// Tests file hashing
-TEST(file, hash) {
-  file tmpfile = file();
-  std::hash hash = std::hash<file>();
-
-  EXPECT_EQ(hash(tmpfile), fs::hash_value(tmpfile.path()));
-}
-
-/// Tests file relational operators
-TEST(file, relational) {
-  file tmpfile = file();
-
-  EXPECT_TRUE(tmpfile == tmpfile);
-  EXPECT_FALSE(tmpfile < tmpfile);
 }
 }    // namespace
 }    // namespace tmp
