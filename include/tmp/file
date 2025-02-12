@@ -35,7 +35,7 @@ namespace tmp {
 ///   #include <tmp/file>
 ///
 ///   auto func(std::string_view content) {
-///     auto tmpfile = tmp::file("org.example.product", ".bin", std::ios::out);
+///     auto tmpfile = tmp::file(std::ios::in | std::ios::out);
 ///     tmpfile << content << std::flush;
 ///
 ///     // the temporary file is deleted recursively when the
