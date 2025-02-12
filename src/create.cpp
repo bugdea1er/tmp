@@ -196,8 +196,8 @@ std::pair<fs::path, filebuf> create_file(std::string_view label,
   }
 
 #ifdef _WIN32
-  std::FILE* handle =
-      _wfopen(path.c_str(), make_mdstring(std::ios::in | std::ios::out));
+  // FIXME: use _wfopen_s
+  std::FILE* handle = _wfopen(path.c_str(), make_mdstring(mode));
   if (handle == nullptr) {
     ec = std::error_code(errno, std::system_category());
     return {};
