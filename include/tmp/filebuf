@@ -69,8 +69,6 @@ public:
 private:
   native_handle_type handle;
 };
-
-using filebuf = basic_filebuf<char>;
 }    // namespace tmp
 
 #endif    // TMP_FILEBUF_H
