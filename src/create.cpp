@@ -211,15 +211,15 @@ std::pair<fs::path, filebuf> create_file(std::string_view label,
   }
 #endif
 
-  filebuf sb;
-  if (sb.open(handle, mode) == nullptr) {
+  filebuf filebuf;
+  if (filebuf.open(handle, mode) == nullptr) {
     close(handle);
     ec = std::make_error_code(std::io_errc::stream);
     fs::remove(path);
   }
 
   ec.clear();
-  return std::make_pair(path, sb);
+  return std::make_pair(path, std::move(filebuf));
 }
 
 fs::path create_directory(std::string_view label) {
