@@ -18,7 +18,7 @@ public:
 #error "Target platform not supported"
 #endif
 
-  filebuf* open(native_handle_type handle, std::ios::openmode mode);
+  std::filebuf* open(native_handle_type handle, std::ios::openmode mode);
 };
 }    // namespace tmp
 

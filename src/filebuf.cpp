@@ -15,12 +15,12 @@ namespace tmp {
 namespace {
 }
 
-filebuf* filebuf::open(native_handle_type handle, std::ios::openmode mode) {
+std::filebuf* filebuf::open(native_handle_type handle, std::ios::openmode mode) {
 #if defined(_LIBCPP_VERSION) && _LIBCPP_VERSION >= 70000
   // LLVM libc++ supports filesystem library since version 7
   // Apple LLVM, despite having a different version scheme still supplies original _LIBCPP_VERSION
   // Apple Clang supports filesystem library since version 11.0.0, and requires macOS 10.15 or newer (TODO: check other apple platforms?)
-  return this->__open(handle, mode) ? this : nullptr;
+  return this->__open(handle, mode);
 #elif defined(__GLIBCXX__)    // TODO: check versions
   // GCC libstdc++ supports filesystem library since 8
   // https://en.cppreference.com/w/cpp/compiler_support/17#C.2B.2B17_library_features
