@@ -18,7 +18,8 @@ extern TMP_EXPORT int create_file();
 /// `std::filebuf` is that the standard does not provide a way to use
 /// an existing open file in a file buffer, and does not even report errors when
 /// opening a file fails
-class TMP_EXPORT filebuf : public std::filebuf {
+template<class charT, class traits = std::char_traits<charT>>
+class basic_filebuf : public std::basic_filebuf<charT, traits> {
 public:
 #if __cpp_lib_fstream_native_handle < 202306L
   /// Implementation-defined handle type to the file
@@ -31,7 +32,7 @@ public:
 #endif
 #endif
 
-  filebuf* open(std::ios::openmode mode) {
+  basic_filebuf* open(std::ios::openmode mode) {
     handle = create_file();
 
 #if defined(_LIBCPP_VERSION)
@@ -60,7 +61,7 @@ public:
   }
 
 #if __cpp_lib_fstream_native_handle < 202306L
-  native_handle_type native_handle()  {
+  native_handle_type native_handle() {
     return handle;
   }
 #endif
@@ -68,6 +69,8 @@ public:
 private:
   native_handle_type handle;
 };
+
+using filebuf = basic_filebuf<char>;
 }    // namespace tmp
 
 #endif    // TMP_FILEBUF_H
