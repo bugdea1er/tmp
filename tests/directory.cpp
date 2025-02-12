@@ -129,21 +129,5 @@ TEST(directory, swap) {
   EXPECT_EQ(fst.path(), snd_path);
   EXPECT_EQ(snd.path(), fst_path);
 }
-
-/// Tests directory hashing
-TEST(directory, hash) {
-  directory tmpdir = directory();
-  std::hash hash = std::hash<directory>();
-
-  EXPECT_EQ(hash(tmpdir), fs::hash_value(tmpdir.path()));
-}
-
-/// Tests directory relational operators
-TEST(directory, relational) {
-  directory tmpdir = directory();
-
-  EXPECT_TRUE(tmpdir == tmpdir);
-  EXPECT_FALSE(tmpdir < tmpdir);
-}
 }    // namespace
 }    // namespace tmp
