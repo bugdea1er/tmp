@@ -27,6 +27,17 @@ public:
 #error "Target platform not supported"
 #endif
 
+#if __cpp_lib_fstream_native_handle < 202306L
+  /// Implementation-defined handle type to the file
+#if defined(_WIN32)
+  using native_handle_type = void*;    // HANDLE
+#elif __has_include(<unistd.h>)
+  using native_handle_type = int;    // POSIX file descriptor
+#else
+#error "Target platform not supported"
+#endif
+#endif
+
   /// Opens a file and configures it as the associated character sequence
   /// @param handle A handle to the open file
   /// @param mode   The file opening mode
@@ -34,6 +45,13 @@ public:
   filebuf* open(handle_type handle, std::ios::openmode mode);
 
   filebuf* open(std::ios::openmode mode);
+
+#if __cpp_lib_fstream_native_handle < 202306L
+  native_handle_type native_handle();
+#endif
+
+private:
+  native_handle_type handle;
 };
 }    // namespace tmp
 

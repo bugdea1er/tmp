@@ -4,13 +4,14 @@
 
 #include <ios>
 
-#if __has_include(<__config>)
+#if defined(_LIBCPP_VERSION)
 #include <__config>    // libc++ configuration
 #endif
 
 namespace tmp {
 
 filebuf* filebuf::open(handle_type handle, std::ios::openmode mode) {
+  this->handle = handle;
 #if defined(_LIBCPP_VERSION)
   return this->__open(handle, mode) != nullptr ? this : nullptr;
 #elif defined(__GLIBCXX__)
@@ -44,7 +45,7 @@ filebuf* filebuf::open(handle_type handle, std::ios::openmode mode) {
 }
 
 filebuf* filebuf::open(std::ios::openmode mode) {
-  int handle = create_file();
+  handle = create_file();
 
 #if defined(_LIBCPP_VERSION)
   return this->__open(handle, mode) != nullptr ? this : nullptr;
@@ -66,8 +67,12 @@ filebuf* filebuf::open(std::ios::openmode mode) {
   }
 
   return nullptr;
-#elif
+#else
 #error "Target C++ standard library is not supported"
 #endif
+}
+
+filebuf::native_handle_type filebuf::native_handle() {
+  return handle;
 }
 }    // namespace tmp

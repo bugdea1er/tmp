@@ -22,7 +22,7 @@ file::file(std::pair<fs::path, filebuf> handle) noexcept
 file::file(std::string_view label, std::string_view extension, openmode mode)
     : file(create_file(label, extension, mode)) {}
 
-std::filebuf* file::rdbuf() const noexcept {
+filebuf* file::rdbuf() const noexcept {
   return const_cast<filebuf*>(std::addressof(sb));    // NOLINT(*-const-cast)
 }
 
