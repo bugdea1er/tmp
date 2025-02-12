@@ -10,9 +10,8 @@ namespace tmp {
 
 extern TMP_EXPORT int create_file();
 
-/// `tmp::basic_filebuf` is a stream buffer whose associated character sequence
-/// is a file; both the input and the output sequences are associated with
-/// the same file, and a joint file position is maintained for both operations
+/// `tmp::basic_filebuf` is an extension for the standard `std::basic_filebuf`,
+/// that provides a member function to open a unique temporary file
 ///
 /// The reason we implement this here rather than using the standard
 /// `std::filebuf` is that the standard does not provide a way to use
