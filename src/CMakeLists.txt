@@ -16,7 +16,6 @@ set_target_properties(${PROJECT_NAME}
 
 target_include_directories(${PROJECT_NAME}
   PUBLIC "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
-         "$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>"
          "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
 
 if(TMP_IS_TOP_LEVEL)
@@ -28,7 +27,9 @@ if(TMP_IS_TOP_LEVEL)
   endif()
 endif()
 
-generate_export_header(${PROJECT_NAME}
-  EXPORT_FILE_NAME "${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/export")
+if(BUILD_SHARED_LIBS)
+  target_compile_definitions(${PROJECT_NAME}
+    PRIVATE TMP_BUILDING_DLL INTERFACE TMP_SHARED)
+endif()
 
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})

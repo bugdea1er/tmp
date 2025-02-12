@@ -30,3 +30,38 @@ jobs:
         run: cmake --build build
       - name: Run tests
         run: ctest --output-on-failure --test-dir build
+  test-meson:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-13
+          - macos-15
+          - ubuntu-20.04
+          - ubuntu-24.04
+          - windows-2019
+          - windows-2022
+    steps:
+      - name: Set up `tmpfs` (if supported)
+        run: sudo mount tmpfs -t tmpfs -o size=100m /tmp
+        if: runner.os == 'Linux'
+      - name: Install Meson (Linux native)
+        run: sudo apt-get install meson
+        if: runner.os == 'Linux'
+      - name: Install Meson (Brew)
+        run: brew install meson
+        if: runner.os == 'macOS'
+      - name: Install Meson (Pip)
+        run: pip install meson ninja
+        if: runner.os == 'Windows'
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Configure Meson (Unix)
+        run: meson setup build
+        if: runner.os != 'Windows'
+      - name: Configure Meson (Windows)
+        run: meson setup build -Dvsenv=true
+        if: runner.os == 'Windows'
+      - name: Run tests
+        run: meson test -C build
