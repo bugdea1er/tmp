@@ -6,6 +6,12 @@
 #include <fstream>
 #include <ios>
 
+#if defined(_LIBCPP_VERSION)
+_LIBCPP_BEGIN_NAMESPACE_STD
+extern FILE* __get_ostream_file(ostream&);
+_LIBCPP_END_NAMESPACE_STD
+#endif
+
 namespace tmp {
 
 extern TMP_EXPORT int create_file();
@@ -32,7 +38,7 @@ public:
 #endif
 
   basic_filebuf* open(std::ios::openmode mode) {
-    handle = create_file();
+    int handle = create_file();
 
 #if defined(_LIBCPP_VERSION)
     return this->__open(handle, mode) != nullptr ? this : nullptr;
@@ -61,12 +67,16 @@ public:
 
 #if __cpp_lib_fstream_native_handle < 202306L
   native_handle_type native_handle() {
-    return handle;
+#if defined(_LIBCPP_VERSION)
+    std::ostream stream = std::ostream(this);
+    return fileno(std::__get_ostream_file(stream));
+#elif defined(__GLIBCXX__)
+    return this->_M_file.fd();
+#else
+#error "Target C++ standard library is not supported"
+#endif
   }
 #endif
-
-private:
-  native_handle_type handle;
 };
 }    // namespace tmp
 
