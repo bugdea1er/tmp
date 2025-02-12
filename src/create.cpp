@@ -263,4 +263,35 @@ fs::path create_directory(std::string_view label, std::error_code& ec) {
 
   return path;
 }
+
+int create_file() {
+  std::error_code ec;
+  int file = create_file(ec);
+
+  if (ec) {
+    throw fs::filesystem_error("Cannot create a temporary file", ec);
+  }
+
+  return file;
+}
+
+int create_file(std::error_code& ec) {
+  fs::path::string_type path = make_pattern("", "");
+  create_parent(path, ec);
+  if (ec) {
+    return {};
+  }
+
+  // FIXME: add signal handling
+  int handle = mkstemp(path.data());
+  if (handle == -1) {
+    ec = std::error_code(errno, std::system_category());
+    return -1;
+  }
+
+  unlink(path.data());
+
+  ec.clear();
+  return handle;
+}
 }    // namespace tmp

@@ -50,6 +50,10 @@ fs::path create_directory(std::string_view label);
 /// @param[out] ec    Parameter for error reporting
 /// @returns A path to the created temporary directory
 fs::path create_directory(std::string_view label, std::error_code& ec);
+
+int create_file();
+
+int create_file(std::error_code& ec);
 }    // namespace tmp
 
 #endif    // TMP_CREATE_H

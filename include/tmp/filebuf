@@ -32,6 +32,8 @@ public:
   /// @param mode   The file opening mode
   /// @returns `this` file buffer, or a null pointer on failure
   filebuf* open(native_handle_type handle, std::ios::openmode mode);
+
+  filebuf* open(std::ios::openmode mode);
 };
 }    // namespace tmp
 
