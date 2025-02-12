@@ -104,7 +104,8 @@ private:
 
   /// Creates a unique temporary file
   /// @param handle A path to the created temporary file and a handle to it
-  explicit file(std::pair<std::filesystem::path, filebuf> handle) TMP_NO_EXPORT;
+  explicit file(std::pair<std::filesystem::path, filebuf> handle) noexcept
+      TMP_NO_EXPORT;
 };
 }    // namespace tmp
 

@@ -2,11 +2,6 @@
 
 #include <ios>
 
-#ifdef _WIN32
-#include <corecrt_io.h>
-#include <cstdio>
-#endif
-
 #if __has_include(<__config>)
 #include <__config>    // libc++ configuration
 #endif

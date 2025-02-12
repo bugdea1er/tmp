@@ -13,9 +13,8 @@
 #include <utility>
 
 namespace tmp {
-namespace {}
 
-file::file(std::pair<fs::path, filebuf> handle)
+file::file(std::pair<fs::path, filebuf> handle) noexcept
     : entry(std::move(handle.first)),
       std::iostream(std::addressof(sb)),
       sb(std::move(handle.second)) {}
