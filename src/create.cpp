@@ -148,15 +148,26 @@ const wchar_t* make_mdstring(std::ios::openmode mode) noexcept {
   }
 }
 #endif
+
+/// Closes the given handle, ignoring any errors
+/// @param[in] handle The handle to close
+void close(filebuf::native_handle_type handle) noexcept {
+#ifdef _WIN32
+  fclose(handle);
+#else
+  ::close(handle);
+#endif
+}
 }    // namespace
 
-std::pair<fs::path, filebuf::native_handle_type> create_file(std::string_view label,
-                                              std::string_view extension) {
+std::pair<fs::path, filebuf> create_file(std::string_view label,
+                                         std::string_view extension,
+                                         std::ios::openmode mode) {
   validate_label(label);    // throws std::invalid_argument with a proper text
   validate_extension(extension);
 
   std::error_code ec;
-  auto file = create_file(label, extension, ec);
+  auto file = create_file(label, extension, mode, ec);
 
   if (ec) {
     throw fs::filesystem_error("Cannot create a temporary file", ec);
@@ -165,9 +176,10 @@ std::pair<fs::path, filebuf::native_handle_type> create_file(std::string_view la
   return file;
 }
 
-std::pair<fs::path, filebuf::native_handle_type> create_file(std::string_view label,
-                                              std::string_view extension,
-                                              std::error_code& ec) {
+std::pair<fs::path, filebuf> create_file(std::string_view label,
+                                         std::string_view extension,
+                                         std::ios::openmode mode,
+                                         std::error_code& ec) {
   if (!is_label_valid(label) || !is_extension_valid(extension)) {
     ec = std::make_error_code(std::errc::invalid_argument);
     return {};
@@ -184,7 +196,8 @@ std::pair<fs::path, filebuf::native_handle_type> create_file(std::string_view la
   }
 
 #ifdef _WIN32
-  std::FILE* handle = _wfopen(path.c_str(), make_mdstring(std::ios::in | std::ios::out));
+  std::FILE* handle =
+      _wfopen(path.c_str(), make_mdstring(std::ios::in | std::ios::out));
   if (handle == nullptr) {
     ec = std::error_code(errno, std::system_category());
     return {};
@@ -198,8 +211,15 @@ std::pair<fs::path, filebuf::native_handle_type> create_file(std::string_view la
   }
 #endif
 
+  filebuf sb;
+  if (sb.open(handle, mode) == nullptr) {
+    close(handle);
+    ec = std::make_error_code(std::io_errc::stream);
+    fs::remove(path);
+  }
+
   ec.clear();
-  return std::make_pair(path, handle);
+  return std::make_pair(path, sb);
 }
 
 fs::path create_directory(std::string_view label) {

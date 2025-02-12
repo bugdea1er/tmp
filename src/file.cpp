@@ -12,37 +12,16 @@
 #include <system_error>
 #include <utility>
 
-#ifdef _WIN32
-#define <cstdio>
-#else
-#include <unistd.h>
-#endif
-
 namespace tmp {
-namespace {
-/// Closes the given handle, ignoring any errors
-/// @param[in] handle The handle to close
-void close(filebuf::native_handle_type handle) noexcept {
-#ifdef _WIN32
-  fclose(handle);
-#else
-  ::close(handle);
-#endif
-}
-}
+namespace {}
 
-file::file(std::pair<fs::path, filebuf::native_handle_type> handle, openmode mode)
+file::file(std::pair<fs::path, filebuf> handle)
     : entry(std::move(handle.first)),
-      std::iostream(std::addressof(sb)) {
-  if (sb.open(handle.second, mode) == nullptr) {
-    close(handle.second);
-    std::error_code ec = std::make_error_code(std::io_errc::stream);
-    throw fs::filesystem_error("Cannot create a temporary file", ec);
-  }
-}
+      std::iostream(std::addressof(sb)),
+      sb(std::move(handle.second)) {}
 
 file::file(std::string_view label, std::string_view extension, openmode mode)
-    : file(create_file(label, extension), mode) {}
+    : file(create_file(label, extension, mode)) {}
 
 file file::copy(const fs::path& path, std::string_view label,
                 std::string_view extension, openmode mode) {
