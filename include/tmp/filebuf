@@ -3,10 +3,17 @@
 
 #include <fstream>
 #include <ios>
-#include <string>
 
 namespace tmp {
 
+/// `tmp::basic_filebuf` is a stream buffer whose associated character sequence
+/// is a file; both the input and the output sequences are associated with
+/// the same file, and a joint file position is maintained for both operations
+///
+/// The reason we implement this here rather than using the standard
+/// `std::filebuf` is that the standard does not provide a way to use
+/// an existing open file in a file buffer, and does not even report errors when
+/// opening a file fails
 class filebuf : public std::filebuf {
 public:
   /// Implementation-defined handle type to the file
@@ -18,7 +25,11 @@ public:
 #error "Target platform not supported"
 #endif
 
-  std::filebuf* open(native_handle_type handle, std::ios::openmode mode);
+  /// Opens a file and configures it as the associated character sequence
+  /// @param handle A handle to the open file
+  /// @param mode   The file opening mode
+  /// @returns `this` file buffer, or a null pointer on failure
+  filebuf* open(native_handle_type handle, std::ios::openmode mode);
 };
 }    // namespace tmp
 
