@@ -34,7 +34,7 @@ filebuf* filebuf::open(native_handle_type handle, std::ios::openmode mode) {
     return nullptr;
   }
 
-  _Init(handle, _Newfl);
+  _Init(handle, _Openfl);
   return this;
 #elif
 #error "Target C++ standard library is not supported"
