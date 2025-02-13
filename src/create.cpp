@@ -137,7 +137,6 @@ const wchar_t* make_mdstring(std::ios::openmode mode) noexcept {
   case std::ios::in | std::ios::binary:
     return L"rb";
   case std::ios::in | std::ios::out | std::ios::binary:
-    return L"r+b";
   case std::ios::in | std::ios::out | std::ios::trunc | std::ios::binary:
     return L"w+bx";
   case std::ios::in | std::ios::out | std::ios::app | std::ios::binary:
@@ -195,6 +194,8 @@ std::pair<fs::path, filebuf> create_file(std::string_view label,
     return {};
   }
 
+  mode |= std::ios::in | std::ios::out;
+
 #ifdef _WIN32
   // FIXME: use _wfopen_s
   std::FILE* handle = _wfopen(path.c_str(), make_mdstring(mode));
@@ -210,8 +211,6 @@ std::pair<fs::path, filebuf> create_file(std::string_view label,
     return {};
   }
 #endif
-
-  mode |= std::ios::in | std::ios::out;
 
   filebuf filebuf;
   if (filebuf.open(handle, mode) == nullptr) {
