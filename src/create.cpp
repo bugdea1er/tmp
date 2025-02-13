@@ -218,6 +218,7 @@ std::pair<fs::path, filebuf> create_file(std::string_view label,
     close(handle);
     ec = std::make_error_code(std::io_errc::stream);
     fs::remove(path);
+    return {};
   }
 
   ec.clear();
