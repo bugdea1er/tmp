@@ -211,6 +211,8 @@ std::pair<fs::path, filebuf> create_file(std::string_view label,
   }
 #endif
 
+  mode |= std::ios::in | std::ios::out;
+
   filebuf filebuf;
   if (filebuf.open(handle, mode) == nullptr) {
     close(handle);

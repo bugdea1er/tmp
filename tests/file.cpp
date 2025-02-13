@@ -127,6 +127,16 @@ TEST(file, create_invalid_extension) {
   EXPECT_THROW(file("", "/."), std::invalid_argument);
 }
 
+/// Tests that file add std::ios::in and std::ios::out flags
+TEST(file, ios_flags) {
+  file tmpfile = file("", "", std::ios::binary);
+  tmpfile << "Hello, world!" << std::flush;
+
+  std::ifstream stream = std::ifstream(tmpfile.path());
+  std::string content = std::string(std::istreambuf_iterator(stream), {});
+  EXPECT_EQ(content, "Hello, world!");
+}
+
 /// Tests creation of a temporary copy of a file
 TEST(file, copy_file) {
   file tmpfile = file();

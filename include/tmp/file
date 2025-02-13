@@ -47,7 +47,7 @@ namespace tmp {
 class TMP_EXPORT file : public entry, public std::iostream {
 public:
   /// Creates a unique temporary file and opens it for reading and writing
-  /// in binary mode
+  /// @note std::ios::in | std::ios::out are always added to the `mode`
   /// @param label     A label to attach to the temporary file path
   /// @param extension An extension of the temporary file path
   /// @param mode      Specifies stream open mode
@@ -57,6 +57,7 @@ public:
                 std::ios::openmode mode = std::ios::in | std::ios::out);
 
   /// Creates a unique temporary copy from the given path
+  /// @note std::ios::in | std::ios::out are always added to the `mode`
   /// @param path      A path to make a temporary copy from
   /// @param label     A label to attach to the temporary file path
   /// @param extension An extension of the temporary file path
