@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 project(tmp
-  VERSION 2.0
+  VERSION 2.1
   DESCRIPTION "RAII-wrappers for unique temporary files and directories for modern C++"
   HOMEPAGE_URL "https://github.com/bugdea1er/tmp"
   LANGUAGES CXX)
@@ -36,7 +36,7 @@ if(TMP_IS_TOP_LEVEL)
   install(EXPORT tmp-targets DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
     NAMESPACE tmp:: FILE tmp-targets.cmake
     COMPONENT Development)
-  install(DIRECTORY "include/" "${PROJECT_BINARY_DIR}/include/"
+  install(DIRECTORY "include/"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
     COMPONENT Development)
 
