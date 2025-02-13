@@ -127,7 +127,14 @@ TEST(file, create_invalid_extension) {
   EXPECT_THROW(file("", "/."), std::invalid_argument);
 }
 
-/// Tests that file add std::ios::in and std::ios::out flags
+/// Tests error handling with invalid open mode
+TEST(file, create_invalid_openmode) {
+  // C++ standard forbids opening a filebuf with `trunc | app`
+  std::ios::openmode openmode = std::ios::trunc | std::ios::app;
+  EXPECT_THROW(file("", "", openmode), fs::filesystem_error);
+}
+
+/// Tests that file adds std::ios::in and std::ios::out flags
 TEST(file, ios_flags) {
   file tmpfile = file("", "", std::ios::binary);
   tmpfile << "Hello, world!" << std::flush;
