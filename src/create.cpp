@@ -41,31 +41,12 @@ void validate_label(const fs::path& label) {
   }
 }
 
-/// Checks that the given extension is valid to be an extension of a file path
-/// @param[in] extension The extension to check validity for
-/// @returns `true` if the extension is valid, `false` otherwise
-bool is_extension_valid(const fs::path& extension) {
-  return extension.empty() || ++extension.begin() == extension.end();
-}
-
-/// Checks that the given extension is valid to be an extension of a file path
-/// @param extension The extension to check validity for
-/// @throws std::invalid_argument if the extension cannot be used in a file path
-void validate_extension(std::string_view extension) {
-  if (!is_extension_valid(extension)) {
-    throw std::invalid_argument(
-        "Cannot create a temporary file: extension must be empty or a valid "
-        "single-segmented pathname");
-  }
-}
-
 #ifdef _WIN32
-/// Creates a temporary path with the given label and extension
-/// @note label and extension must be valid
-/// @param[in] label     A label to attach to the path pattern
-/// @param[in] extension An extension of the temporary file path
+/// Creates a temporary path with the given label
+/// @note label must be valid
+/// @param[in] label A label to attach to the path pattern
 /// @returns A unique temporary path
-fs::path make_path(std::string_view label, std::string_view extension) {
+fs::path make_path(std::string_view label) {
   constexpr static std::size_t CHARS_IN_GUID = 39;
   GUID guid;
   CoCreateGuid(&guid);
@@ -77,26 +58,15 @@ fs::path make_path(std::string_view label, std::string_view extension) {
            guid.Data4[3], guid.Data4[4], guid.Data4[5], guid.Data4[6],
            guid.Data4[7]);
 
-  fs::path pattern = fs::temp_directory_path() / label / name;
-  pattern += extension;
-
-  return pattern;
+  return fs::temp_directory_path() / label / name;
 }
 #else
-/// Placeholder in temporary path templates to be replaced
-/// with random characters
-constexpr std::string_view placeholder = "XXXXXX";
-
-/// Creates a temporary path pattern with the given label and extension
-/// @note label and extension must be valid
-/// @param[in] label     A label to attach to the path pattern
-/// @param[in] extension An extension of the temporary file path
+/// Creates a temporary path pattern with the given label
+/// @note label must be valid
+/// @param[in] label A label to attach to the path pattern
 /// @returns A path pattern for the unique temporary path
-fs::path make_pattern(std::string_view label, std::string_view extension) {
-  fs::path pattern = fs::temp_directory_path() / label / placeholder;
-  pattern += extension;
-
-  return pattern;
+fs::path make_pattern(std::string_view label) {
+  return fs::temp_directory_path() / label / "XXXXXX";
 }
 #endif
 
@@ -160,13 +130,11 @@ void close(filebuf::native_handle_type handle) noexcept {
 }    // namespace
 
 std::pair<fs::path, filebuf> create_file(std::string_view label,
-                                         std::string_view extension,
                                          std::ios::openmode mode) {
   validate_label(label);    // throws std::invalid_argument with a proper text
-  validate_extension(extension);
 
   std::error_code ec;
-  auto file = create_file(label, extension, mode, ec);
+  auto file = create_file(label, mode, ec);
 
   if (ec) {
     throw fs::filesystem_error("Cannot create a temporary file", ec);
@@ -176,18 +144,17 @@ std::pair<fs::path, filebuf> create_file(std::string_view label,
 }
 
 std::pair<fs::path, filebuf> create_file(std::string_view label,
-                                         std::string_view extension,
                                          std::ios::openmode mode,
                                          std::error_code& ec) {
-  if (!is_label_valid(label) || !is_extension_valid(extension)) {
+  if (!is_label_valid(label)) {
     ec = std::make_error_code(std::errc::invalid_argument);
     return {};
   }
 
 #ifdef _WIN32
-  fs::path::string_type path = make_path(label, extension);
+  fs::path::string_type path = make_path(label);
 #else
-  fs::path::string_type path = make_pattern(label, extension);
+  fs::path::string_type path = make_pattern(label);
 #endif
   create_parent(path, ec);
   if (ec) {
@@ -211,8 +178,7 @@ std::pair<fs::path, filebuf> create_file(std::string_view label,
     return {};
   }
 #else
-  // FIXME: `mkstemps` function is not a part of POSIX standard
-  int handle = mkstemps(path.data(), static_cast<int>(extension.size()));
+  int handle = mkstemp(path.data());
   if (handle == -1) {
     ec = std::error_code(errno, std::system_category());
     return {};
@@ -251,9 +217,9 @@ fs::path create_directory(std::string_view label, std::error_code& ec) {
   }
 
 #ifdef _WIN32
-  fs::path::string_type path = make_path(label, "");
+  fs::path::string_type path = make_path(label);
 #else
-  fs::path::string_type path = make_pattern(label, "");
+  fs::path::string_type path = make_pattern(label);
 #endif
   create_parent(path, ec);
   if (ec) {

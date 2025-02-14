@@ -19,12 +19,11 @@ file::file(std::pair<fs::path, filebuf> handle) noexcept
       std::iostream(std::addressof(sb)),
       sb(std::move(handle.second)) {}
 
-file::file(std::string_view label, std::string_view extension, openmode mode)
-    : file(create_file(label, extension, mode)) {}
+file::file(std::string_view label, openmode mode)
+    : file(create_file(label, mode)) {}
 
-file file::copy(const fs::path& path, std::string_view label,
-                std::string_view extension, openmode mode) {
-  file tmpfile = file(label, extension, mode);
+file file::copy(const fs::path& path, std::string_view label, openmode mode) {
+  file tmpfile = file(label, mode);
 
   std::error_code ec;
   fs::copy_file(path, tmpfile, fs::copy_options::overwrite_existing, ec);
