@@ -21,32 +21,33 @@
 namespace tmp {
 namespace {
 
-/// Checks that the given label is valid to attach to a temporary entry path
-/// @param[in] label The label to check validity for
-/// @returns `true` if the label is valid, `false` otherwise
-bool is_label_valid(const fs::path& label) {
-  return label.empty() || (++label.begin() == label.end() &&
-                           label.is_relative() && !label.has_root_path() &&
-                           label.filename() != "." && label.filename() != "..");
+/// Checks if the given prefix is valid to attach to a temporary directory name
+/// @param[in] prefix The prefix to check validity for
+/// @returns `true` if the prefix is valid, `false` otherwise
+bool is_prefix_valid(const fs::path& prefix) {
+  return prefix.empty() ||
+         (++prefix.begin() == prefix.end() && prefix.is_relative() &&
+          !prefix.has_root_path() && prefix.filename() != "." &&
+          prefix.filename() != "..");
 }
 
-/// Checks that the given label is valid to attach to a temporary entry path
-/// @param label The label to check validity for
-/// @throws std::invalid_argument if the label cannot be attached to a path
-void validate_label(const fs::path& label) {
-  if (!is_label_valid(label)) {
+/// Checks that the given prefix is valid to attach to a temporary entry path
+/// @param prefix The prefix to check validity for
+/// @throws std::invalid_argument if the prefix cannot be attached to a path
+void validate_prefix(const fs::path& prefix) {
+  if (!is_prefix_valid(prefix)) {
     throw std::invalid_argument(
-        "Cannot create a temporary entry: label must be empty or a valid "
+        "Cannot create a temporary entry: prefix must be empty or a valid "
         "single-segmented relative pathname");
   }
 }
 
 #ifdef _WIN32
-/// Creates a temporary path with the given label
-/// @note label must be valid
-/// @param[in] label A label to attach to the path pattern
+/// Creates a temporary path with the given prefix
+/// @note prefix must be valid
+/// @param[in] prefix A prefix to attach to the path pattern
 /// @returns A unique temporary path
-fs::path make_path(std::string_view label) {
+fs::path make_path(std::string_view prefix) {
   constexpr static std::size_t CHARS_IN_GUID = 39;
   GUID guid;
   CoCreateGuid(&guid);
@@ -58,15 +59,21 @@ fs::path make_path(std::string_view label) {
            guid.Data4[3], guid.Data4[4], guid.Data4[5], guid.Data4[6],
            guid.Data4[7]);
 
-  return fs::temp_directory_path() / label / name;
+  fs::path path = fs::temp_directory_path() / prefix;
+  path += name;
+
+  return path;
 }
 #else
-/// Creates a temporary path pattern with the given label
-/// @note label must be valid
-/// @param[in] label A label to attach to the path pattern
+/// Creates a temporary path pattern with the given prefix
+/// @note prefix must be valid
+/// @param[in] prefix A prefix to attach to the path pattern
 /// @returns A path pattern for the unique temporary path
-fs::path make_pattern(std::string_view label) {
-  return fs::temp_directory_path() / label / "XXXXXX";
+fs::path make_pattern(std::string_view prefix) {
+  fs::path path = fs::temp_directory_path() / prefix;
+  path += "XXXXXX";
+
+  return path;
 }
 #endif
 
@@ -188,11 +195,11 @@ std::pair<fs::path, filebuf> create_file(std::ios::openmode mode,
   return std::make_pair(path, std::move(filebuf));
 }
 
-fs::path create_directory(std::string_view label) {
-  validate_label(label);    // throws std::invalid_argument with a proper text
+fs::path create_directory(std::string_view prefix) {
+  validate_prefix(prefix);    // throws std::invalid_argument with a proper text
 
   std::error_code ec;
-  fs::path directory = create_directory(label, ec);
+  fs::path directory = create_directory(prefix, ec);
 
   if (ec) {
     throw fs::filesystem_error("Cannot create a temporary directory", ec);
@@ -201,16 +208,16 @@ fs::path create_directory(std::string_view label) {
   return directory;
 }
 
-fs::path create_directory(std::string_view label, std::error_code& ec) {
-  if (!is_label_valid(label)) {
+fs::path create_directory(std::string_view prefix, std::error_code& ec) {
+  if (!is_prefix_valid(prefix)) {
     ec = std::make_error_code(std::errc::invalid_argument);
     return fs::path();
   }
 
 #ifdef _WIN32
-  fs::path::string_type path = make_path(label);
+  fs::path::string_type path = make_path(prefix);
 #else
-  fs::path::string_type path = make_pattern(label);
+  fs::path::string_type path = make_pattern(prefix);
 #endif
   create_parent(path, ec);
   if (ec) {
