@@ -14,9 +14,12 @@ namespace {
 
 namespace fs = std::filesystem;
 
+/// Temporary directory prefix for this test suite
+constexpr std::string_view prefix = "com.github.bugdea1er.tmp";
+
 /// Tests directory creation with prefix
 TEST(directory, create_with_prefix) {
-  directory tmpdir = directory(PREFIX);
+  directory tmpdir = directory(prefix);
   fs::path parent = tmpdir.path().parent_path();
 
   EXPECT_TRUE(fs::exists(tmpdir));
@@ -24,7 +27,7 @@ TEST(directory, create_with_prefix) {
   EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path()));
 
   fs::path::string_type filename = tmpdir.path().filename();
-  EXPECT_EQ(filename.substr(0, std::string(PREFIX).length()), fs::path(PREFIX));
+  EXPECT_EQ(filename.substr(0, prefix.length()), fs::path(prefix));
 
   fs::perms permissions = fs::status(tmpdir).permissions();
 #ifdef _WIN32
@@ -48,8 +51,8 @@ TEST(directory, create_without_prefix) {
 
 /// Tests multiple directories creation with the same prefix
 TEST(directory, create_multiple) {
-  directory fst = directory(PREFIX);
-  directory snd = directory(PREFIX);
+  directory fst = directory(prefix);
+  directory snd = directory(prefix);
 
   EXPECT_FALSE(fs::equivalent(fst, snd));
 }
