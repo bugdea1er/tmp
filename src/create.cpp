@@ -119,7 +119,7 @@ const wchar_t* make_mdstring(std::ios::openmode mode) noexcept {
 
 /// Closes the given handle, ignoring any errors
 /// @param[in] handle The handle to close
-void close(filebuf::native_handle_type handle) noexcept {
+void close(filebuf::open_handle_type handle) noexcept {
 #ifdef _WIN32
   fclose(handle);
 #else

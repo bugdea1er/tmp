@@ -16,20 +16,40 @@ namespace tmp {
 /// opening a file fails
 class filebuf : public std::filebuf {
 public:
+  /// Implementation-defined handle type to the open file
+#if defined(_WIN32)
+  using open_handle_type = std::FILE*;
+#elif __has_include(<unistd.h>)
+  using open_handle_type = int;    // POSIX file descriptor
+#else
+#error "Target platform not supported"
+#endif
+
   /// Implementation-defined handle type to the file
 #if defined(_WIN32)
-  using native_handle_type = std::FILE*;
+  using native_handle_type = void*;    // HANDLE
 #elif __has_include(<unistd.h>)
   using native_handle_type = int;    // POSIX file descriptor
 #else
 #error "Target platform not supported"
 #endif
 
+  /// Creates a file buffer that is not associated with any file
+  filebuf() noexcept;
+
   /// Opens a file and configures it as the associated character sequence
   /// @param handle A handle to the open file
   /// @param mode   The file opening mode
   /// @returns `this` file buffer, or a null pointer on failure
-  filebuf* open(native_handle_type handle, std::ios::openmode mode);
+  filebuf* open(open_handle_type handle, std::ios::openmode mode);
+
+  /// Returns an implementation-defined handle to this file
+  /// @returns The underlying implementation-defined handle
+  native_handle_type native_handle() const noexcept;
+
+private:
+  /// Native handle to the open file
+  open_handle_type handle;
 };
 }    // namespace tmp
 
