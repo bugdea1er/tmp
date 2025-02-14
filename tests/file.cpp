@@ -52,14 +52,14 @@ TEST(file, type_traits) {
   static_assert(std::is_same_v<file::off_type, traits::off_type>);
 }
 
-/// Tests file creation with label
-TEST(file, create_with_label) {
-  file tmpfile = file(LABEL);
+/// Tests file creation
+TEST(file, create) {
+  file tmpfile = file();
   fs::path parent = tmpfile.path().parent_path();
 
   EXPECT_TRUE(fs::exists(tmpfile));
   EXPECT_TRUE(fs::is_regular_file(tmpfile));
-  EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path() / LABEL));
+  EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path()));
   EXPECT_TRUE(is_open(tmpfile));
 
 #if __cpp_lib_fstream_native_handle >= 202306L
@@ -76,49 +76,23 @@ TEST(file, create_with_label) {
 #endif
 }
 
-/// Tests file creation without label
-TEST(file, create_without_label) {
-  file tmpfile = file();
-  fs::path parent = tmpfile.path().parent_path();
-
-  EXPECT_TRUE(fs::exists(tmpfile));
-  EXPECT_TRUE(fs::is_regular_file(tmpfile));
-  EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path()));
-  EXPECT_TRUE(is_open(tmpfile));
-}
-
-/// Tests multiple file creation with the same label
+/// Tests multiple file creation
 TEST(file, create_multiple) {
-  file fst = file(LABEL);
-  file snd = file(LABEL);
+  file fst = file();
+  file snd = file();
 
   EXPECT_FALSE(fs::equivalent(fst, snd));
-}
-
-/// Tests error handling with invalid labels
-TEST(file, create_invalid_label) {
-  EXPECT_THROW(file("multi/segment"), std::invalid_argument);
-  EXPECT_THROW(file("/root"), std::invalid_argument);
-  EXPECT_THROW(file(".."), std::invalid_argument);
-  EXPECT_THROW(file("."), std::invalid_argument);
-
-  fs::path root = fs::temp_directory_path().root_name();
-  if (!root.empty()) {
-    EXPECT_THROW(file(root.string() + "relative"), std::invalid_argument);
-    EXPECT_THROW(file(root.string() + "/root"), std::invalid_argument);
-  }
 }
 
 /// Tests error handling with invalid open mode
 TEST(file, create_invalid_openmode) {
   // C++ standard forbids opening a filebuf with `trunc | app`
-  std::ios::openmode openmode = std::ios::trunc | std::ios::app;
-  EXPECT_THROW(file("", openmode), fs::filesystem_error);
+  EXPECT_THROW(file(std::ios::trunc | std::ios::app), fs::filesystem_error);
 }
 
 /// Tests that file adds std::ios::in and std::ios::out flags
 TEST(file, ios_flags) {
-  file tmpfile = file("", std::ios::binary);
+  file tmpfile = file(std::ios::binary);
   tmpfile << "Hello, world!" << std::flush;
 
   std::ifstream stream = std::ifstream(tmpfile.path());
