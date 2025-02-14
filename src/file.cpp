@@ -35,6 +35,10 @@ file file::copy(const fs::path& path, std::ios::openmode mode) {
   return tmpfile;
 }
 
+file::native_handle_type file::native_handle() const noexcept {
+  return sb.native_handle();
+}
+
 std::filebuf* file::rdbuf() const noexcept {
   return const_cast<filebuf*>(std::addressof(sb));    // NOLINT(*-const-cast)
 }
