@@ -77,14 +77,6 @@ fs::path make_pattern(std::string_view prefix) {
 }
 #endif
 
-/// Creates the parent directory of the given path if it does not exist
-/// @param[in]  path The path for which the parent directory needs to be created
-/// @param[out] ec   Parameter for error reporting
-/// @returns `true` if a parent directory was newly created, `false` otherwise
-bool create_parent(const fs::path& path, std::error_code& ec) {
-  return fs::create_directories(path.parent_path(), ec);
-}
-
 #ifdef _WIN32
 /// Makes a mode string for the `_wfdopen` function
 /// @param mode The file opening mode
@@ -154,10 +146,6 @@ std::pair<fs::path, filebuf> create_file(std::ios::openmode mode,
 #else
   fs::path::string_type path = make_pattern("");
 #endif
-  create_parent(path, ec);
-  if (ec) {
-    return {};
-  }
 
   mode |= std::ios::in | std::ios::out;
 
@@ -219,10 +207,6 @@ fs::path create_directory(std::string_view prefix, std::error_code& ec) {
 #else
   fs::path::string_type path = make_pattern(prefix);
 #endif
-  create_parent(path, ec);
-  if (ec) {
-    return fs::path();
-  }
 
 #ifdef _WIN32
   if (!CreateDirectory(path.c_str(), nullptr)) {
