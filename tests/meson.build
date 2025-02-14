@@ -6,7 +6,7 @@ unit_test = executable(
   'file.cpp',
   dependencies: [gtest_main_dep, tmp_dep],
   cpp_args: [
-    '-DLABEL="com.github.bugdea1er.tmp"',
+    '-DPREFIX="com.github.bugdea1er.tmp"',
     '-DBUILD_DIR="' + meson.current_build_dir() + '"',
   ],
   build_by_default: false,

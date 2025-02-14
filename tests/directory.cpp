@@ -14,14 +14,17 @@ namespace {
 
 namespace fs = std::filesystem;
 
-/// Tests directory creation with label
-TEST(directory, create_with_label) {
-  directory tmpdir = directory(LABEL);
+/// Tests directory creation with prefix
+TEST(directory, create_with_prefix) {
+  directory tmpdir = directory(PREFIX);
   fs::path parent = tmpdir.path().parent_path();
 
   EXPECT_TRUE(fs::exists(tmpdir));
   EXPECT_TRUE(fs::is_directory(tmpdir));
-  EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path() / LABEL));
+  EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path()));
+
+  fs::path::string_type filename = tmpdir.path().filename();
+  EXPECT_EQ(filename.substr(0, std::string(PREFIX).length()), fs::path(PREFIX));
 
   fs::perms permissions = fs::status(tmpdir).permissions();
 #ifdef _WIN32
@@ -33,8 +36,8 @@ TEST(directory, create_with_label) {
 #endif
 }
 
-/// Tests directory creation without label
-TEST(directory, create_without_label) {
+/// Tests directory creation without prefix
+TEST(directory, create_without_prefix) {
   directory tmpdir = directory();
   fs::path parent = tmpdir.path().parent_path();
 
@@ -43,16 +46,16 @@ TEST(directory, create_without_label) {
   EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path()));
 }
 
-/// Tests multiple directories creation with the same label
+/// Tests multiple directories creation with the same prefix
 TEST(directory, create_multiple) {
-  directory fst = directory(LABEL);
-  directory snd = directory(LABEL);
+  directory fst = directory(PREFIX);
+  directory snd = directory(PREFIX);
 
   EXPECT_FALSE(fs::equivalent(fst, snd));
 }
 
-/// Tests error handling with invalid labels
-TEST(directory, create_invalid_label) {
+/// Tests error handling with invalid prefixes
+TEST(directory, create_invalid_prefix) {
   EXPECT_THROW(directory("multi/segment"), std::invalid_argument);
   EXPECT_THROW(directory("/root"), std::invalid_argument);
   EXPECT_THROW(directory(".."), std::invalid_argument);

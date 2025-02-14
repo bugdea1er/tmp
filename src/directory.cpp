@@ -16,11 +16,11 @@ constexpr fs::copy_options copy_options =
     fs::copy_options::recursive | fs::copy_options::overwrite_existing;
 }    // namespace
 
-directory::directory(std::string_view label)
-    : entry(create_directory(label)) {}
+directory::directory(std::string_view prefix)
+    : entry(create_directory(prefix)) {}
 
-directory directory::copy(const fs::path& path, std::string_view label) {
-  directory tmpdir = directory(label);
+directory directory::copy(const fs::path& path, std::string_view prefix) {
+  directory tmpdir = directory(prefix);
 
   std::error_code ec;
   if (fs::is_directory(path)) {
