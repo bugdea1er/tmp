@@ -68,10 +68,6 @@ public:
   /// @returns The underlying implementation-defined handle
   native_handle_type native_handle() const noexcept;
 
-  /// Returns pointer to the underlying raw file device object
-  /// @returns A pointer to the underlying raw file device
-  std::filebuf* rdbuf() const noexcept;
-
   /// Moves the managed file to a given target, releasing
   /// ownership of the managed file; behaves like `std::filesystem::rename`
   /// even when moving between filesystems

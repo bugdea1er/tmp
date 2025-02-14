@@ -39,10 +39,6 @@ file::native_handle_type file::native_handle() const noexcept {
   return sb.native_handle();
 }
 
-std::filebuf* file::rdbuf() const noexcept {
-  return const_cast<filebuf*>(std::addressof(sb));    // NOLINT(*-const-cast)
-}
-
 void file::move(const fs::path& to) {
   sb.close();
 

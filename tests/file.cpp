@@ -23,7 +23,8 @@ namespace fs = std::filesystem;
 
 /// Returns whether the underlying raw file device object is open
 bool is_open(const file& file) {
-  return file.rdbuf()->is_open();
+  std::filebuf* filebuf = dynamic_cast<std::filebuf*>(file.rdbuf());
+  return filebuf != nullptr && filebuf->is_open();
 }
 
 /// Checks if the given file handle is valid
