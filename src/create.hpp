@@ -12,24 +12,19 @@
 namespace tmp {
 namespace fs = std::filesystem;
 
-/// Creates a temporary file with the given label in the system's
-/// temporary directory, and opens it for reading and writing
-/// @param[in] label     A label to attach to the temporary file path
-/// @param[in] mode      Specifies stream open mode
+/// Creates a temporary file in the system's temporary directory,
+/// and opens it for reading and writing
+/// @param[in] mode Specifies stream open mode
 /// @returns A path to the created temporary file and a handle to it
 /// @throws fs::filesystem_error  if cannot create a temporary file
-/// @throws std::invalid_argument if the label is ill-formatted
-std::pair<fs::path, filebuf> create_file(std::string_view label,
-                                         std::ios::openmode mode);
+std::pair<fs::path, filebuf> create_file(std::ios::openmode mode);
 
-/// Creates a temporary file with the given label in the system's
-/// temporary directory, and opens it for reading and writing
-/// @param[in]  label     A label to attach to the temporary file path
-/// @param[in] mode      Specifies stream open mode
-/// @param[out] ec        Parameter for error reporting
+/// Creates a temporary file  in the system's temporary directory,
+/// and opens it for reading and writing
+/// @param[in]  mode Specifies stream open mode
+/// @param[out] ec   Parameter for error reporting
 /// @returns A path to the created temporary file and a handle to it
-std::pair<fs::path, filebuf> create_file(std::string_view label,
-                                         std::ios::openmode mode,
+std::pair<fs::path, filebuf> create_file(std::ios::openmode mode,
                                          std::error_code& ec);
 
 /// Creates a temporary directory with the given label in the system's

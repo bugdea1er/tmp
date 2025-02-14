@@ -129,12 +129,9 @@ void close(filebuf::native_handle_type handle) noexcept {
 }
 }    // namespace
 
-std::pair<fs::path, filebuf> create_file(std::string_view label,
-                                         std::ios::openmode mode) {
-  validate_label(label);    // throws std::invalid_argument with a proper text
-
+std::pair<fs::path, filebuf> create_file(std::ios::openmode mode) {
   std::error_code ec;
-  auto file = create_file(label, mode, ec);
+  std::pair<fs::path, filebuf> file = create_file(mode, ec);
 
   if (ec) {
     throw fs::filesystem_error("Cannot create a temporary file", ec);
@@ -143,18 +140,12 @@ std::pair<fs::path, filebuf> create_file(std::string_view label,
   return file;
 }
 
-std::pair<fs::path, filebuf> create_file(std::string_view label,
-                                         std::ios::openmode mode,
+std::pair<fs::path, filebuf> create_file(std::ios::openmode mode,
                                          std::error_code& ec) {
-  if (!is_label_valid(label)) {
-    ec = std::make_error_code(std::errc::invalid_argument);
-    return {};
-  }
-
 #ifdef _WIN32
-  fs::path::string_type path = make_path(label);
+  fs::path::string_type path = make_path("");
 #else
-  fs::path::string_type path = make_pattern(label);
+  fs::path::string_type path = make_pattern("");
 #endif
   create_parent(path, ec);
   if (ec) {
