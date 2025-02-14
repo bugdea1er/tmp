@@ -8,7 +8,7 @@
 
 namespace tmp {
 
-filebuf* filebuf::open(native_handle_type handle, std::ios::openmode mode) {
+filebuf* filebuf::open(open_handle_type handle, std::ios::openmode mode) {
 #if defined(_LIBCPP_VERSION)
   return this->__open(handle, mode) != nullptr ? this : nullptr;
 #elif defined(__GLIBCXX__)
