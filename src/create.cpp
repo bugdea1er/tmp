@@ -71,7 +71,7 @@ fs::path make_path(std::string_view prefix) {
 /// @returns A path pattern for the unique temporary path
 fs::path make_pattern(std::string_view prefix) {
   fs::path path = fs::temp_directory_path() / prefix;
-  path += "XXXXXX";
+  path += "XXXXXX";    // TODO: add '.', like `com.github.bugdea1er.tmp.yotR2k`?
 
   return path;
 }
