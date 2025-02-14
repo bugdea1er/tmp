@@ -37,7 +37,7 @@ namespace tmp {
 ///   #include <tmp/file>
 ///
 ///   auto func(std::string_view content) {
-///     auto tmpfile = tmp::file("org.example.product", ".bin", std::ios::out);
+///     auto tmpfile = tmp::file("org.example.product", std::ios::out);
 ///     tmpfile << content << std::flush;
 ///
 ///     // the temporary file is deleted recursively when the
@@ -49,24 +49,22 @@ public:
   /// Creates a unique temporary file and opens it for reading and writing
   /// @note std::ios::in | std::ios::out are always added to the `mode`
   /// @param label     A label to attach to the temporary file path
-  /// @param extension An extension of the temporary file path
   /// @param mode      Specifies stream open mode
   /// @throws std::filesystem::filesystem_error if cannot create a file
-  /// @throws std::invalid_argument             if arguments are ill-formatted
-  explicit file(std::string_view label = "", std::string_view extension = "",
+  /// @throws std::invalid_argument             if the label is ill-formatted
+  explicit file(std::string_view label = "",
                 std::ios::openmode mode = std::ios::in | std::ios::out);
 
   /// Creates a unique temporary copy from the given path
   /// @note std::ios::in | std::ios::out are always added to the `mode`
   /// @param path      A path to make a temporary copy from
   /// @param label     A label to attach to the temporary file path
-  /// @param extension An extension of the temporary file path
   /// @param mode      Specifies stream open mode
   /// @returns The new temporary file
   /// @throws std::filesystem::filesystem_error if given path is not a file
-  /// @throws std::invalid_argument             if arguments are ill-formatted
+  /// @throws std::invalid_argument             if the label is ill-formatted
   static file copy(const std::filesystem::path& path,
-                   std::string_view label = "", std::string_view extension = "",
+                   std::string_view label = "",
                    std::ios::openmode mode = std::ios::in | std::ios::out);
 
 #if __cpp_lib_fstream_native_handle >= 202306L

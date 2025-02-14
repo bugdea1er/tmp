@@ -87,16 +87,6 @@ TEST(file, create_without_label) {
   EXPECT_TRUE(is_open(tmpfile));
 }
 
-/// Tests file creation with extension
-TEST(file, create_with_extension) {
-  file tmpfile = file("", ".test");
-
-  EXPECT_TRUE(fs::exists(tmpfile));
-  EXPECT_TRUE(fs::is_regular_file(tmpfile));
-  EXPECT_EQ(tmpfile.path().extension(), ".test");
-  EXPECT_TRUE(is_open(tmpfile));
-}
-
 /// Tests multiple file creation with the same label
 TEST(file, create_multiple) {
   file fst = file(LABEL);
@@ -119,24 +109,16 @@ TEST(file, create_invalid_label) {
   }
 }
 
-/// Tests error handling with invalid extensions
-TEST(file, create_invalid_extension) {
-  EXPECT_THROW(file("", "multi/segment"), std::invalid_argument);
-  EXPECT_THROW(file("", "/root"), std::invalid_argument);
-  EXPECT_THROW(file("", "/.."), std::invalid_argument);
-  EXPECT_THROW(file("", "/."), std::invalid_argument);
-}
-
 /// Tests error handling with invalid open mode
 TEST(file, create_invalid_openmode) {
   // C++ standard forbids opening a filebuf with `trunc | app`
   std::ios::openmode openmode = std::ios::trunc | std::ios::app;
-  EXPECT_THROW(file("", "", openmode), fs::filesystem_error);
+  EXPECT_THROW(file("", openmode), fs::filesystem_error);
 }
 
 /// Tests that file adds std::ios::in and std::ios::out flags
 TEST(file, ios_flags) {
-  file tmpfile = file("", "", std::ios::binary);
+  file tmpfile = file("", std::ios::binary);
   tmpfile << "Hello, world!" << std::flush;
 
   std::ifstream stream = std::ifstream(tmpfile.path());
