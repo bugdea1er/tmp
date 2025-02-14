@@ -5,7 +5,6 @@
 
 #include <filesystem>
 #include <fstream>
-#include <gmock/gmock.h>
 #include <iterator>
 #include <stdexcept>
 #include <utility>
@@ -23,7 +22,9 @@ TEST(directory, create_with_prefix) {
   EXPECT_TRUE(fs::exists(tmpdir));
   EXPECT_TRUE(fs::is_directory(tmpdir));
   EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path()));
-  EXPECT_THAT(tmpdir.path().filename(), testing::StartsWith(PREFIX));
+
+  fs::path::string_type filename = tmpdir.path().filename();
+  EXPECT_EQ(filename.substr(0, std::string(PREFIX).length()), fs::path(PREFIX));
 
   fs::perms permissions = fs::status(tmpdir).permissions();
 #ifdef _WIN32

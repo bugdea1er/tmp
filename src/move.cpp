@@ -59,11 +59,6 @@ void remove(const fs::path& path) noexcept {
     try {
       std::error_code ec;
       fs::remove_all(path, ec);
-
-      fs::path parent = path.parent_path();
-      if (!fs::equivalent(parent, fs::temp_directory_path(), ec)) {
-        fs::remove(parent, ec);
-      }
     } catch (const std::bad_alloc& ex) {
       static_cast<void>(ex);
     }
