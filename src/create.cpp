@@ -3,6 +3,7 @@
 #include <tmp/filebuf>
 
 #include <filesystem>
+#include <iostream>
 #include <stdexcept>
 #include <string_view>
 #include <system_error>
@@ -85,32 +86,32 @@ const wchar_t* make_mdstring(std::ios::openmode mode) noexcept {
   switch (mode & ~std::ios::ate) {
   case std::ios::out:
   case std::ios::out | std::ios::trunc:
-    return L"wx";
+    return L"wxD";
   case std::ios::out | std::ios::app:
   case std::ios::app:
-    return L"a";
+    return L"aD";
   case std::ios::in:
-    return L"r";
+    return L"rD";
   case std::ios::in | std::ios::out:
   case std::ios::in | std::ios::out | std::ios::trunc:
-    return L"w+x";
+    return L"w+xD";
   case std::ios::in | std::ios::out | std::ios::app:
   case std::ios::in | std::ios::app:
-    return L"a+";
+    return L"a+D";
   case std::ios::out | std::ios::binary:
   case std::ios::out | std::ios::trunc | std::ios::binary:
-    return L"wbx";
+    return L"wbxD";
   case std::ios::out | std::ios::app | std::ios::binary:
   case std::ios::app | std::ios::binary:
-    return L"ab";
+    return L"abD";
   case std::ios::in | std::ios::binary:
-    return L"rb";
+    return L"rbD";
   case std::ios::in | std::ios::out | std::ios::binary:
   case std::ios::in | std::ios::out | std::ios::trunc | std::ios::binary:
-    return L"w+bx";
+    return L"w+bxD";
   case std::ios::in | std::ios::out | std::ios::app | std::ios::binary:
   case std::ios::in | std::ios::app | std::ios::binary:
-    return L"a+b";
+    return L"a+bD";
   default:
     return nullptr;
   }
