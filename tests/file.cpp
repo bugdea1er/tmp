@@ -108,15 +108,24 @@ TEST(file, copy_file) {
 
   EXPECT_TRUE(fs::is_regular_file(tmpfile));
 
+  // Test file pointer position after copying
+  std::streampos streampos = copy.tellg();
+  copy.seekg(0, std::ios::end);
+  EXPECT_EQ(streampos, copy.tellg());
+
+  // Test file copy contents
   std::ifstream stream = std::ifstream(copy.path());
   std::string content = std::string(std::istreambuf_iterator(stream), {});
   EXPECT_EQ(content, "Hello, world!");
 }
 
-/// Tests creation of a temporary copy of a directory
-TEST(file, copy_directory) {
-  directory tmpdir = directory();
-  EXPECT_THROW(file::copy(tmpdir), fs::filesystem_error);
+/// Tests creation of copy errors
+TEST(file, copy_errors) {
+  // `file::copy` cannot copy a directory
+  EXPECT_THROW(file::copy(directory()), fs::filesystem_error);
+
+  // `file::copy` cannot copy a non-existent file
+  EXPECT_THROW(file::copy("nonexistent.txt"), fs::filesystem_error);
 }
 
 /// Tests that moving a temporary file to itself does nothing
