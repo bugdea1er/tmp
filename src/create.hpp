@@ -15,17 +15,16 @@ namespace fs = std::filesystem;
 /// Creates a temporary file in the system's temporary directory,
 /// and opens it for reading and writing
 /// @param[in] mode Specifies stream open mode
-/// @returns A path to the created temporary file and a handle to it
+/// @returns A handle to the created temporary file
 /// @throws fs::filesystem_error  if cannot create a temporary file
-std::pair<fs::path, filebuf> create_file(std::ios::openmode mode);
+filebuf create_file(std::ios::openmode mode);
 
-/// Creates a temporary file  in the system's temporary directory,
+/// Creates a temporary file in the system's temporary directory,
 /// and opens it for reading and writing
 /// @param[in]  mode Specifies stream open mode
 /// @param[out] ec   Parameter for error reporting
-/// @returns A path to the created temporary file and a handle to it
-std::pair<fs::path, filebuf> create_file(std::ios::openmode mode,
-                                         std::error_code& ec);
+/// @returns A handle to the created temporary file
+filebuf create_file(std::ios::openmode mode, std::error_code& ec);
 
 /// Creates a temporary directory with the given prefix in the system's
 /// temporary directory

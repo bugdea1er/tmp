@@ -128,9 +128,9 @@ void close(filebuf::open_handle_type handle) noexcept {
 }
 }    // namespace
 
-std::pair<fs::path, filebuf> create_file(std::ios::openmode mode) {
+filebuf create_file(std::ios::openmode mode) {
   std::error_code ec;
-  std::pair<fs::path, filebuf> file = create_file(mode, ec);
+  filebuf file = create_file(mode, ec);
 
   if (ec) {
     throw fs::filesystem_error("Cannot create a temporary file", ec);
@@ -139,8 +139,7 @@ std::pair<fs::path, filebuf> create_file(std::ios::openmode mode) {
   return file;
 }
 
-std::pair<fs::path, filebuf> create_file(std::ios::openmode mode,
-                                         std::error_code& ec) {
+filebuf create_file(std::ios::openmode mode, std::error_code& ec) {
 #ifdef _WIN32
   fs::path::string_type path = make_path("");
 #else
@@ -169,6 +168,8 @@ std::pair<fs::path, filebuf> create_file(std::ios::openmode mode,
     ec = std::error_code(errno, std::system_category());
     return {};
   }
+
+  unlink(path.c_str());
 #endif
 
   filebuf filebuf;
@@ -180,7 +181,7 @@ std::pair<fs::path, filebuf> create_file(std::ios::openmode mode,
   }
 
   ec.clear();
-  return std::make_pair(path, std::move(filebuf));
+  return filebuf;
 }
 
 fs::path create_directory(std::string_view prefix) {

@@ -1,5 +1,4 @@
 #include <tmp/directory>
-#include <tmp/file>
 
 #include <gtest/gtest.h>
 
@@ -90,8 +89,8 @@ TEST(directory, copy_directory) {
 
 /// Tests creation of a temporary copy of a file
 TEST(directory, copy_file) {
-  file tmpfile = file();
-  EXPECT_THROW(directory::copy(tmpfile), fs::filesystem_error);
+  std::ofstream("existing.txt", std::ios::binary) << "Hello, world!";
+  EXPECT_THROW(directory::copy("existing.txt"), fs::filesystem_error);
 }
 
 /// Tests `operator/` of directory
