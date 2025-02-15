@@ -71,28 +71,22 @@ void close(file::native_handle_type handle) noexcept {
 #endif
 }
 
-/// Copies a file contents from the given path to the given file descriptor
-/// @param[in]  from The path to the source file
+/// Copies file contents from one file descriptor to another
+/// @param[in]  from The source file descriptor
 /// @param[in]  to   The target file descriptor
 /// @param[out] ec   Parameter for error reporting
-void copy_file(const fs::path& from, file::native_handle_type to,
-               std::error_code& ec) noexcept {
+void copy_file(file::native_handle_type from, file::native_handle_type to, std::error_code& ec) noexcept {
   // TODO: can be optimized using `sendfile`, `copyfile` or other system API
-  file::native_handle_type source = open(from, /*readonly=*/true, ec);
-  if (ec) {
-    return;
-  }
-
   buffer_type buffer = buffer_type();
   while (true) {
 #ifdef _WIN32
     DWORD bytes_read;
-    if (!ReadFile(source, buffer.data(), block_size, &bytes_read, nullptr)) {
+    if (!ReadFile(from, buffer.data(), block_size, &bytes_read, nullptr)) {
       ec = std::error_code(GetLastError(), std::system_category());
       break;
     }
 #else
-    ssize_t bytes_read = read(source, buffer.data(), block_size);
+    ssize_t bytes_read = read(from, buffer.data(), block_size);
     if (bytes_read < 0) {
       ec = std::error_code(errno, std::system_category());
       break;
@@ -116,56 +110,32 @@ void copy_file(const fs::path& from, file::native_handle_type to,
     }
 #endif
   }
-
-  close(source);
 }
 
-/// Copies a file contents from the given path to the given file descriptor
+/// Copies file contents from the given path to the given file descriptor
+/// @param[in]  from The path to the source file
+/// @param[in]  to   The target file descriptor
+/// @param[out] ec   Parameter for error reporting
+void copy_file(const fs::path& from, file::native_handle_type to,
+               std::error_code& ec) noexcept {
+  file::native_handle_type source = open(from, /*readonly=*/true, ec);
+  if (!ec) {
+    copy_file(source, to, ec);
+    close(source);
+  }
+}
+
+/// Copies file contents from the given path to the given file descriptor
 /// @param[in]  from The source file descriptor
 /// @param[in]  to   The path to the target file
 /// @param[out] ec   Parameter for error reporting
 void copy_file(file::native_handle_type from, const fs::path& to,
                std::error_code& ec) noexcept {
   file::native_handle_type target = open(to, /*readonly=*/false, ec);
-  if (ec) {
-    return;
+  if (!ec) {
+    copy_file(from, target, ec);
+    close(target);
   }
-
-  buffer_type buffer = buffer_type();
-  while (true) {
-#ifdef _WIN32
-    DWORD bytes_read;
-    if (!ReadFile(from, buffer.data(), block_size, &bytes_read, nullptr)) {
-      ec = std::error_code(GetLastError(), std::system_category());
-      break;
-    }
-#else
-    ssize_t bytes_read = read(from, buffer.data(), block_size);
-    if (bytes_read < 0) {
-      ec = std::error_code(errno, std::system_category());
-      break;
-    }
-#endif
-    if (bytes_read == 0) {
-      break;
-    }
-
-#ifdef _WIN32
-    DWORD written;
-    if (!WriteFile(target, buffer.data(), bytes_read, &written, nullptr)) {
-      ec = std::error_code(GetLastError(), std::system_category());
-      return;
-    }
-#else
-    ssize_t written = write(target, buffer.data(), bytes_read);
-    if (written < 0) {
-      ec = std::error_code(errno, std::system_category());
-      break;
-    }
-#endif
-  }
-
-  close(target);
 }
 }    // namespace
 
