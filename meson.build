@@ -29,7 +29,6 @@ tmp = library(
   'src/file.cpp',
   'src/filebuf.cpp',
   'src/directory.cpp',
-  'src/move.cpp',
   install: true,
   include_directories: include_directory,
   gnu_symbol_visibility: 'hidden',
