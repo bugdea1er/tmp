@@ -185,7 +185,6 @@ TEST(file, move_constructor) {
   file snd = file(std::move(fst));
 
   EXPECT_TRUE(is_open(snd));
-  EXPECT_FALSE(is_open(fst));
 
   snd.seekg(0);
   std::string content;

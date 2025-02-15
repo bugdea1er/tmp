@@ -54,8 +54,9 @@ file::native_handle_type open(const fs::path& path, bool readonly,
     ec = std::error_code(GetLastError(), std::system_category());
   }
 #else
+  mode_t mode = 0644;
   int oflag = readonly ? O_RDONLY | O_NONBLOCK : O_RDWR | O_TRUNC | O_CREAT;
-  int handle = ::open(path.c_str(), oflag);
+  int handle = ::open(path.c_str(), oflag, mode);
   if (handle == -1) {
     ec = std::error_code(errno, std::system_category());
   }
