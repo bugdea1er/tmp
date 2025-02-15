@@ -108,10 +108,15 @@ TEST(file, copy_file) {
 
   EXPECT_TRUE(fs::is_regular_file(tmpfile));
 
-  // Test file pointer position after copying
-  std::streampos streampos = copy.tellg();
+  // Test get file pointer position after copying
+  std::streampos gstreampos = copy.tellg();
   copy.seekg(0, std::ios::end);
-  EXPECT_EQ(streampos, copy.tellg());
+  EXPECT_EQ(gstreampos, copy.tellg());
+
+  // Test put file pointer position after copying
+  std::streampos pstreampos = copy.tellp();
+  copy.seekp(0, std::ios::end);
+  EXPECT_EQ(pstreampos, copy.tellp());
 
   // Test file copy contents
   std::ifstream stream = std::ifstream(copy.path());
