@@ -54,22 +54,10 @@ TEST(file, type_traits) {
 /// Tests file creation
 TEST(file, create) {
   file tmpfile = file();
-  fs::path parent = tmpfile.path().parent_path();
-
-  EXPECT_TRUE(fs::exists(tmpfile));
-  EXPECT_TRUE(fs::is_regular_file(tmpfile));
-  EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path()));
   EXPECT_TRUE(is_open(tmpfile));
   EXPECT_TRUE(is_open(tmpfile.native_handle()));
 
-  fs::perms permissions = fs::status(tmpfile).permissions();
-#ifdef _WIN32
-  // GetTempFileNameW creates a file with all permissions
-  EXPECT_EQ(permissions, fs::perms::all);
-#else
-  // mkstemp creates a file that can only be read and written by the owner
-  EXPECT_EQ(permissions, fs::perms::owner_read | fs::perms::owner_write);
-#endif
+  // TODO: test that the file is on the same filesystem as temp_directory_path
 }
 
 /// Tests multiple file creation
@@ -77,7 +65,7 @@ TEST(file, create_multiple) {
   file fst = file();
   file snd = file();
 
-  EXPECT_FALSE(fs::equivalent(fst, snd));
+  EXPECT_NE(fst.native_handle(), snd.native_handle());
 }
 
 /// Tests error handling with invalid open mode
@@ -91,22 +79,22 @@ TEST(file, ios_flags) {
   file tmpfile = file(std::ios::binary);
   tmpfile << "Hello, world!" << std::flush;
 
-  std::ifstream stream = std::ifstream(tmpfile.path());
-  std::string content = std::string(std::istreambuf_iterator(stream), {});
+  tmpfile.seekg(0, std::ios::beg);
+  std::string content = std::string(std::istreambuf_iterator(tmpfile), {});
   EXPECT_EQ(content, "Hello, world!");
 }
 
 /// Tests creation of a temporary copy of a file
 TEST(file, copy_file) {
-  file tmpfile = file();
-  tmpfile << "Hello, world!" << std::flush;
+  std::ofstream original = std::ofstream("existing.txt", std::ios::binary);
+  original << "Hello, world!" << std::flush;
 
-  file copy = file::copy(tmpfile);
-  EXPECT_TRUE(fs::exists(tmpfile));
-  EXPECT_TRUE(fs::exists(copy));
-  EXPECT_FALSE(fs::equivalent(tmpfile, copy));
+  file copy = file::copy("existing.txt");
+  EXPECT_TRUE(fs::exists("existing.txt"));
+  EXPECT_TRUE(is_open(copy));
 
-  EXPECT_TRUE(fs::is_regular_file(tmpfile));
+  // To test that we actually copy the original file
+  original << "Goodbye, world!" << std::flush;
 
   // Test get file pointer position after copying
   std::streampos gstreampos = copy.tellg();
@@ -119,8 +107,8 @@ TEST(file, copy_file) {
   EXPECT_EQ(pstreampos, copy.tellp());
 
   // Test file copy contents
-  std::ifstream stream = std::ifstream(copy.path());
-  std::string content = std::string(std::istreambuf_iterator(stream), {});
+  copy.seekg(0, std::ios::beg);
+  std::string content = std::string(std::istreambuf_iterator(copy), {});
   EXPECT_EQ(content, "Hello, world!");
 }
 
@@ -179,16 +167,13 @@ TEST(file, move_to_non_existing_directory) {
 
 /// Tests that destructor removes a file
 TEST(file, destructor) {
-  fs::path path;
   file::native_handle_type handle;
 
   {
     file tmpfile = file();
-    path = tmpfile;
     handle = tmpfile.native_handle();
   }
 
-  EXPECT_FALSE(fs::exists(path));
   EXPECT_FALSE(is_open(handle));
 }
 
@@ -199,8 +184,6 @@ TEST(file, move_constructor) {
 
   file snd = file(std::move(fst));
 
-  EXPECT_FALSE(snd.path().empty());
-  EXPECT_TRUE(fs::exists(snd));
   EXPECT_TRUE(is_open(snd));
 
   snd.seekg(0);
@@ -217,19 +200,17 @@ TEST(file, move_assignment) {
     file snd = file();
     snd << "Hello!";
 
-    fs::path path1 = fst;
-    fs::path path2 = snd;
+    file::native_handle_type fst_handle = fst.native_handle();
+    file::native_handle_type snd_handle = snd.native_handle();
 
     fst = std::move(snd);
 
-    EXPECT_FALSE(fs::exists(path1));
-    EXPECT_TRUE(fs::exists(path2));
-
-    EXPECT_TRUE(fs::exists(fst));
-    EXPECT_TRUE(fs::equivalent(fst, path2));
+    EXPECT_FALSE(is_open(fst_handle));
+    EXPECT_TRUE(is_open(snd_handle));
+    EXPECT_EQ(fst.native_handle(), snd_handle);
   }
 
-  EXPECT_FALSE(fst.path().empty());
+  EXPECT_TRUE(is_open(fst));
 
   fst.seekg(0);
   std::string content;
@@ -242,13 +223,13 @@ TEST(file, swap) {
   file fst = file();
   file snd = file();
 
-  fs::path fst_path = fst.path();
-  fs::path snd_path = snd.path();
+  file::native_handle_type fst_handle = fst.native_handle();
+  file::native_handle_type snd_handle = snd.native_handle();
 
   std::swap(fst, snd);
 
-  EXPECT_EQ(fst.path(), snd_path);
-  EXPECT_EQ(snd.path(), fst_path);
+  EXPECT_EQ(fst.native_handle(), snd_handle);
+  EXPECT_EQ(snd.native_handle(), fst_handle);
   EXPECT_TRUE(is_open(fst));
   EXPECT_TRUE(is_open(snd));
 }
@@ -258,15 +239,8 @@ TEST(file, hash) {
   file tmpfile = file();
   std::hash hash = std::hash<file>();
 
-  EXPECT_EQ(hash(tmpfile), fs::hash_value(tmpfile.path()));
-}
-
-/// Tests file relational operators
-TEST(file, relational) {
-  file tmpfile = file();
-
-  EXPECT_TRUE(tmpfile == tmpfile);
-  EXPECT_FALSE(tmpfile < tmpfile);
+  EXPECT_EQ(hash(tmpfile),
+            std::hash<file::native_handle_type>()(tmpfile.native_handle()));
 }
 }    // namespace
 }    // namespace tmp

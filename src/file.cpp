@@ -54,8 +54,9 @@ file::native_handle_type open(const fs::path& path, bool readonly,
     ec = std::error_code(GetLastError(), std::system_category());
   }
 #else
+  constexpr mode_t mode = 0644;
   int oflag = readonly ? O_RDONLY | O_NONBLOCK : O_RDWR | O_TRUNC | O_CREAT;
-  int handle = ::open(path.c_str(), oflag);
+  int handle = ::open(path.c_str(), oflag, mode);
   if (handle == -1) {
     ec = std::error_code(errno, std::system_category());
   }
@@ -143,13 +144,9 @@ void copy_file(file::native_handle_type from, const fs::path& to,
 }
 }    // namespace
 
-file::file(std::pair<fs::path, filebuf> handle) noexcept
-    : entry(std::move(handle.first)),
-      std::iostream(std::addressof(sb)),
-      sb(std::move(handle.second)) {}
-
 file::file(std::ios::openmode mode)
-    : file(create_file(mode)) {}
+    : std::iostream(std::addressof(sb)),
+      sb(create_file(mode)) {}
 
 file file::copy(const fs::path& path, std::ios::openmode mode) {
   file tmpfile = file(mode);
@@ -180,31 +177,22 @@ void file::move(const fs::path& to) {
   if (ec) {
     throw fs::filesystem_error("Cannot move a temporary file", to, ec);
   }
-
-  entry::clear();
 }
 
-file::~file() noexcept {
-  sb.close();
-}
+file::~file() noexcept = default;
 
 // NOLINTBEGIN(*-use-after-move)
 file::file(file&& other) noexcept
-    : entry(std::move(other)),
-      std::iostream(std::move(other)),
+    : std::iostream(std::move(other)),
       sb(std::move(other.sb)) {
   set_rdbuf(std::addressof(sb));
 }
-
-file& file::operator=(file&& other) {
-  std::iostream::operator=(std::move(other));
-
-  // The stream buffer must be assigned first to close the file;
-  // otherwise `entry` may not be able to remove the file before reassigning
-  sb = std::move(other.sb);
-  entry::operator=(std::move(other));
-
-  return *this;
-}
 // NOLINTEND(*-use-after-move)
+
+file& file::operator=(file&& other) = default;
 }    // namespace tmp
+
+std::size_t
+std::hash<tmp::file>::operator()(const tmp::file& file) const noexcept {
+  return std::hash<tmp::file::native_handle_type>()(file.native_handle());
+}

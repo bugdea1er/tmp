@@ -3,6 +3,7 @@
 #include <tmp/filebuf>
 
 #include <filesystem>
+#include <iostream>
 #include <stdexcept>
 #include <string_view>
 #include <system_error>
@@ -85,32 +86,32 @@ const wchar_t* make_mdstring(std::ios::openmode mode) noexcept {
   switch (mode & ~std::ios::ate) {
   case std::ios::out:
   case std::ios::out | std::ios::trunc:
-    return L"wx";
+    return L"wxD";
   case std::ios::out | std::ios::app:
   case std::ios::app:
-    return L"a";
+    return L"aD";
   case std::ios::in:
-    return L"r";
+    return L"rD";
   case std::ios::in | std::ios::out:
   case std::ios::in | std::ios::out | std::ios::trunc:
-    return L"w+x";
+    return L"w+xD";
   case std::ios::in | std::ios::out | std::ios::app:
   case std::ios::in | std::ios::app:
-    return L"a+";
+    return L"a+D";
   case std::ios::out | std::ios::binary:
   case std::ios::out | std::ios::trunc | std::ios::binary:
-    return L"wbx";
+    return L"wbxD";
   case std::ios::out | std::ios::app | std::ios::binary:
   case std::ios::app | std::ios::binary:
-    return L"ab";
+    return L"abD";
   case std::ios::in | std::ios::binary:
-    return L"rb";
+    return L"rbD";
   case std::ios::in | std::ios::out | std::ios::binary:
   case std::ios::in | std::ios::out | std::ios::trunc | std::ios::binary:
-    return L"w+bx";
+    return L"w+bxD";
   case std::ios::in | std::ios::out | std::ios::app | std::ios::binary:
   case std::ios::in | std::ios::app | std::ios::binary:
-    return L"a+b";
+    return L"a+bD";
   default:
     return nullptr;
   }
@@ -128,9 +129,9 @@ void close(filebuf::open_handle_type handle) noexcept {
 }
 }    // namespace
 
-std::pair<fs::path, filebuf> create_file(std::ios::openmode mode) {
+filebuf create_file(std::ios::openmode mode) {
   std::error_code ec;
-  std::pair<fs::path, filebuf> file = create_file(mode, ec);
+  filebuf file = create_file(mode, ec);
 
   if (ec) {
     throw fs::filesystem_error("Cannot create a temporary file", ec);
@@ -139,8 +140,7 @@ std::pair<fs::path, filebuf> create_file(std::ios::openmode mode) {
   return file;
 }
 
-std::pair<fs::path, filebuf> create_file(std::ios::openmode mode,
-                                         std::error_code& ec) {
+filebuf create_file(std::ios::openmode mode, std::error_code& ec) {
 #ifdef _WIN32
   fs::path::string_type path = make_path("");
 #else
@@ -169,6 +169,8 @@ std::pair<fs::path, filebuf> create_file(std::ios::openmode mode,
     ec = std::error_code(errno, std::system_category());
     return {};
   }
+
+  unlink(path.c_str());
 #endif
 
   filebuf filebuf;
@@ -180,7 +182,7 @@ std::pair<fs::path, filebuf> create_file(std::ios::openmode mode,
   }
 
   ec.clear();
-  return std::make_pair(path, std::move(filebuf));
+  return filebuf;
 }
 
 fs::path create_directory(std::string_view prefix) {
