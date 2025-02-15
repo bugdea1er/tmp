@@ -26,7 +26,6 @@ endif
 tmp = library(
   'tmp',
   'src/create.cpp',
-  'src/entry.cpp',
   'src/file.cpp',
   'src/filebuf.cpp',
   'src/directory.cpp',
@@ -48,8 +47,6 @@ tmp_dep = declare_dependency(
 )
 
 install_headers(
-  'include/tmp/directory',
-  'include/tmp/entry',
   'include/tmp/export',
   'include/tmp/file',
   subdir: 'tmp',
