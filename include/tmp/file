@@ -54,6 +54,7 @@ public:
 
   /// Creates a unique temporary copy from the given path
   /// @note std::ios::in | std::ios::out are always added to the `mode`
+  /// @note after creating a copy, its I/O position indicator points to the end
   /// @param path A path to make a temporary copy from
   /// @param mode Specifies stream open mode
   /// @returns The new temporary file
