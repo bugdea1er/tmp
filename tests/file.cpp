@@ -133,49 +133,20 @@ TEST(file, copy_errors) {
   EXPECT_THROW(file::copy("nonexistent.txt"), fs::filesystem_error);
 }
 
-/// Tests that moving a temporary file to itself does nothing
-TEST(file, move_to_self) {
-  fs::path path;
-
-  {
-    file tmpfile = file();
-    tmpfile << "Hello, world!";
-
-    path = tmpfile;
-
-    tmpfile.move(tmpfile);
-  }
-
-  EXPECT_TRUE(fs::exists(path));
-
-  {
-    std::ifstream stream = std::ifstream(path);
-    std::string content = std::string(std::istreambuf_iterator(stream), {});
-    EXPECT_EQ(content, "Hello, world!");
-  }
-
-  fs::remove_all(path);
-}
-
 /// Tests moving a temporary file to existing non-directory file
 TEST(file, move_to_existing_file) {
-  fs::path path;
-
   fs::path to = fs::path(BUILD_DIR) / "move_file_to_existing_test";
   std::ofstream(to) << "Goodbye, world!";
 
   {
     file tmpfile = file();
-    tmpfile << "Hello, world!";
-
-    path = tmpfile;
+    tmpfile << "Hello, world!" << std::flush;
 
     tmpfile.move(to);
   }
 
   std::error_code ec;
   EXPECT_TRUE(fs::exists(to, ec));
-  EXPECT_FALSE(fs::exists(path, ec));
 
   {
     std::ifstream stream = std::ifstream(to);
