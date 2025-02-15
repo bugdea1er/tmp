@@ -1,7 +1,6 @@
 #ifndef TMP_DIRECTORY_H
 #define TMP_DIRECTORY_H
 
-#include <tmp/entry>
 #include <tmp/export>
 
 #include <filesystem>
@@ -35,7 +34,7 @@ namespace tmp {
 ///     // `tmp::directory` object goes out of scope and is destroyed
 ///   }
 /// @endcode
-class TMP_EXPORT directory : public entry {
+class TMP_EXPORT directory {
 public:
   /// Creates a unique temporary directory
   /// @param prefix A prefix to attach to the temporary directory path
@@ -52,6 +51,14 @@ public:
   static directory copy(const std::filesystem::path& path,
                         std::string_view prefix = "");
 
+  /// Returns the managed path
+  /// @returns The full path this entry manages
+  operator const std::filesystem::path&() const noexcept;
+
+  /// Returns the managed path
+  /// @returns The full path this entry manages
+  const std::filesystem::path& path() const noexcept;
+
   /// Concatenates this directory path with a given source
   /// @param source A string which represents a path name
   /// @returns The result of path concatenation
@@ -65,16 +72,22 @@ public:
   void move(const std::filesystem::path& to);
 
   /// Deletes the managed directory recursively
-  ~directory() noexcept override;
+  ~directory() noexcept;
 
   directory(directory&&) noexcept;                    ///< MoveConstructible
   directory& operator=(directory&&) noexcept;         ///< MoveAssignable
   directory(const directory&) = delete;               ///< not CopyConstructible
   directory& operator=(const directory&) = delete;    ///< not CopyAssignable
+
+private:
+  /// The managed directory path
+  std::filesystem::path pathobject;
 };
 }    // namespace tmp
 
 /// The template specialization of `std::hash` for `tmp::directory`
-template<> struct std::hash<tmp::directory> : std::hash<tmp::entry> {};
+template<> struct TMP_EXPORT std::hash<tmp::directory> {
+  std::size_t operator()(const tmp::directory& directory) const noexcept;
+};
 
 #endif    // TMP_DIRECTORY_H
