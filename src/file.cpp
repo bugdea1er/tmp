@@ -43,10 +43,13 @@ file::native_handle_type open(const fs::path& path, bool readonly,
   ec.clear();
 
 #ifdef _WIN32
+  DWORD access = readonly ? GENERIC_READ : GENERIC_WRITE;
+  DWORD creation_disposition = readonly ? OPEN_EXISTING : CREATE_ALWAYS;
+  DWORD share_mode = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
+
   HANDLE handle =
-      CreateFile(path.c_str(), GENERIC_READ,
-                 FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL,
-                 OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+      CreateFile(path.c_str(), access, share_mode, nullptr,
+                 creation_disposition, FILE_ATTRIBUTE_NORMAL, nullptr);
   if (handle == INVALID_HANDLE_VALUE) {
     ec = std::error_code(GetLastError(), std::system_category());
   }
@@ -75,7 +78,8 @@ void close(file::native_handle_type handle) noexcept {
 /// @param[in]  from The source file descriptor
 /// @param[in]  to   The target file descriptor
 /// @param[out] ec   Parameter for error reporting
-void copy_file(file::native_handle_type from, file::native_handle_type to, std::error_code& ec) noexcept {
+void copy_file(file::native_handle_type from, file::native_handle_type to,
+               std::error_code& ec) noexcept {
   // TODO: can be optimized using `sendfile`, `copyfile` or other system API
   buffer_type buffer = buffer_type();
   while (true) {
@@ -165,6 +169,9 @@ file::native_handle_type file::native_handle() const noexcept {
 }
 
 void file::move(const fs::path& to) {
+  // TODO: I couldn't figure out how to create a hard link to a file without
+  // hard links, so I just copy it even within the same file system
+
   seekg(0, std::ios::beg);
 
   std::error_code ec;
