@@ -1,5 +1,4 @@
 #include <tmp/directory>
-#include <tmp/entry>
 
 #include "create.hpp"
 #include "move.hpp"
@@ -17,7 +16,7 @@ constexpr fs::copy_options copy_options =
 }    // namespace
 
 directory::directory(std::string_view prefix)
-    : entry(create_directory(prefix)) {}
+    : pathobject(create_directory(prefix)) {}
 
 directory directory::copy(const fs::path& path, std::string_view prefix) {
   directory tmpdir = directory(prefix);
@@ -36,6 +35,14 @@ directory directory::copy(const fs::path& path, std::string_view prefix) {
   return tmpdir;
 }
 
+directory::operator const fs::path&() const noexcept {
+  return pathobject;
+}
+
+const fs::path& directory::path() const noexcept {
+  return *this;
+}
+
 fs::path directory::operator/(std::string_view source) const {
   return path() / source;
 }
@@ -49,11 +56,30 @@ void directory::move(const fs::path& to) {
                                ec);
   }
 
-  clear();
+  pathobject.clear();
 }
 
-directory::~directory() noexcept = default;
+directory::~directory() noexcept {
+  remove(*this);
+}
 
-directory::directory(directory&&) noexcept = default;
-directory& directory::operator=(directory&&) noexcept = default;
+directory::directory(directory&& other) noexcept
+    : pathobject(std::move(other.pathobject)) {
+  other.pathobject.clear();
+}
+
+directory& directory::operator=(directory&& other) noexcept {
+  remove(*this);
+
+  pathobject = std::move(other.pathobject);
+  other.pathobject.clear();
+
+  return *this;
+}
 }    // namespace tmp
+
+std::size_t std::hash<tmp::directory>::operator()(
+    const tmp::directory& directory) const noexcept {
+  // `std::hash<std::filesystem::path>` was not included in the C++17 standard
+  return filesystem::hash_value(directory);
+}

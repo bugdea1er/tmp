@@ -1,8 +1,6 @@
-#include <tmp/entry>
 #include <tmp/file>
 
 #include "create.hpp"
-#include "move.hpp"
 
 #include <array>
 #include <filesystem>
