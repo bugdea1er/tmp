@@ -14,6 +14,7 @@
 #ifdef _WIN32
 #define NOMINMAX
 #define UNICODE
+#include <corecrt_io.h>
 #include <Windows.h>
 #else
 #include <cerrno>
@@ -143,8 +144,28 @@ void copy_file(file::native_handle_type from, const fs::path& to,
 }    // namespace
 
 file::file(std::ios::openmode mode)
-    : std::iostream(std::addressof(sb)),
-      sb(create_file(mode)) {}
+    : std::iostream(std::addressof(sb)) {
+  mode |= std::ios::in | std::ios::out;
+  open_handle_type handle = create_file(mode);
+
+#if defined(__GLIBCXX__)
+  sb = __gnu_cxx::stdio_filebuf<char>(handle, mode);
+  if (!sb.is_open()) {
+    close(handle);
+    throw fs::filesystem_error("", std::make_error_code(std::io_errc::stream));
+  }
+#elif defined(_LIBCPP_VERSION)
+  this->handle = handle;
+  sb.__open(handle, mode);
+  if (!sb.is_open()) {
+    close(handle);
+    throw fs::filesystem_error("", std::make_error_code(std::io_errc::stream));
+  }
+#else    // MSVC
+  underlying = handle;
+  sb = std::filebuf(underlying);
+#endif
+}
 
 file file::copy(const fs::path& path, std::ios::openmode mode) {
   file tmpfile = file(mode);
@@ -160,7 +181,18 @@ file file::copy(const fs::path& path, std::ios::openmode mode) {
 }
 
 file::native_handle_type file::native_handle() const noexcept {
-  return sb.native_handle();
+#if defined(__GLIBCXX__)
+  return sb.fd();
+#elif defined(_LIBCPP_VERSION)
+  return handle;
+#else    // MSVC
+  intptr_t osfhandle = _get_osfhandle(_fileno(underlying));
+  if (osfhandle == -1) {
+    return nullptr;
+  }
+
+  return reinterpret_cast<void*>(osfhandle);
+#endif
 }
 
 void file::move(const fs::path& to) {
@@ -177,7 +209,12 @@ void file::move(const fs::path& to) {
   }
 }
 
-file::~file() noexcept = default;
+file::~file() noexcept {
+#ifdef _MSC_VER
+  sb.close();
+  fclose(underlying);
+#endif
+}
 
 // NOLINTBEGIN(*-use-after-move)
 file::file(file&& other) noexcept
