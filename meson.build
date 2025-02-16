@@ -27,7 +27,6 @@ tmp = library(
   'tmp',
   'src/create.cpp',
   'src/file.cpp',
-  'src/filebuf.cpp',
   'src/directory.cpp',
   install: true,
   include_directories: include_directory,

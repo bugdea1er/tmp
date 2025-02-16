@@ -1,9 +1,6 @@
 #include "create.hpp"
 
-#include <tmp/filebuf>
-
 #include <filesystem>
-#include <iostream>
 #include <stdexcept>
 #include <string_view>
 #include <system_error>
@@ -117,30 +114,20 @@ const wchar_t* make_mdstring(std::ios::openmode mode) noexcept {
   }
 }
 #endif
-
-/// Closes the given handle, ignoring any errors
-/// @param[in] handle The handle to close
-void close(filebuf::open_handle_type handle) noexcept {
-#ifdef _WIN32
-  fclose(handle);
-#else
-  ::close(handle);
-#endif
-}
 }    // namespace
 
-filebuf create_file(std::ios::openmode mode) {
+open_handle_type create_file(std::ios::openmode mode) {
   std::error_code ec;
-  filebuf file = create_file(mode, ec);
+  open_handle_type handle = create_file(mode, ec);
 
   if (ec) {
     throw fs::filesystem_error("Cannot create a temporary file", ec);
   }
 
-  return file;
+  return handle;
 }
 
-filebuf create_file(std::ios::openmode mode, std::error_code& ec) {
+open_handle_type create_file(std::ios::openmode mode, std::error_code& ec) {
 #ifdef _WIN32
   fs::path::string_type path = make_path("");
 #else
@@ -173,16 +160,9 @@ filebuf create_file(std::ios::openmode mode, std::error_code& ec) {
   unlink(path.c_str());
 #endif
 
-  filebuf filebuf;
-  if (filebuf.open(handle, mode) == nullptr) {
-    close(handle);
-    ec = std::make_error_code(std::io_errc::stream);
-    fs::remove(path);
-    return {};
-  }
-
+  (void)mode;
   ec.clear();
-  return filebuf;
+  return handle;
 }
 
 fs::path create_directory(std::string_view prefix) {
