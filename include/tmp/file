@@ -99,7 +99,7 @@ private:
   /// The underlying raw file device object
   mutable __gnu_cxx::stdio_filebuf<char> sb;
 #elif defined(_LIBCPP_VERSION)
-  // In LLVM libc++ we still use the public `std::filebuf::__open` method
+  // In LLVM libc++ we use the public `std::filebuf::__open` method
   // and save a native handle to return in `file::native_handle()`
 
   /// The underlying native handle to the file
@@ -108,8 +108,7 @@ private:
   /// The underlying raw file device object
   std::filebuf sb;
 #elif defined(_MSC_VER)
-  // In Microsoft STL the documentation specifically tells us not to inherit
-  // from `std::filebuf`, so we use the `std::filebuf::filebuf(std::FILE*)`
+  // In Microsoft STL we use the `std::filebuf::filebuf(std::FILE*)`
   // extension and save a pointer to that file to close it ourselves
 
   /// The underlying C file stream
