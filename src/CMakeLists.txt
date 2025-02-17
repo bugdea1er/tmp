@@ -9,7 +9,6 @@ target_link_libraries(${PROJECT_NAME} PUBLIC std::filesystem)
 set_target_properties(${PROJECT_NAME}
   PROPERTIES EXPORT_NAME ${PROJECT_NAME}
              CXX_EXTENSIONS OFF
-             CXX_VISIBILITY_PRESET hidden
              VISIBILITY_INLINES_HIDDEN ON
              VERSION ${PROJECT_VERSION}
              SOVERSION ${PROJECT_VERSION_MAJOR})
@@ -25,11 +24,6 @@ if(TMP_IS_TOP_LEVEL)
     # FIXME: warning C4251 for 'tmp::entry::pathobject'
     target_compile_options(${PROJECT_NAME} PRIVATE /W3 /wd4251)
   endif()
-endif()
-
-if(BUILD_SHARED_LIBS)
-  target_compile_definitions(${PROJECT_NAME}
-    PRIVATE TMP_BUILDING_DLL INTERFACE TMP_SHARED)
 endif()
 
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})

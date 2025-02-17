@@ -1,16 +1,14 @@
 #ifndef TMP_FILE_H
 #define TMP_FILE_H
 
-#include <tmp/export>
-
 #include <filesystem>
-#include <fstream>
 #include <ios>
 #include <istream>
-#include <string_view>
 
 #ifdef __GLIBCXX__
 #include <ext/stdio_filebuf.h>
+#else
+#include <fstream>
 #endif
 
 namespace tmp {
@@ -45,7 +43,7 @@ namespace tmp {
 ///     // `tmp::file` object goes out of scope and is destroyed
 ///   }
 /// @endcode
-class TMP_EXPORT file : public std::iostream {
+class file : public std::iostream {
 public:
   /// Implementation-defined handle type to the file
 #if defined(_WIN32)
@@ -123,7 +121,7 @@ private:
 }    // namespace tmp
 
 /// The template specialization of `std::hash` for `tmp::file`
-template<> struct TMP_EXPORT std::hash<tmp::file> {
+template<> struct std::hash<tmp::file> {
   std::size_t operator()(const tmp::file& file) const noexcept;
 };
 
