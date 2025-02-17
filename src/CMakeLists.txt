@@ -21,8 +21,7 @@ if(TMP_IS_TOP_LEVEL)
   if(CMAKE_CXX_COMPILER_ID MATCHES GNU|Clang)
     target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic)
   elseif(MSVC)
-    # FIXME: warning C4251 for 'tmp::entry::pathobject'
-    target_compile_options(${PROJECT_NAME} PRIVATE /W3 /wd4251)
+    target_compile_options(${PROJECT_NAME} PRIVATE /W3)
   endif()
 endif()
 
