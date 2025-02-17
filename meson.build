@@ -27,7 +27,6 @@ tmp = library(
   'tmp',
   'src/create.cpp',
   'src/file.cpp',
-  'src/filebuf.cpp',
   'src/directory.cpp',
   install: true,
   include_directories: include_directory,
@@ -46,6 +45,7 @@ tmp_dep = declare_dependency(
 )
 
 install_headers(
+  'include/tmp/directory',
   'include/tmp/export',
   'include/tmp/file',
   subdir: 'tmp',
