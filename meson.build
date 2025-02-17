@@ -45,6 +45,7 @@ tmp_dep = declare_dependency(
 )
 
 install_headers(
+  'include/tmp/directory',
   'include/tmp/export',
   'include/tmp/file',
   subdir: 'tmp',
