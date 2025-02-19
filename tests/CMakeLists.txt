@@ -1,5 +1,7 @@
 project(${PROJECT_NAME}.test)
 
+# We never want to build GTest as a shared lib
+set(BUILD_SHARED_LIBS OFF)
 find_package(GTest)
 
 add_executable(${PROJECT_NAME} directory.cpp file.cpp)
