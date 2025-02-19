@@ -23,6 +23,8 @@ else
   dll_build_args = []
 endif
 
+dll_build_args += '-D_CRT_SECURE_NO_WARNINGS'
+
 tmp = library(
   'tmp',
   'src/create.cpp',
