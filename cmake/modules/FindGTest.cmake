@@ -50,6 +50,7 @@ if(GTest_FOUND)
   return()
 endif()
 
+set(BUILD_SHARED_LIBS OFF)
 if(POLICY CMP0135)
   cmake_policy(SET CMP0135 NEW)
 endif()

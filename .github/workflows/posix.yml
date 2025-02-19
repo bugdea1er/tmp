@@ -1,12 +1,16 @@
 ---
-name: tests
+name: posix
 "on":
   push:
     branches: [main]
   pull_request:
 
+env:
+  CXXFLAGS: -fsanitize=address -Werror -Wall -Wextra -pedantic
+  LDFLAGS: -fsanitize=address
+
 jobs:
-  test:
+  cmake:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -16,8 +20,6 @@ jobs:
           - ubuntu-24.04
           - macos-13
           - macos-15
-          - windows-2019
-          - windows-2022
     steps:
       - name: Set up `tmpfs` (if supported)
         run: sudo mount tmpfs -t tmpfs -o size=100m /tmp
@@ -25,23 +27,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Configure CMake
-        run: cmake -B build -DCMAKE_COMPILE_WARNING_AS_ERROR=ON
+        run: cmake -B build -DBUILD_SHARED_LIBS=TRUE
       - name: Build tests
         run: cmake --build build
       - name: Run tests
         run: ctest --output-on-failure --test-dir build
-  test-meson:
+
+  meson:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os:
-          - macos-13
-          - macos-15
           - ubuntu-20.04
           - ubuntu-24.04
-          - windows-2019
-          - windows-2022
+          - macos-13
+          - macos-15
     steps:
       - name: Set up `tmpfs` (if supported)
         run: sudo mount tmpfs -t tmpfs -o size=100m /tmp
@@ -52,16 +53,9 @@ jobs:
       - name: Install Meson (Brew)
         run: brew install meson
         if: runner.os == 'macOS'
-      - name: Install Meson (Pip)
-        run: pip install meson ninja
-        if: runner.os == 'Windows'
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Configure Meson (Unix)
+      - name: Configure Meson
         run: meson setup build
-        if: runner.os != 'Windows'
-      - name: Configure Meson (Windows)
-        run: meson setup build -Dvsenv=true
-        if: runner.os == 'Windows'
       - name: Run tests
         run: meson test -C build
