@@ -148,6 +148,9 @@ file::file(std::ios::openmode mode)
 #if defined(_MSC_VER)
       ,
       underlying(nullptr, &std::fclose)
+#elif defined(_LIBCPP_VERSION)
+      ,
+      handle(create_file())
 #endif
 {
   mode |= std::ios::in | std::ios::out;
@@ -155,22 +158,20 @@ file::file(std::ios::openmode mode)
 #if defined(__GLIBCXX__)
   int handle = create_file();
   sb = __gnu_cxx::stdio_filebuf<char>(handle, mode);
-  if (!sb.is_open()) {
-    close(handle);
-    throw fs::filesystem_error("", std::make_error_code(std::io_errc::stream));
-  }
 #elif defined(_LIBCPP_VERSION)
-  this->handle = create_file();
   sb.__open(handle, mode);
-  if (!sb.is_open()) {
-    close(handle);
-    throw fs::filesystem_error("", std::make_error_code(std::io_errc::stream));
-  }
 #else    // MSVC
-  std::FILE* handle = create_file(mode);
-  underlying.reset(handle);
+  underlying.reset(create_file(mode));
   sb = std::filebuf(underlying.get());
 #endif
+
+  if (!sb.is_open()) {
+#ifndef _WIN32
+    close(handle);
+#endif
+    std::error_code ec = std::make_error_code(std::io_errc::stream);
+    throw fs::filesystem_error("Cannot open a temporary file", ec);
+  }
 }
 
 file file::copy(const fs::path& path, std::ios::openmode mode) {
