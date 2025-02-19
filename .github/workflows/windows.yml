@@ -1,0 +1,49 @@
+---
+name: windows
+"on":
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CXXFLAGS: /WX /W3 /wd4251
+
+jobs:
+  cmake:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-2019
+          - windows-2022
+        BUILD_SHARED_LIBS:
+          - "TRUE"
+          - "FALSE"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Configure CMake
+        run: cmake -B build -DBUILD_SHARED_LIBS=${{ matrix.BUILD_SHARED_LIBS }}
+      - name: Build tests
+        run: cmake --build build
+      - name: Run tests
+        run: ctest --output-on-failure --test-dir build
+
+  meson:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-2019
+          - windows-2022
+    steps:
+      - name: Install Meson
+        run: pip install meson ninja
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Configure Meson
+        run: meson setup build -Dvsenv=true
+      - name: Run tests
+        run: meson test -C build

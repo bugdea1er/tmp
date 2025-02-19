@@ -19,6 +19,7 @@ tmp = library(
   include_directories: include_directory,
   version: meson.project_version(),
   dependencies: [filesystem_dep],
+  cpp_args: ['-D_CRT_SECURE_NO_WARNINGS'],
 )
 
 tmp_dep = declare_dependency(
