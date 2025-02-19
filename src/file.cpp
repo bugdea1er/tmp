@@ -151,22 +151,23 @@ file::file(std::ios::openmode mode)
 #endif
 {
   mode |= std::ios::in | std::ios::out;
-  open_handle_type handle = create_file(mode);
 
 #if defined(__GLIBCXX__)
+  int handle = create_file();
   sb = __gnu_cxx::stdio_filebuf<char>(handle, mode);
   if (!sb.is_open()) {
     close(handle);
     throw fs::filesystem_error("", std::make_error_code(std::io_errc::stream));
   }
 #elif defined(_LIBCPP_VERSION)
-  this->handle = handle;
+  this->handle = create_file();
   sb.__open(handle, mode);
   if (!sb.is_open()) {
     close(handle);
     throw fs::filesystem_error("", std::make_error_code(std::io_errc::stream));
   }
 #else    // MSVC
+  std::FILE* handle = create_file(mode);
   underlying.reset(handle);
   sb = std::filebuf(underlying.get());
 #endif
