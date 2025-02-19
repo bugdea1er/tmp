@@ -26,7 +26,6 @@ tmp_dep = declare_dependency(
   include_directories: include_directory,
   dependencies: [filesystem_dep],
   version: meson.project_version(),
-  compile_args: dll_usage_args,
 )
 
 install_headers(
@@ -42,7 +41,6 @@ if not meson.is_subproject()
   pkg = import('pkgconfig')
   pkg.generate(
     tmp,
-    extra_cflags: dll_usage_args,
     libraries: [filesystem_dep],
     version: meson.project_version(),
     filebase: 'lib' + meson.project_name(),
