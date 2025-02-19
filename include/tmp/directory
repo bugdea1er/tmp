@@ -1,8 +1,6 @@
 #ifndef TMP_DIRECTORY_H
 #define TMP_DIRECTORY_H
 
-#include <tmp/export>
-
 #include <filesystem>
 #include <string_view>
 
@@ -34,7 +32,7 @@ namespace tmp {
 ///     // `tmp::directory` object goes out of scope and is destroyed
 ///   }
 /// @endcode
-class TMP_EXPORT directory {
+class directory {
 public:
   /// Creates a unique temporary directory
   /// @param prefix A prefix to attach to the temporary directory path
@@ -86,7 +84,7 @@ private:
 }    // namespace tmp
 
 /// The template specialization of `std::hash` for `tmp::directory`
-template<> struct TMP_EXPORT std::hash<tmp::directory> {
+template<> struct std::hash<tmp::directory> {
   std::size_t operator()(const tmp::directory& directory) const noexcept;
 };
 
