@@ -18,8 +18,8 @@ jobs:
           - windows-2019
           - windows-2022
         BUILD_SHARED_LIBS:
-          - TRUE
-          - FALSE
+          - "TRUE"
+          - "FALSE"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
