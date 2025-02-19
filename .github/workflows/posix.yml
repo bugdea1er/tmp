@@ -2,7 +2,7 @@
 name: posix
 "on":
   push:
-    branches: [main, CI]
+    branches: [main]
   pull_request:
 
 env:
