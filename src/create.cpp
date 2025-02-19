@@ -116,55 +116,6 @@ const wchar_t* make_mdstring(std::ios::openmode mode) noexcept {
 #endif
 }    // namespace
 
-open_handle_type create_file(std::ios::openmode mode) {
-  std::error_code ec;
-  open_handle_type handle = create_file(mode, ec);
-
-  if (ec) {
-    throw fs::filesystem_error("Cannot create a temporary file", ec);
-  }
-
-  return handle;
-}
-
-open_handle_type create_file(std::ios::openmode mode, std::error_code& ec) {
-#ifdef _WIN32
-  fs::path::string_type path = make_path("");
-#else
-  fs::path::string_type path = make_pattern("");
-#endif
-
-  mode |= std::ios::in | std::ios::out;
-
-#ifdef _WIN32
-  std::FILE* handle;
-
-  // FIXME: use _wfopen_s
-  if (const wchar_t* mdstr = make_mdstring(mode)) {
-    handle = _wfopen(path.c_str(), mdstr);
-    if (handle == nullptr) {
-      ec = std::error_code(errno, std::system_category());
-      return {};
-    }
-  } else {
-    ec = std::make_error_code(std::errc::invalid_argument);
-    return {};
-  }
-#else
-  int handle = mkstemp(path.data());
-  if (handle == -1) {
-    ec = std::error_code(errno, std::system_category());
-    return {};
-  }
-
-  unlink(path.c_str());
-#endif
-
-  (void)mode;
-  ec.clear();
-  return handle;
-}
-
 fs::path create_directory(std::string_view prefix) {
   validate_prefix(prefix);    // throws std::invalid_argument with a proper text
 
@@ -202,4 +153,66 @@ fs::path create_directory(std::string_view prefix, std::error_code& ec) {
 
   return path;
 }
+
+#if defined(_WIN32)
+std::FILE* create_file(std::ios::openmode mode) {
+  std::error_code ec;
+  std::FILE* handle = create_file(mode, ec);
+
+  if (ec) {
+    throw fs::filesystem_error("Cannot create a temporary file", ec);
+  }
+
+  return handle;
+}
+
+std::FILE* create_file(std::ios::openmode mode, std::error_code& ec) {
+  fs::path::string_type path = make_path("");
+
+  mode |= std::ios::in | std::ios::out;
+
+  std::FILE* handle;
+
+  // FIXME: use _wfopen_s
+  if (const wchar_t* mdstr = make_mdstring(mode)) {
+    handle = _wfopen(path.c_str(), mdstr);
+    if (handle == nullptr) {
+      ec = std::error_code(errno, std::system_category());
+      return nullptr;
+    }
+  } else {
+    ec = std::make_error_code(std::errc::invalid_argument);
+    return nullptr;
+  }
+
+  ec.clear();
+  return handle;
+}
+#else
+int create_file() {
+  std::error_code ec;
+  int handle = create_file(ec);
+
+  if (ec) {
+    throw fs::filesystem_error("Cannot create a temporary file", ec);
+  }
+
+  return handle;
+}
+
+int create_file(std::error_code& ec) {
+  fs::path::string_type path = make_pattern("");
+
+  int handle = mkstemp(path.data());
+  if (handle == -1) {
+    ec = std::error_code(errno, std::system_category());
+    return -1;
+  }
+
+  unlink(path.c_str());
+
+  ec.clear();
+  return handle;
+}
+#endif
 }    // namespace tmp
