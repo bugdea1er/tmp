@@ -8,7 +8,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC std::filesystem)
 set_target_properties(${PROJECT_NAME}
   PROPERTIES EXPORT_NAME ${PROJECT_NAME}
              CXX_EXTENSIONS OFF
-             CXX_VISIBILITY_PRESET hidden
+             WINDOWS_EXPORT_ALL_SYMBOLS ON
              VISIBILITY_INLINES_HIDDEN ON
              VERSION ${PROJECT_VERSION}
              SOVERSION ${PROJECT_VERSION_MAJOR})
@@ -16,10 +16,5 @@ set_target_properties(${PROJECT_NAME}
 target_include_directories(${PROJECT_NAME}
   PUBLIC "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
          "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
-
-if(BUILD_SHARED_LIBS)
-  target_compile_definitions(${PROJECT_NAME}
-    PRIVATE TMP_BUILDING_DLL INTERFACE TMP_SHARED)
-endif()
 
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
