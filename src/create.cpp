@@ -171,10 +171,8 @@ std::FILE* create_file(std::ios::openmode mode, std::error_code& ec) {
   mode |= std::ios::in | std::ios::out;
 
   std::FILE* handle;
-
-  // FIXME: use _wfopen_s
   if (const wchar_t* mdstr = make_mdstring(mode)) {
-    handle = _wfopen(path.c_str(), mdstr);
+    handle = _wfsopen(path.c_str(), mdstr, _SH_DENYNO);
     if (handle == nullptr) {
       ec = std::error_code(errno, std::system_category());
       return nullptr;
