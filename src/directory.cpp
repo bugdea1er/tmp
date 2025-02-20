@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <string_view>
 #include <system_error>
+#include <utility>
 
 namespace tmp {
 namespace {
@@ -100,7 +101,7 @@ directory::operator const fs::path&() const noexcept {
 }
 
 const fs::path& directory::path() const noexcept {
-  return *this;
+  return pathobject;
 }
 
 fs::path directory::operator/(std::string_view source) const {
@@ -124,16 +125,13 @@ directory::~directory() noexcept {
 }
 
 directory::directory(directory&& other) noexcept
-    : pathobject(std::move(other.pathobject)) {
-  other.pathobject.clear();
-}
+    : pathobject(std::exchange(other.pathobject, fs::path())) {}
 
 directory& directory::operator=(directory&& other) noexcept {
+  // TODO: should this throw in case of remove error?
   remove(*this);
 
-  pathobject = std::move(other.pathobject);
-  other.pathobject.clear();
-
+  pathobject = std::exchange(other.pathobject, fs::path());
   return *this;
 }
 }    // namespace tmp
