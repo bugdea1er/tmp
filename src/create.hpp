@@ -2,9 +2,12 @@
 #define TMP_CREATE_H
 
 #include <filesystem>
-#include <ios>
 #include <string_view>
 #include <system_error>
+
+#ifdef _WIN32
+#include <ios>
+#endif
 
 namespace tmp {
 namespace fs = std::filesystem;

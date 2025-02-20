@@ -5,9 +5,12 @@
 
 #include <filesystem>
 #include <fstream>
+#include <ios>
+#include <istream>
 #include <iterator>
-#include <stdexcept>
+#include <ostream>
 #include <system_error>
+#include <type_traits>
 #include <utility>
 
 #ifdef _WIN32

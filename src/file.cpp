@@ -3,11 +3,11 @@
 #include "create.hpp"
 
 #include <array>
+#include <cstddef>
 #include <filesystem>
-#include <fstream>
 #include <ios>
 #include <istream>
-#include <string_view>
+#include <memory>
 #include <system_error>
 #include <utility>
 
@@ -204,7 +204,7 @@ file::native_handle_type file::native_handle() const noexcept {
 
 void file::move(const fs::path& to) {
   // TODO: I couldn't figure out how to create a hard link to a file without
-  // hard links, so I just copy it even within the same file system
+  // other hard links, so I just copy it even within the same file system
 
   seekg(0, std::ios::beg);
 

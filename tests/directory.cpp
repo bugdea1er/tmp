@@ -4,8 +4,11 @@
 
 #include <filesystem>
 #include <fstream>
+#include <ios>
 #include <iterator>
 #include <stdexcept>
+#include <string>
+#include <string_view>
 #include <utility>
 
 namespace tmp {

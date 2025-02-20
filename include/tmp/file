@@ -7,7 +7,6 @@
 #include <fstream>
 #include <ios>
 #include <istream>
-#include <string_view>
 
 #ifdef __GLIBCXX__
 #include <ext/stdio_filebuf.h>
