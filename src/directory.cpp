@@ -36,7 +36,8 @@ void remove(const fs::path& path) noexcept {
 /// @param[out] ec   Parameter for error reporting
 /// @throws std::bad_alloc if memory allocation fails
 void move(const fs::path& from, const fs::path& to, std::error_code& ec) {
-  // FIXME: `fs::is_directory can fail here`
+  // FIXME: fs::is_directory can throw here
+  // FIXME: Time-of-check to time-of-use
   if (fs::exists(to)) {
     if (!fs::is_directory(from) && fs::is_directory(to)) {
       ec = std::make_error_code(std::errc::is_a_directory);
@@ -86,6 +87,7 @@ directory directory::copy(const fs::path& path, std::string_view prefix) {
 
   std::error_code ec;
   if (fs::is_directory(path)) {
+    // FIXME: Time-of-check to time-of-use
     fs::copy(path, tmpdir, copy_options, ec);
   } else {
     ec = std::make_error_code(std::errc::not_a_directory);
