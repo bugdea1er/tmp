@@ -71,6 +71,29 @@ TEST(file, create_multiple) {
   EXPECT_NE(fst.native_handle(), snd.native_handle());
 }
 
+TEST(file, openmode) {
+  {
+    file tmpfile = file();
+    tmpfile << "Hello, World!" << std::flush;
+    tmpfile.seekg(0);
+    tmpfile << "Goodbye!" << std::flush;
+
+    tmpfile.seekg(0);
+    std::string content = std::string(std::istreambuf_iterator(tmpfile), {});
+    EXPECT_EQ(content, "Goodbye!orld!");
+  }
+  {
+    file tmpfile = file(std::ios::app);
+    tmpfile << "Hello, World!" << std::flush;
+    tmpfile.seekg(0);
+    tmpfile << "Goodbye!" << std::flush;
+
+    tmpfile.seekg(0);
+    std::string content = std::string(std::istreambuf_iterator(tmpfile), {});
+    EXPECT_EQ(content, "Hello, World!Goodbye!");
+  }
+}
+
 /// Tests error handling with invalid open mode
 TEST(file, create_invalid_openmode) {
   // C++ standard forbids opening a filebuf with `trunc | app`
