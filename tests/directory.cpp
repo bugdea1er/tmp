@@ -28,8 +28,14 @@ TEST(directory, create_with_prefix) {
   EXPECT_TRUE(fs::is_directory(tmpdir));
   EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path()));
 
+#ifdef _WIN32
+  constexpr std::wstring_view actual_prefix = L"com.github.bugdea1er.tmp.";
+#else
+  constexpr std::string_view actual_prefix = "com.github.bugdea1er.tmp.";
+#endif
+
   fs::path::string_type filename = tmpdir.path().filename();
-  EXPECT_EQ(filename.substr(0, prefix.length()), fs::path(prefix));
+  EXPECT_EQ(filename.substr(0, actual_prefix.length()), actual_prefix);
 
   fs::perms permissions = fs::status(tmpdir).permissions();
 #ifdef _WIN32

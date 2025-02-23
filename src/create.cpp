@@ -8,6 +8,7 @@
 #ifdef _WIN32
 #define UNICODE
 #include <Windows.h>
+#include <array>
 #include <cwchar>
 #else
 #include <cerrno>
@@ -45,19 +46,22 @@ void validate_prefix(const fs::path& prefix) {
 /// @param[in] prefix A prefix to attach to the path pattern
 /// @returns A unique temporary path
 fs::path make_path(std::string_view prefix) {
-  constexpr static std::size_t CHARS_IN_GUID = 39;
   GUID guid;
   CoCreateGuid(&guid);
 
-  wchar_t name[CHARS_IN_GUID];
-  swprintf(name, CHARS_IN_GUID,
-           L"%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X", guid.Data1,
-           guid.Data2, guid.Data3, guid.Data4[0], guid.Data4[1], guid.Data4[2],
-           guid.Data4[3], guid.Data4[4], guid.Data4[5], guid.Data4[6],
-           guid.Data4[7]);
+  constexpr static std::size_t CHARS_IN_GUID = 39;
+  std::array name = std::array<wchar_t, CHARS_IN_GUID>();
+
+  const wchar_t* format =
+      prefix.empty() ? L"%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X"
+                     : L".%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X";
+
+  swprintf(name.data(), name.size(), format, guid.Data1, guid.Data2, guid.Data3,
+           guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3],
+           guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]);
 
   fs::path path = fs::temp_directory_path() / prefix;
-  path += name;
+  path += name.data();
 
   return path;
 }
@@ -68,7 +72,7 @@ fs::path make_path(std::string_view prefix) {
 /// @returns A path pattern for the unique temporary path
 fs::path make_pattern(std::string_view prefix) {
   fs::path path = fs::temp_directory_path() / prefix;
-  path += "XXXXXX";    // TODO: add '.', like `com.github.bugdea1er.tmp.yotR2k`?
+  path += prefix.empty() ? "XXXXXX" : ".XXXXXX";
 
   return path;
 }
