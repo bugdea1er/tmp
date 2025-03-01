@@ -202,6 +202,14 @@ file::native_handle_type file::native_handle() const noexcept {
 #endif
 }
 
+fs::path file::path() const {
+#ifdef __linux__
+  return fs::path("/proc/self/fd") / std::to_string(native_handle());
+#else
+  return fs::path("/dev/fd") / std::to_string(native_handle());
+#endif
+}
+
 void file::move(const fs::path& to) {
   // TODO: I couldn't figure out how to create a hard link to a file without
   // other hard links, so I just copy it even within the same file system

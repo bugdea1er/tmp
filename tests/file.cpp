@@ -113,6 +113,29 @@ TEST(file, ios_flags) {
   EXPECT_EQ(content, "Hello, world!");
 }
 
+TEST(file, path) {
+  file tmpfile = file();
+  tmpfile << "Hello, world!" << std::flush;
+
+  EXPECT_TRUE(fs::exists(tmpfile.path()));
+
+  {
+    tmpfile.seekp(0, std::ios::beg);    // file pointer position is shared
+
+    std::string content = std::string(std::istreambuf_iterator(tmpfile), {});
+    EXPECT_EQ(content, "Hello, world!");
+  }
+
+  std::ofstream(tmpfile.path(), std::ios::app) << "Goodbye, world!";
+
+  {
+    tmpfile.seekp(0, std::ios::beg);
+
+    std::string content = std::string(std::istreambuf_iterator(tmpfile), {});
+    EXPECT_EQ(content, "Hello, world!Goodbye, world!");
+  }
+}
+
 /// Tests creation of a temporary copy of a file
 TEST(file, copy_file) {
   std::ofstream original = std::ofstream("existing.txt", std::ios::binary);
