@@ -170,19 +170,19 @@ std::FILE* create_file(std::ios::openmode mode) {
 }
 
 std::FILE* create_file(std::ios::openmode mode, std::error_code& ec) {
+  mode |= std::ios::in | std::ios::out;
+  const wchar_t* mdstr = make_mdstring(mode);
+  if (mdstr == nullptr) {
+    ec = std::make_error_code(std::errc::invalid_argument);
+    return nullptr;
+  }
+
   fs::path::string_type path = make_path("");
 
-  mode |= std::ios::in | std::ios::out;
-
-  std::FILE* handle;
-  if (const wchar_t* mdstr = make_mdstring(mode)) {
-    handle = _wfsopen(path.c_str(), mdstr, _SH_DENYNO);
-    if (handle == nullptr) {
-      ec = std::error_code(errno, std::system_category());
-      return nullptr;
-    }
-  } else {
-    ec = std::make_error_code(std::errc::invalid_argument);
+  std::FILE* handle = _wfsopen(path.c_str(), mdstr, _SH_DENYNO);
+  DeleteFile(path.c_str());
+  if (handle == nullptr) {
+    ec = std::error_code(errno, std::system_category());
     return nullptr;
   }
 
