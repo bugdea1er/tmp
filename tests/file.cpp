@@ -113,8 +113,19 @@ TEST(file, ios_flags) {
   EXPECT_EQ(content, "Hello, world!");
 }
 
+#ifndef _WIN32
+/// Tests a file path getter
 TEST(file, path) {
   file tmpfile = file();
+
+  struct stat handle_stat;
+  fstat(tmpfile.native_handle(), &handle_stat);
+
+  struct stat path_stat;
+  stat(tmpfile.path().c_str(), &path_stat);
+
+  EXPECT_EQ(handle_stat.st_ino, path_stat.st_ino);
+
   tmpfile << "Hello, world!" << std::flush;
 
   EXPECT_TRUE(fs::exists(tmpfile.path()));
@@ -122,7 +133,8 @@ TEST(file, path) {
   {
     tmpfile.seekp(0, std::ios::beg);    // file pointer position is shared
 
-    std::string content = std::string(std::istreambuf_iterator(tmpfile), {});
+    std::ifstream stream = std::ifstream(tmpfile.path(), std::ios::binary);
+    std::string content = std::string(std::istreambuf_iterator(stream), {});
     EXPECT_EQ(content, "Hello, world!");
   }
 
@@ -135,6 +147,7 @@ TEST(file, path) {
     EXPECT_EQ(content, "Hello, world!Goodbye, world!");
   }
 }
+#endif
 
 /// Tests creation of a temporary copy of a file
 TEST(file, copy_file) {

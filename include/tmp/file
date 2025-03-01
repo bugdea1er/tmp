@@ -75,10 +75,12 @@ public:
   /// @returns The underlying implementation-defined handle
   native_handle_type native_handle() const noexcept;
 
+#ifndef _WIN32
   /// Returns the path to this file
   /// @note The path is valid only within this process and its children
   /// @returns The full path to this file
   std::filesystem::path path() const;
+#endif
 
   /// Moves the managed file to a given target, releasing
   /// ownership of the managed file; behaves like `std::filesystem::rename`

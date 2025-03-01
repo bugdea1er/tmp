@@ -202,13 +202,11 @@ file::native_handle_type file::native_handle() const noexcept {
 #endif
 }
 
+#ifndef _WIN32
 fs::path file::path() const {
-#ifdef __linux__
-  return fs::path("/proc/self/fd") / std::to_string(native_handle());
-#else
   return fs::path("/dev/fd") / std::to_string(native_handle());
-#endif
 }
+#endif
 
 void file::move(const fs::path& to) {
   // TODO: I couldn't figure out how to create a hard link to a file without
