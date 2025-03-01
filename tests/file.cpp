@@ -83,6 +83,8 @@ TEST(file, create) {
   stat(fs::temp_directory_path().c_str(), &temp_directory_stat);
 
   EXPECT_EQ(file_stat.st_dev, temp_directory_stat.st_dev);
+  EXPECT_EQ(file_stat.st_mode & S_IFMT, S_IFREG);    // Is a regular file
+  EXPECT_EQ(file_stat.st_nlink, 0);                  // Has no hardlinks
 #endif
 }
 
