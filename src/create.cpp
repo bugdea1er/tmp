@@ -204,7 +204,16 @@ int create_file() {
 int create_file(std::error_code& ec) {
   fs::path::string_type path = make_pattern("");
 
-  int handle = mkstemp(path.data());
+  int handle;
+#ifdef __linux__
+  handle = open(path.c_str(), O_RDWR | O_TMPFILE, S_IRUSR | S_IWUSR);
+  if (handle >= 0) {
+    ec.clear();
+    return handle;
+  }
+#endif
+
+  handle = mkstemp(path.data());
   if (handle == -1) {
     ec = std::error_code(errno, std::system_category());
     return -1;
