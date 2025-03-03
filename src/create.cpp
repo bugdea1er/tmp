@@ -65,6 +65,26 @@ fs::path make_path(std::string_view prefix) {
 
   return path;
 }
+
+/// Makes a mode string for opening a temporary file using `_wfsopen`
+/// @param mode The file opening mode
+/// @returns A suitable mode string
+const wchar_t* make_mdstring(std::ios::openmode mode) noexcept {
+  switch (mode & ~std::ios::in & ~std::ios::out & ~std::ios::ate) {
+  case std::ios::openmode():
+  case std::ios::trunc:
+    return L"w+xTD";
+  case std::ios::app:
+    return L"a+TD";
+  case std::ios::binary:
+  case std::ios::trunc | std::ios::binary:
+    return L"w+bxTD";
+  case std::ios::app | std::ios::binary:
+    return L"a+bTD";
+  default:
+    return nullptr;
+  }
+}
 #else
 /// Creates a temporary path pattern with the given prefix
 /// @note prefix must be valid
@@ -75,46 +95,6 @@ fs::path make_pattern(std::string_view prefix) {
   path += prefix.empty() ? "XXXXXX" : ".XXXXXX";
 
   return path;
-}
-#endif
-
-#ifdef _WIN32
-/// Makes a mode string for the `_wfdopen` function
-/// @param mode The file opening mode
-/// @returns A suitable mode string
-const wchar_t* make_mdstring(std::ios::openmode mode) noexcept {
-  switch (mode & ~std::ios::ate) {
-  case std::ios::out:
-  case std::ios::out | std::ios::trunc:
-    return L"wxTD";
-  case std::ios::out | std::ios::app:
-  case std::ios::app:
-    return L"aTD";
-  case std::ios::in:
-    return L"rTD";
-  case std::ios::in | std::ios::out:
-  case std::ios::in | std::ios::out | std::ios::trunc:
-    return L"w+xTD";
-  case std::ios::in | std::ios::out | std::ios::app:
-  case std::ios::in | std::ios::app:
-    return L"a+TD";
-  case std::ios::out | std::ios::binary:
-  case std::ios::out | std::ios::trunc | std::ios::binary:
-    return L"wbxTD";
-  case std::ios::out | std::ios::app | std::ios::binary:
-  case std::ios::app | std::ios::binary:
-    return L"abTD";
-  case std::ios::in | std::ios::binary:
-    return L"rbTD";
-  case std::ios::in | std::ios::out | std::ios::binary:
-  case std::ios::in | std::ios::out | std::ios::trunc | std::ios::binary:
-    return L"w+bxTD";
-  case std::ios::in | std::ios::out | std::ios::app | std::ios::binary:
-  case std::ios::in | std::ios::app | std::ios::binary:
-    return L"a+bTD";
-  default:
-    return nullptr;
-  }
 }
 #endif
 }    // namespace
@@ -170,7 +150,6 @@ std::FILE* create_file(std::ios::openmode mode) {
 }
 
 std::FILE* create_file(std::ios::openmode mode, std::error_code& ec) {
-  mode |= std::ios::in | std::ios::out;
   const wchar_t* mdstr = make_mdstring(mode);
   if (mdstr == nullptr) {
     ec = std::make_error_code(std::errc::invalid_argument);
