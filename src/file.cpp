@@ -202,6 +202,12 @@ file::native_handle_type file::native_handle() const noexcept {
 #endif
 }
 
+#ifndef _WIN32
+fs::path file::path() const {
+  return fs::path("/dev/fd") / std::to_string(native_handle());
+}
+#endif
+
 void file::move(const fs::path& to) {
   // TODO: I couldn't figure out how to create a hard link to a file without
   // other hard links, so I just copy it even within the same file system
