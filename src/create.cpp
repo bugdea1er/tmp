@@ -86,32 +86,32 @@ const wchar_t* make_mdstring(std::ios::openmode mode) noexcept {
   switch (mode & ~std::ios::ate) {
   case std::ios::out:
   case std::ios::out | std::ios::trunc:
-    return L"wxD";
+    return L"wxTD";
   case std::ios::out | std::ios::app:
   case std::ios::app:
-    return L"aD";
+    return L"aTD";
   case std::ios::in:
-    return L"rD";
+    return L"rTD";
   case std::ios::in | std::ios::out:
   case std::ios::in | std::ios::out | std::ios::trunc:
-    return L"w+xD";
+    return L"w+xTD";
   case std::ios::in | std::ios::out | std::ios::app:
   case std::ios::in | std::ios::app:
-    return L"a+D";
+    return L"a+TD";
   case std::ios::out | std::ios::binary:
   case std::ios::out | std::ios::trunc | std::ios::binary:
-    return L"wbxD";
+    return L"wbxTD";
   case std::ios::out | std::ios::app | std::ios::binary:
   case std::ios::app | std::ios::binary:
-    return L"abD";
+    return L"abTD";
   case std::ios::in | std::ios::binary:
-    return L"rbD";
+    return L"rbTD";
   case std::ios::in | std::ios::out | std::ios::binary:
   case std::ios::in | std::ios::out | std::ios::trunc | std::ios::binary:
-    return L"w+bxD";
+    return L"w+bxTD";
   case std::ios::in | std::ios::out | std::ios::app | std::ios::binary:
   case std::ios::in | std::ios::app | std::ios::binary:
-    return L"a+bD";
+    return L"a+bTD";
   default:
     return nullptr;
   }
