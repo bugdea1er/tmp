@@ -1,6 +1,7 @@
 #include "create.hpp"
 
 #include <filesystem>
+#include <iostream>
 #include <stdexcept>
 #include <string_view>
 #include <system_error>
@@ -23,20 +24,19 @@ namespace {
 /// @param[in] prefix The prefix to check validity for
 /// @returns `true` if the prefix is valid, `false` otherwise
 bool is_prefix_valid(const fs::path& prefix) {
-  return prefix.empty() ||
-         (++prefix.begin() == prefix.end() && prefix.is_relative() &&
-          !prefix.has_root_path() && prefix.filename() != "." &&
-          prefix.filename() != "..");
+  // We also need to check that the prefix does not contain a root path
+  // because of how path concatenation works in C++
+  return prefix.empty() || (++prefix.begin() == prefix.end() &&
+                            prefix.is_relative() && !prefix.has_root_path());
 }
 
-/// Checks that the given prefix is valid to attach to a temporary entry path
+/// Checks if the given prefix is valid to attach to a temporary directory name
 /// @param prefix The prefix to check validity for
-/// @throws std::invalid_argument if the prefix cannot be attached to a path
+/// @throws std::invalid_argument if the prefix cannot be attached to the name
 void validate_prefix(const fs::path& prefix) {
   if (!is_prefix_valid(prefix)) {
-    throw std::invalid_argument(
-        "Cannot create a temporary entry: prefix must be empty or a valid "
-        "single-segmented relative pathname");
+    throw std::invalid_argument("Cannot create a temporary directory: prefix "
+                                "must not contain a directory separator");
   }
 }
 
