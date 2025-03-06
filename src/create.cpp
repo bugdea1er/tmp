@@ -1,6 +1,7 @@
 #include "create.hpp"
 
 #include <filesystem>
+#include <iostream>
 #include <stdexcept>
 #include <string_view>
 #include <system_error>
@@ -23,8 +24,10 @@ namespace {
 /// @param[in] prefix The prefix to check validity for
 /// @returns `true` if the prefix is valid, `false` otherwise
 bool is_prefix_valid(const fs::path& prefix) {
-  return prefix.native().find(fs::path::preferred_separator) ==
-         fs::path::string_type::npos;
+  // We also need to check that the prefix does not contain a root path
+  // because of how path concatenation works in C++
+  return prefix.empty() || (++prefix.begin() == prefix.end() &&
+                            prefix.is_relative() && !prefix.has_root_path());
 }
 
 /// Checks if the given prefix is valid to attach to a temporary directory name
