@@ -129,16 +129,23 @@ void copy_file(const fs::path& from, file::native_handle_type to,
   }
 }
 
-/// Copies file contents from the given path to the given file descriptor
-/// @param[in]  from The source file descriptor
-/// @param[in]  to   The path to the target file
-/// @param[out] ec   Parameter for error reporting
-void copy_file(file::native_handle_type from, const fs::path& to,
-               std::error_code& ec) noexcept {
+/// Moves the file known by the given file descriptor to the given path
+/// @param[in] from The file target descriptor
+/// @param[in] to   The path to the target file
+/// @throws std::filesystem::filesystem_error if cannot move the file
+void move(file::native_handle_type from, const fs::path& to) {
+  // FIXME: I couldn't figure out how to create a hard link to a file without
+  //        other hard links, so I just copy it even within the same file system
+
+  std::error_code ec;
   file::native_handle_type target = open(to, /*readonly=*/false, ec);
   if (!ec) {
     copy_file(from, target, ec);
     close(target);
+  }
+
+  if (ec) {
+    throw fs::filesystem_error("Cannot move a temporary file", to, ec);
   }
 }
 }    // namespace
@@ -203,17 +210,8 @@ file::native_handle_type file::native_handle() const noexcept {
 }
 
 void file::move(const fs::path& to) {
-  // TODO: I couldn't figure out how to create a hard link to a file without
-  // other hard links, so I just copy it even within the same file system
-
   seekg(0, std::ios::beg);
-
-  std::error_code ec;
-  copy_file(native_handle(), to, ec);
-
-  if (ec) {
-    throw fs::filesystem_error("Cannot move a temporary file", to, ec);
-  }
+  tmp::move(native_handle(), to);
 }
 
 file::~file() noexcept = default;
