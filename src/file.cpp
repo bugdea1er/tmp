@@ -117,15 +117,19 @@ void copy_file(file::native_handle_type from, file::native_handle_type to,
 }
 
 /// Copies file contents from the given path to the given file descriptor
-/// @param[in]  from The path to the source file
-/// @param[in]  to   The target file descriptor
-/// @param[out] ec   Parameter for error reporting
-void copy_file(const fs::path& from, file::native_handle_type to,
-               std::error_code& ec) noexcept {
+/// @param[in] from The path to the source file
+/// @param[in] to   The target file descriptor
+/// @throws std::filesystem::filesystem_error if cannot copy the file
+void copy(const fs::path& from, file::native_handle_type to) {
+  std::error_code ec;
   file::native_handle_type source = open(from, /*readonly=*/true, ec);
   if (!ec) {
     copy_file(source, to, ec);
     close(source);
+  }
+
+  if (ec) {
+    throw fs::filesystem_error("Cannot create a temporary copy", from, ec);
   }
 }
 
@@ -183,13 +187,7 @@ file::file(std::ios::openmode mode)
 
 file file::copy(const fs::path& path, std::ios::openmode mode) {
   file tmpfile = file(mode);
-
-  std::error_code ec;
-  copy_file(path, tmpfile.native_handle(), ec);
-
-  if (ec) {
-    throw fs::filesystem_error("Cannot create a temporary copy", path, ec);
-  }
+  tmp::copy(path, tmpfile.native_handle());
 
   return tmpfile;
 }
