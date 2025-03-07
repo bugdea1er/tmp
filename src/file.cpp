@@ -158,12 +158,14 @@ file::file(std::ios::openmode mode)
     : std::iostream(std::addressof(sb))
 #if defined(_MSC_VER)
       ,
-      underlying(nullptr, &std::fclose)
+      underlying(create_file(mode), &std::fclose),
+      sb(underlying.get())
 #elif defined(_LIBCPP_VERSION)
       ,
       handle(create_file())
 #endif
 {
+#ifndef _MSC_VER
   mode |= std::ios::in | std::ios::out;
 
 #if defined(__GLIBCXX__)
@@ -171,9 +173,7 @@ file::file(std::ios::openmode mode)
   sb = __gnu_cxx::stdio_filebuf<char>(handle, mode);
 #elif defined(_LIBCPP_VERSION)
   sb.__open(handle, mode);
-#else    // MSVC
-  underlying.reset(create_file(mode));
-  sb = std::filebuf(underlying.get());
+#endif
 #endif
 
   if (!sb.is_open()) {
