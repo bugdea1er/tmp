@@ -24,7 +24,6 @@
 
 namespace tmp {
 namespace {
-
 /// A block size for file reading
 /// @note should always be less than INT_MAX
 constexpr std::size_t block_size = 4096;
@@ -115,6 +114,7 @@ void copy_file(file::native_handle_type from, file::native_handle_type to,
 #endif
   }
 }
+}    // namespace
 
 /// Copies file contents from the given path to the given file descriptor
 /// @param[in] from The path to the source file
@@ -152,85 +152,4 @@ void move(file::native_handle_type from, const fs::path& to) {
     throw fs::filesystem_error("Cannot move a temporary file", to, ec);
   }
 }
-}    // namespace
-
-file::file(std::ios::openmode mode)
-    : std::iostream(std::addressof(sb))
-#if defined(_MSC_VER)
-      ,
-      underlying(nullptr, &std::fclose)
-#elif defined(_LIBCPP_VERSION)
-      ,
-      handle(create_file())
-#endif
-{
-  mode |= std::ios::in | std::ios::out;
-
-#if defined(__GLIBCXX__)
-  int handle = create_file();
-  sb = __gnu_cxx::stdio_filebuf<char>(handle, mode);
-#elif defined(_LIBCPP_VERSION)
-  sb.__open(handle, mode);
-#else    // MSVC
-  underlying.reset(create_file(mode));
-  sb = std::filebuf(underlying.get());
-#endif
-
-  if (!sb.is_open()) {
-#ifndef _WIN32
-    close(handle);
-#endif
-    std::error_code ec = std::make_error_code(std::io_errc::stream);
-    throw fs::filesystem_error("Cannot open a temporary file", ec);
-  }
-}
-
-file file::copy(const fs::path& path, std::ios::openmode mode) {
-  file tmpfile = file(mode);
-  tmp::copy(path, tmpfile.native_handle());
-
-  return tmpfile;
-}
-
-file::native_handle_type file::native_handle() const noexcept {
-#if defined(__GLIBCXX__)
-  return sb.fd();
-#elif defined(_LIBCPP_VERSION)
-  return handle;
-#else    // MSVC
-  intptr_t osfhandle = _get_osfhandle(_fileno(underlying.get()));
-  if (osfhandle == -1) {
-    return nullptr;
-  }
-
-  return reinterpret_cast<void*>(osfhandle);
-#endif
-}
-
-void file::move(const fs::path& to) {
-  seekg(0, std::ios::beg);
-  tmp::move(native_handle(), to);
-}
-
-file::~file() noexcept = default;
-
-// NOLINTBEGIN(*-use-after-move)
-file::file(file&& other) noexcept
-    : std::iostream(std::move(other)),
-#if defined(_MSC_VER)
-      underlying(std::move(other.underlying)),
-#elif defined(_LIBCPP_VERSION)
-      handle(other.handle),
-#endif
-      sb(std::move(other.sb)) {
-  set_rdbuf(std::addressof(sb));
-}
-// NOLINTEND(*-use-after-move)
-
-file& file::operator=(file&& other) = default;
 }    // namespace tmp
-
-std::size_t
-std::hash<tmp::file>::operator()(const tmp::file& file) const noexcept {
-  return std::hash<tmp::file::native_handle_type>()(file.native_handle());
-}
