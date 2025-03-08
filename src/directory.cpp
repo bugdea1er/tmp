@@ -125,6 +125,7 @@ void directory::move(const fs::path& to) {
 }
 
 directory::~directory() noexcept {
+  (void)reserved;    // Old compilers do not want to accept `[[maybe_unused]]`
   remove(*this);
 }
 
