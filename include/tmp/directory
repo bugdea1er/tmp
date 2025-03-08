@@ -2,6 +2,7 @@
 #define TMP_DIRECTORY_H
 
 #include <tmp/export>
+#include <tmp/file>
 
 #include <filesystem>
 #include <string_view>
@@ -82,6 +83,9 @@ public:
 private:
   /// The managed directory path
   std::filesystem::path pathobject;
+
+  /// Memory reserved for future use
+  file::native_handle_type reserved;
 };
 }    // namespace tmp
 
