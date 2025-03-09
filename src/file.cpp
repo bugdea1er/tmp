@@ -199,12 +199,7 @@ file::native_handle_type file::native_handle() const noexcept {
 #elif defined(_LIBCPP_VERSION)
   return handle;
 #else    // MSVC
-  intptr_t osfhandle = _get_osfhandle(_fileno(underlying.get()));
-  if (osfhandle == -1) {
-    return nullptr;
-  }
-
-  return reinterpret_cast<void*>(osfhandle);
+  return reinterpret_cast<void*>(_get_osfhandle(_fileno(underlying.get())));
 #endif
 }
 
