@@ -44,7 +44,8 @@ namespace tmp {
 ///     // `tmp::file` object goes out of scope and is destroyed
 ///   }
 /// @endcode
-class TMP_EXPORT file : public std::iostream {
+template<class charT, class traits = std::char_traits<charT>>
+class basic_file : public std::basic_iostream<charT, traits> {
 public:
   /// Implementation-defined handle type to the file
 #if defined(_WIN32)
@@ -59,7 +60,38 @@ public:
   /// @note std::ios::in | std::ios::out are always added to the `mode`
   /// @param mode Specifies stream open mode
   /// @throws std::filesystem::filesystem_error if cannot create a file
-  explicit file(std::ios::openmode mode = std::ios::in | std::ios::out);
+  explicit basic_file(std::ios::openmode mode = std::ios::in | std::ios::out)
+      : std::basic_iostream<charT, traits>(std::addressof(sb))
+  #if defined(_MSC_VER)
+        ,
+        underlying(nullptr, &std::fclose)
+  #endif
+  {
+    mode |= std::ios::in | std::ios::out;
+
+#if defined(__GLIBCXX__)
+    extern int create_file(void);
+    int handle = create_file();
+    sb = __gnu_cxx::stdio_filebuf<charT, traits>(handle, mode);
+#elif defined(_LIBCPP_VERSION)
+    extern int create_file(void);
+    handle = create_file();
+    sb.__open(handle, mode);
+#else    // MSVC
+    extern std::FILE* create_file(std::ios::openmode);
+    underlying.reset(create_file(mode));
+    sb = std::basic_filebuf<charT, traits>(underlying.get());
+#endif
+
+    if (!sb.is_open()) {
+#ifndef _WIN32
+      extern void close(int) noexcept;
+      close(handle);
+#endif
+      std::error_code ec = std::make_error_code(std::io_errc::stream);
+      throw std::filesystem::filesystem_error("Cannot open a temporary file", ec);
+    }
+  }
 
   /// Creates a unique temporary copy from the given path
   /// @note std::ios::in | std::ios::out are always added to the `mode`
@@ -68,27 +100,61 @@ public:
   /// @param mode Specifies stream open mode
   /// @returns The new temporary file
   /// @throws std::filesystem::filesystem_error if given path is not a file
-  static file copy(const std::filesystem::path& path,
-                   std::ios::openmode mode = std::ios::in | std::ios::out);
+  static basic_file copy(const std::filesystem::path& path, std::ios::openmode mode = std::ios::in | std::ios::out) {
+    extern void copy(const std::filesystem::path&, native_handle_type);
+
+    basic_file tmpfile = basic_file(mode);
+    copy(path, tmpfile.native_handle());
+
+    return tmpfile;
+  }
 
   /// Returns an implementation-defined handle to this file
   /// @returns The underlying implementation-defined handle
-  native_handle_type native_handle() const noexcept;
+  native_handle_type native_handle() const noexcept {
+#if defined(__GLIBCXX__)
+    return sb.fd();
+#elif defined(_LIBCPP_VERSION)
+    return handle;
+#else    // MSVC
+    intptr_t osfhandle = _get_osfhandle(_fileno(underlying.get()));
+    if (osfhandle == -1) {
+      return nullptr;
+    }
+
+    return reinterpret_cast<void*>(osfhandle);
+#endif
+  }
 
   /// Moves the managed file to a given target, releasing
   /// ownership of the managed file; behaves like `std::filesystem::rename`
   /// even when moving between filesystems
   /// @param to A path to the target file
   /// @throws std::filesystem::filesystem_error if cannot move the owned file
-  void move(const std::filesystem::path& to);
+  void move(const std::filesystem::path& to) {
+    extern void move(native_handle_type, const std::filesystem::path&);
+
+    basic_file::seekg(0, std::ios::beg);
+    move(native_handle(), to);
+  }
 
   /// Deletes and closes the managed file
-  ~file() noexcept override;
+  ~basic_file() noexcept override = default;
 
-  file(file&&) noexcept;                    ///< MoveConstructible
-  file& operator=(file&&);                  ///< MoveAssignable
-  file(const file&) = delete;               ///< not CopyConstructible
-  file& operator=(const file&) = delete;    ///< not CopyAssignable
+  basic_file(basic_file&& other) noexcept   ///< MoveConstructible
+    : std::basic_iostream<charT, traits>(std::move(other)),
+#if defined(_MSC_VER)
+      underlying(std::move(other.underlying)),
+#elif defined(_LIBCPP_VERSION)
+      handle(other.handle),
+#endif
+      sb(std::move(other.sb)) {
+    std::basic_iostream<charT, traits>::set_rdbuf(std::addressof(sb));
+  }
+
+  basic_file& operator=(basic_file&&) = default;        ///< MoveAssignable
+  basic_file(const basic_file&) = delete;               ///< not CopyConstructible
+  basic_file& operator=(const basic_file&) = delete;    ///< not CopyAssignable
 
 private:
 #if defined(__GLIBCXX__)
@@ -96,34 +162,39 @@ private:
   // which has everything we need
 
   /// The underlying raw file device object
-  mutable __gnu_cxx::stdio_filebuf<char> sb;
+  mutable __gnu_cxx::stdio_filebuf<charT, traits> sb;
 #elif defined(_LIBCPP_VERSION)
-  // In LLVM libc++ we use the public `std::filebuf::__open` method
+  // In LLVM libc++ we use the public `std::basic_filebuf::__open` method
   // and save a native handle to return in `file::native_handle()`
 
   /// The underlying native handle to the file
   int handle;
 
   /// The underlying raw file device object
-  std::filebuf sb;
+  std::basic_filebuf<charT, traits> sb;
 #elif defined(_MSC_VER)
-  // In Microsoft STL we use the `std::filebuf::filebuf(std::FILE*)`
+  // In Microsoft STL we use the `std::basic_filebuf::basic_filebuf(std::FILE*)`
   // extension and save a pointer to that file to close it ourselves
 
   /// The underlying C file stream
   std::unique_ptr<std::FILE, decltype(&std::fclose)> underlying;
 
   /// The underlying raw file device object
-  std::filebuf sb;
+  std::basic_filebuf<charT, traits> sb;
 #else
 #error "Target platform not supported"
 #endif
 };
+
+using file = basic_file<char>;
+using wfile = basic_file<wchar_t>;
 }    // namespace tmp
 
-/// The template specialization of `std::hash` for `tmp::file`
-template<> struct TMP_EXPORT std::hash<tmp::file> {
-  std::size_t operator()(const tmp::file& file) const noexcept;
+/// The template specialization of `std::hash` for `tmp::basic_file`
+template<class charT, class traits> struct std::hash<tmp::basic_file<charT, traits>> {
+  std::size_t operator()(const tmp::basic_file<charT, traits>& file) const noexcept {
+    return std::hash<typename tmp::basic_file<charT, traits>::native_handle_type>()(file.native_handle());
+  }
 };
 
 #endif    // TMP_FILE_H
