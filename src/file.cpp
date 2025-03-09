@@ -1,6 +1,7 @@
-#include <tmp/file>
-
 #include "create.hpp"
+#include "export.hpp"
+
+#include <tmp/file>
 
 #include <array>
 #include <cstddef>
@@ -229,8 +230,3 @@ file::file(file&& other) noexcept
 
 file& file::operator=(file&& other) = default;
 }    // namespace tmp
-
-std::size_t
-std::hash<tmp::file>::operator()(const tmp::file& file) const noexcept {
-  return std::hash<tmp::file::native_handle_type>()(file.native_handle());
-}
