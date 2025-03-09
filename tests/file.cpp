@@ -100,7 +100,7 @@ TEST(file, create_multiple) {
 /// Tests error handling with invalid open mode
 TEST(file, create_invalid_openmode) {
   // C++ standard forbids opening a filebuf with `trunc | app`
-  EXPECT_THROW(file(std::ios::trunc | std::ios::app), fs::filesystem_error);
+  EXPECT_THROW(file(std::ios::trunc | std::ios::app), std::invalid_argument);
 }
 
 /// Tests that file adds std::ios::in and std::ios::out flags

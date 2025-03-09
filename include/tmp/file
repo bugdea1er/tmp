@@ -57,6 +57,7 @@ public:
   /// @note std::ios::in | std::ios::out are always added to the `mode`
   /// @param mode Specifies stream open mode
   /// @throws std::filesystem::filesystem_error if cannot create a file
+  /// @throws std::invalid_argument if the given open mode is invalid
   explicit file(std::ios::openmode mode = std::ios::in | std::ios::out);
 
   /// Creates a unique temporary copy from the given path
@@ -65,7 +66,8 @@ public:
   /// @param path A path to make a temporary copy from
   /// @param mode Specifies stream open mode
   /// @returns The new temporary file
-  /// @throws std::filesystem::filesystem_error if given path is not a file
+  /// @throws std::filesystem::filesystem_error if cannot create a copy
+  /// @throws std::invalid_argument if the given open mode is invalid
   static file copy(const std::filesystem::path& path,
                    std::ios::openmode mode = std::ios::in | std::ios::out);
 

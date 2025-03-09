@@ -181,8 +181,8 @@ file::file(std::ios::openmode mode)
 #ifndef _WIN32
     close(handle);
 #endif
-    std::error_code ec = std::make_error_code(std::io_errc::stream);
-    throw fs::filesystem_error("Cannot open a temporary file", ec);
+    throw std::invalid_argument(
+        "Cannot create a temporary file: invalid openmode");
   }
 }
 
