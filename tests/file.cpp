@@ -103,6 +103,30 @@ TEST(file, create_invalid_openmode) {
   EXPECT_THROW(file(std::ios::trunc | std::ios::app), std::invalid_argument);
 }
 
+/// Tests file default open mode
+TEST(file, openmode_default) {
+  file tmpfile = file();
+  tmpfile << "Hello, World!" << std::flush;
+  tmpfile.seekg(0);
+  tmpfile << "Goodbye!" << std::flush;
+
+  tmpfile.seekg(0);
+  std::string content = std::string(std::istreambuf_iterator(tmpfile), {});
+  EXPECT_EQ(content, "Goodbye!orld!");
+}
+
+/// Tests file `app` open mode
+TEST(file, openmode_append) {
+  file tmpfile = file(std::ios::app);
+  tmpfile << "Hello, World!" << std::flush;
+  tmpfile.seekg(0);
+  tmpfile << "Goodbye!" << std::flush;
+
+  tmpfile.seekg(0);
+  std::string content = std::string(std::istreambuf_iterator(tmpfile), {});
+  EXPECT_EQ(content, "Hello, World!Goodbye!");
+}
+
 /// Tests that file adds std::ios::in and std::ios::out flags
 TEST(file, ios_flags) {
   file tmpfile = file(std::ios::binary);
