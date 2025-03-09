@@ -18,8 +18,4 @@ class TMP_EXPORT directory;
 class TMP_EXPORT file;
 }    // namespace tmp
 
-namespace std {
-template<> struct TMP_EXPORT hash<tmp::file>;
-}
-
 #endif    // TMP_EXPORT_H
