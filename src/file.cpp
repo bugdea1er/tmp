@@ -1,6 +1,7 @@
-#include <tmp/file>
-
 #include "create.hpp"
+#include "export.hpp"
+
+#include <tmp/file>
 
 #include <array>
 #include <cstddef>
@@ -111,7 +112,7 @@ void copy_file(file::native_handle_type from, file::native_handle_type to,
 /// @param[in] from The path to the source file
 /// @param[in] to   The target file descriptor
 /// @throws std::filesystem::filesystem_error if cannot copy the file
-TMP_EXPORT void copy(const fs::path& from, file::native_handle_type to) {
+TMP_EXPORT void copy_file(const fs::path& from, file::native_handle_type to) {
   std::error_code ec;
   file::native_handle_type source = open(from, /*readonly=*/true, ec);
   if (!ec) {
@@ -128,7 +129,7 @@ TMP_EXPORT void copy(const fs::path& from, file::native_handle_type to) {
 /// @param[in] from The file target descriptor
 /// @param[in] to   The path to the target file
 /// @throws std::filesystem::filesystem_error if cannot move the file
-TMP_EXPORT void move(file::native_handle_type from, const fs::path& to) {
+TMP_EXPORT void move_file(file::native_handle_type from, const fs::path& to) {
   // FIXME: I couldn't figure out how to create a hard link to a file without
   //        other hard links, so I just copy it even within the same file system
 
@@ -146,7 +147,7 @@ TMP_EXPORT void move(file::native_handle_type from, const fs::path& to) {
 
 /// Closes the given handle, ignoring any errors
 /// @param[in] handle The handle to close
-TMP_EXPORT void close(file::native_handle_type handle) noexcept {
+TMP_EXPORT void close_file(file::native_handle_type handle) noexcept {
 #ifdef _WIN32
   CloseHandle(handle);
 #else

@@ -11,15 +11,9 @@ filesystem_proj = subproject('filesystem')
 filesystem_dep = filesystem_proj.get_variable('filesystem_dep')
 
 default_library = get_option('default_library')
-if default_library != 'static'
-  dll_usage_args = ['-DTMP_SHARED']
-  if host_machine.system() == 'windows'
-    dll_build_args = ['-DTMP_BUILDING_DLL']
-  else
-    dll_build_args = []
-  endif
+if default_library != 'static' and host_machine.system() == 'windows'
+  dll_build_args = ['-DTMP_BUILDING_DLL']
 else
-  dll_usage_args = []
   dll_build_args = []
 endif
 
@@ -41,12 +35,10 @@ tmp_dep = declare_dependency(
   include_directories: include_directory,
   dependencies: [filesystem_dep],
   version: meson.project_version(),
-  compile_args: dll_usage_args,
 )
 
 install_headers(
   'include/tmp/directory',
-  'include/tmp/export',
   'include/tmp/file',
   subdir: 'tmp',
 )
@@ -58,7 +50,6 @@ if not meson.is_subproject()
   pkg = import('pkgconfig')
   pkg.generate(
     tmp,
-    extra_cflags: dll_usage_args,
     libraries: [filesystem_dep],
     version: meson.project_version(),
     filebase: 'lib' + meson.project_name(),

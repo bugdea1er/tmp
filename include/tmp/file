@@ -1,8 +1,6 @@
 #ifndef TMP_FILE_H
 #define TMP_FILE_H
 
-#include <tmp/export>
-
 #include <filesystem>
 #include <fstream>
 #include <ios>
@@ -85,8 +83,8 @@ public:
 
     if (!sb.is_open()) {
 #ifndef _WIN32
-      extern void close(int) noexcept;
-      close(handle);
+      extern void close_file(int) noexcept;
+      close_file(handle);
 #endif
       std::error_code ec = std::make_error_code(std::io_errc::stream);
       throw std::filesystem::filesystem_error("Cannot open a temporary file", ec);
@@ -101,10 +99,10 @@ public:
   /// @returns The new temporary file
   /// @throws std::filesystem::filesystem_error if given path is not a file
   static basic_file copy(const std::filesystem::path& path, std::ios::openmode mode = std::ios::in | std::ios::out) {
-    extern void copy(const std::filesystem::path&, native_handle_type);
+    extern void copy_file(const std::filesystem::path&, native_handle_type);
 
     basic_file tmpfile = basic_file(mode);
-    copy(path, tmpfile.native_handle());
+    copy_file(path, tmpfile.native_handle());
 
     return tmpfile;
   }
@@ -132,10 +130,10 @@ public:
   /// @param to A path to the target file
   /// @throws std::filesystem::filesystem_error if cannot move the owned file
   void move(const std::filesystem::path& to) {
-    extern void move(native_handle_type, const std::filesystem::path&);
+    extern void move_file(native_handle_type, const std::filesystem::path&);
 
     basic_file::seekg(0, std::ios::beg);
-    move(native_handle(), to);
+    move_file(native_handle(), to);
   }
 
   /// Deletes and closes the managed file

@@ -5,9 +5,9 @@ AllowShortFunctionsOnASingleLine: Empty
 
 IncludeBlocks: Regroup
 IncludeCategories:
-  - Regex: '^(<tmp)'
-    Priority: 1
   - Regex: '^(")'
+    Priority: 1
+  - Regex: '^(<tmp)'
     Priority: 2
   - Regex: '^(<gtest)'
     Priority: 3

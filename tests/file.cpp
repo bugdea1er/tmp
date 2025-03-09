@@ -65,7 +65,7 @@ constexpr std::basic_string<charT> convert_string(const char* string) {
 template<typename charT> class file : public testing::Test {};
 
 using char_types = testing::Types<char, wchar_t>;
-TYPED_TEST_SUITE(file, char_types);
+TYPED_TEST_SUITE(file, char_types, testing::internal::DefaultNameGenerator);
 
 /// Tests file type traits and member types
 TYPED_TEST(file, type_traits) {
