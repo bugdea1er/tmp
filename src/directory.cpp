@@ -1,6 +1,7 @@
-#include <tmp/directory>
-
 #include "create.hpp"
+#include "export.hpp"
+
+#include <tmp/directory>
 
 #include <cstddef>
 #include <filesystem>
@@ -140,9 +141,3 @@ directory& directory::operator=(directory&& other) noexcept {
   return *this;
 }
 }    // namespace tmp
-
-std::size_t std::hash<tmp::directory>::operator()(
-    const tmp::directory& directory) const noexcept {
-  // `std::hash<std::filesystem::path>` was not included in the C++17 standard
-  return filesystem::hash_value(directory);
-}
