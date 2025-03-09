@@ -1,6 +1,8 @@
 #ifndef TMP_CREATE_H
 #define TMP_CREATE_H
 
+#include "export.hpp"
+
 #include <filesystem>
 #include <string_view>
 #include <system_error>
@@ -33,7 +35,7 @@ fs::path create_directory(std::string_view prefix, std::error_code& ec);
 /// @param[in] mode Specifies stream open mode
 /// @returns A handle to the created temporary file
 /// @throws fs::filesystem_error if cannot create a temporary file
-std::FILE* create_file(std::ios::openmode mode);
+TMP_EXPORT std::FILE* create_file(std::ios::openmode mode);
 
 /// Creates a temporary file in the system's temporary directory,
 /// and opens it for reading and writing
@@ -46,7 +48,7 @@ std::FILE* create_file(std::ios::openmode mode, std::error_code& ec);
 /// and opens it for reading and writing
 /// @returns A handle to the created temporary file
 /// @throws fs::filesystem_error if cannot create a temporary file
-int create_file();
+TMP_EXPORT int create_file();
 
 /// Creates a temporary file in the system's temporary directory,
 /// and opens it for reading and writing

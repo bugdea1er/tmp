@@ -15,7 +15,6 @@
 
 namespace tmp {
 class TMP_EXPORT directory;
-class TMP_EXPORT file;
 }    // namespace tmp
 
 #endif    // TMP_EXPORT_H

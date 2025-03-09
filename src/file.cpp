@@ -65,16 +65,6 @@ file::native_handle_type open(const fs::path& path, bool readonly,
   return handle;
 }
 
-/// Closes the given handle, ignoring any errors
-/// @param[in] handle The handle to close
-void close(file::native_handle_type handle) noexcept {
-#ifdef _WIN32
-  CloseHandle(handle);
-#else
-  ::close(handle);
-#endif
-}
-
 /// Copies file contents from one file descriptor to another
 /// @param[in]  from The source file descriptor
 /// @param[in]  to   The target file descriptor
@@ -116,12 +106,13 @@ void copy_file(file::native_handle_type from, file::native_handle_type to,
 #endif
   }
 }
+}    // namespace
 
 /// Copies file contents from the given path to the given file descriptor
 /// @param[in] from The path to the source file
 /// @param[in] to   The target file descriptor
 /// @throws std::filesystem::filesystem_error if cannot copy the file
-void copy(const fs::path& from, file::native_handle_type to) {
+TMP_EXPORT void copy_file(const fs::path& from, file::native_handle_type to) {
   std::error_code ec;
   file::native_handle_type source = open(from, /*readonly=*/true, ec);
   if (!ec) {
@@ -138,7 +129,7 @@ void copy(const fs::path& from, file::native_handle_type to) {
 /// @param[in] from The file target descriptor
 /// @param[in] to   The path to the target file
 /// @throws std::filesystem::filesystem_error if cannot move the file
-void move(file::native_handle_type from, const fs::path& to) {
+TMP_EXPORT void move_file(file::native_handle_type from, const fs::path& to) {
   // FIXME: I couldn't figure out how to create a hard link to a file without
   //        other hard links, so I just copy it even within the same file system
 
@@ -153,80 +144,14 @@ void move(file::native_handle_type from, const fs::path& to) {
     throw fs::filesystem_error("Cannot move a temporary file", to, ec);
   }
 }
-}    // namespace
 
-file::file(std::ios::openmode mode)
-    : std::iostream(std::addressof(sb))
-#if defined(_MSC_VER)
-      ,
-      underlying(create_file(mode), &std::fclose),
-      sb(underlying.get())
-#elif defined(_LIBCPP_VERSION)
-      ,
-      handle(create_file())
-#endif
-{
-#ifndef _MSC_VER
-  mode |= std::ios::in | std::ios::out;
-
-#if defined(__GLIBCXX__)
-  int handle = create_file();
-  sb = __gnu_cxx::stdio_filebuf<char>(handle, mode);
-#elif defined(_LIBCPP_VERSION)
-  sb.__open(handle, mode);
-#endif
-#endif
-
-  if (!sb.is_open()) {
-#ifndef _WIN32
-    close(handle);
-#endif
-    std::error_code ec = std::make_error_code(std::io_errc::stream);
-    throw fs::filesystem_error("Cannot open a temporary file", ec);
-  }
-}
-
-file file::copy(const fs::path& path, std::ios::openmode mode) {
-  file tmpfile = file(mode);
-  tmp::copy(path, tmpfile.native_handle());
-
-  return tmpfile;
-}
-
-file::native_handle_type file::native_handle() const noexcept {
-#if defined(__GLIBCXX__)
-  return sb.fd();
-#elif defined(_LIBCPP_VERSION)
-  return handle;
-#else    // MSVC
-  intptr_t osfhandle = _get_osfhandle(_fileno(underlying.get()));
-  if (osfhandle == -1) {
-    return nullptr;
-  }
-
-  return reinterpret_cast<void*>(osfhandle);
+/// Closes the given handle, ignoring any errors
+/// @param[in] handle The handle to close
+TMP_EXPORT void close_file(file::native_handle_type handle) noexcept {
+#ifdef _WIN32
+  CloseHandle(handle);
+#else
+  ::close(handle);
 #endif
 }
-
-void file::move(const fs::path& to) {
-  seekg(0, std::ios::beg);
-  tmp::move(native_handle(), to);
-}
-
-file::~file() noexcept = default;
-
-// NOLINTBEGIN(*-use-after-move)
-file::file(file&& other) noexcept
-    : std::iostream(std::move(other)),
-#if defined(_MSC_VER)
-      underlying(std::move(other.underlying)),
-#elif defined(_LIBCPP_VERSION)
-      handle(other.handle),
-#endif
-      sb(std::move(other.sb)) {
-  set_rdbuf(std::addressof(sb));
-}
-// NOLINTEND(*-use-after-move)
-
-file& file::operator=(file&& other) = default;
 }    // namespace tmp
