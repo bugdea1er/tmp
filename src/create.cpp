@@ -143,6 +143,11 @@ std::FILE* create_file(std::ios::openmode mode) {
   std::FILE* handle = create_file(mode, ec);
 
   if (ec) {
+    if (ec == std::errc::invalid_argument) {
+      throw std::invalid_argument(
+          "Cannot create a temporary file: invalid openmode");
+    }
+
     throw fs::filesystem_error("Cannot create a temporary file", ec);
   }
 
