@@ -30,14 +30,14 @@ fs::path create_directory(std::string_view prefix, std::error_code& ec);
 #if defined(_WIN32)
 /// Creates a temporary file in the system's temporary directory,
 /// and opens it for reading and writing
-/// @param[in] mode Specifies stream open mode
+/// @param[in] mode The file opening mode
 /// @returns A handle to the created temporary file
 /// @throws fs::filesystem_error if cannot create a temporary file
 std::FILE* create_file(std::ios::openmode mode);
 
 /// Creates a temporary file in the system's temporary directory,
 /// and opens it for reading and writing
-/// @param[in]  mode Specifies stream open mode
+/// @param[in]  mode The file opening mode
 /// @param[out] ec   Parameter for error reporting
 /// @returns A handle to the created temporary file
 std::FILE* create_file(std::ios::openmode mode, std::error_code& ec);

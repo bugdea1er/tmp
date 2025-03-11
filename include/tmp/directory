@@ -12,7 +12,7 @@ namespace tmp {
 /// directory and deletes it recursively when this handle goes out of scope
 ///
 /// When a `tmp::directory` object is created, it creates a unique temporary
-/// directory using the system default location for temporary files
+/// directory in the current user's temporary directory
 ///
 /// The managed directory is deleted of when either of the following happens:
 /// - the managing `tmp::directory` object is destroyed
@@ -36,7 +36,7 @@ namespace tmp {
 /// @endcode
 class directory {
 public:
-  /// Creates a unique temporary directory
+  /// Creates a unique directory in the current user's temporary directory
   /// @param prefix A prefix to add to the temporary directory name
   /// @throws std::filesystem::filesystem_error if cannot create a directory
   /// @throws std::invalid_argument if the prefix contains a directory separator

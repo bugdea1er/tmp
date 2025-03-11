@@ -16,8 +16,8 @@ namespace tmp {
 /// deletes it when this handle goes out of scope
 ///
 /// When a `tmp::file` object is created, it creates a unique temporary file
-/// using the system default location for temporary files and opens it
-/// with the given `openmode`
+/// in the current user's temporary directory and opens it with
+/// for reading and writing
 ///
 /// The managed file is deleted of when either of the following happens:
 /// - the managing `tmp::file` object is destroyed
@@ -53,18 +53,18 @@ public:
 #error "Target platform not supported"
 #endif
 
-  /// Creates a unique temporary file and opens it for reading and writing
-  /// @note std::ios::in | std::ios::out are always added to the `mode`
-  /// @param mode Specifies stream open mode
+  /// Creates a unique file in the current user's temporary directory
+  /// and opens it with `mode | std::ios::in | std::ios::out`
+  /// @param mode The file opening mode
   /// @throws std::filesystem::filesystem_error if cannot create a file
   /// @throws std::invalid_argument if the given open mode is invalid
   explicit file(std::ios::openmode mode = std::ios::in | std::ios::out);
 
   /// Creates a unique temporary copy from the given path
-  /// @note std::ios::in | std::ios::out are always added to the `mode`
+  /// and opens it with `mode | std::ios::in | std::ios::out`
   /// @note after creating a copy, its I/O position indicator points to the end
   /// @param path A path to make a temporary copy from
-  /// @param mode Specifies stream open mode
+  /// @param mode The file opening mode
   /// @returns The new temporary file
   /// @throws std::filesystem::filesystem_error if cannot create a copy
   /// @throws std::invalid_argument if the given open mode is invalid
@@ -82,7 +82,7 @@ public:
   /// @throws std::filesystem::filesystem_error if cannot move the owned file
   void move(const std::filesystem::path& to);
 
-  /// Deletes and closes the managed file
+  /// Closes and deletes the managed file
   ~file() noexcept override;
 
   file(file&&) noexcept;                    ///< MoveConstructible
