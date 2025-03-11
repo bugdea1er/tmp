@@ -42,7 +42,7 @@ public:
   /// @throws std::invalid_argument if the prefix contains a directory separator
   explicit directory(std::string_view prefix = "");
 
-  /// Creates a unique temporary copy recursively from the given path
+  /// Creates a unique temporary copy recursively from the given directory path
   /// @param path   A path to make a temporary copy from
   /// @param prefix A prefix to add to the temporary directory name
   /// @returns The new temporary directory
@@ -51,12 +51,12 @@ public:
   static directory copy(const std::filesystem::path& path,
                         std::string_view prefix = "");
 
-  /// Returns the managed path
-  /// @returns The full path this entry manages
+  /// Returns the path of this directory
+  /// @returns The full path of this directory
   operator const std::filesystem::path&() const noexcept;
 
-  /// Returns the managed path
-  /// @returns The full path this entry manages
+  /// Returns the path of this directory
+  /// @returns The full path of this directory
   const std::filesystem::path& path() const noexcept;
 
   /// Concatenates this directory path with a given source
@@ -64,23 +64,23 @@ public:
   /// @returns The result of path concatenation
   std::filesystem::path operator/(std::string_view source) const;
 
-  /// Moves the managed directory recursively to a given target, releasing
-  /// ownership of the managed directory; behaves like `std::filesystem::rename`
+  /// Moves this directory recursively to the given path, releasing
+  /// ownership of the directory, as if by `std::filesystem::rename`
   /// even when moving between filesystems
-  /// @param to A path to the target directory
-  /// @throws std::filesystem::filesystem_error if cannot move the owned path
+  /// @param to The target path
+  /// @throws std::filesystem::filesystem_error if cannot move the directory
   void move(const std::filesystem::path& to);
 
-  /// Deletes the managed directory recursively
+  /// Deletes this directory recursively
   ~directory() noexcept;
 
   directory(directory&&) noexcept;                    ///< MoveConstructible
-  directory& operator=(directory&&) noexcept;         ///< MoveAssignable
+  directory& operator=(directory&&);                  ///< MoveAssignable
   directory(const directory&) = delete;               ///< not CopyConstructible
   directory& operator=(const directory&) = delete;    ///< not CopyAssignable
 
 private:
-  /// The managed directory path
+  /// This directory path
   std::filesystem::path pathobject;
 
   /// Memory reserved for future use

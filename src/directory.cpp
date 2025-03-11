@@ -133,9 +133,8 @@ directory::~directory() noexcept {
 directory::directory(directory&& other) noexcept
     : pathobject(std::exchange(other.pathobject, fs::path())) {}
 
-directory& directory::operator=(directory&& other) noexcept {
-  // TODO: should this throw in case of remove error?
-  remove(*this);
+directory& directory::operator=(directory&& other) {
+  fs::remove_all(path());
 
   pathobject = std::exchange(other.pathobject, fs::path());
   return *this;
