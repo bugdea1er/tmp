@@ -59,10 +59,10 @@ public:
   /// @returns The full path of this directory
   const std::filesystem::path& path() const noexcept;
 
-  /// Concatenates this directory path with a given source
-  /// @param source A string which represents a path name
+  /// Concatenates this directory path with a given path name
+  /// @param source A path name
   /// @returns The result of path concatenation
-  std::filesystem::path operator/(std::string_view source) const;
+  std::filesystem::path operator/(const std::filesystem::path& source) const;
 
   /// Moves this directory recursively to the given path, releasing
   /// ownership of the directory, as if by `std::filesystem::rename`

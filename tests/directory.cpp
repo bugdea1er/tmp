@@ -107,9 +107,17 @@ TEST(directory, copy_file) {
 /// Tests `operator/` of directory
 TEST(directory, subpath) {
   directory tmpdir = directory();
-  fs::path child = tmpdir / "child";
+  fs::path expected = tmpdir.path() / "child";
+  std::ofstream(expected) << "Hello, world!";
 
-  EXPECT_TRUE(fs::equivalent(tmpdir, child.parent_path()));
+  EXPECT_TRUE(fs::equivalent(expected, tmpdir / "child"));
+  EXPECT_TRUE(fs::equivalent(expected, tmpdir / L"child"));
+  EXPECT_TRUE(fs::equivalent(expected, tmpdir / std::string("child")));
+  EXPECT_TRUE(fs::equivalent(expected, tmpdir / std::wstring(L"child")));
+  EXPECT_TRUE(fs::equivalent(expected, tmpdir / std::string_view("child")));
+  EXPECT_TRUE(fs::equivalent(expected, tmpdir / std::wstring_view(L"child")));
+  EXPECT_TRUE(fs::equivalent(expected, tmpdir / fs::path("child")));
+  EXPECT_TRUE(fs::equivalent(expected, tmpdir / fs::path(L"child")));
 }
 
 /// Tests that moving a temporary directory to itself does nothing

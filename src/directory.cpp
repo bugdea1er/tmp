@@ -109,7 +109,7 @@ const fs::path& directory::path() const noexcept {
   return pathobject;
 }
 
-fs::path directory::operator/(std::string_view source) const {
+fs::path directory::operator/(const fs::path& source) const {
   return path() / source;
 }
 
