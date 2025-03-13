@@ -3,17 +3,17 @@
 
 #if defined _WIN32
 #if defined TMP_BUILDING_DLL
-#define TMP_EXPORT __declspec(dllexport)
+#define exported __declspec(dllexport)
 #else
-#define TMP_EXPORT
+#define exported
 #endif
 #else
-#define TMP_EXPORT __attribute__((visibility("default")))
+#define exported __attribute__((visibility("default")))
 #endif
 
 namespace tmp {
-class TMP_EXPORT directory;
-class TMP_EXPORT file;
+class exported directory;
+class exported file;
 }    // namespace tmp
 
 #endif    // TMP_EXPORT_H
