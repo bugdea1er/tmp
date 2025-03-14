@@ -134,6 +134,7 @@ fs::path create_directory(std::string_view prefix, std::error_code& ec) {
   }
 #endif
 
+  // TODO: open and lock the directory before returning the path
   return path;
 }
 
@@ -204,6 +205,8 @@ int create_file(std::error_code& ec) {
   }
 
   unlink(path.c_str());
+  // TODO: check that there are no hardlinks to the file
+  //       someone might have created one before we unlinked the file
 
   ec.clear();
   return handle;
