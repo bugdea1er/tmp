@@ -3,6 +3,7 @@
 
 #include <tmp/file>
 
+#include <cstddef>
 #include <filesystem>
 #include <string_view>
 

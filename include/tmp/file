@@ -1,6 +1,7 @@
 #ifndef TMP_FILE_H
 #define TMP_FILE_H
 
+#include <cstddef>
 #include <filesystem>
 #include <fstream>
 #include <ios>
