@@ -13,34 +13,39 @@
 
 namespace tmp {
 
-/// `tmp::file` is a smart handle that owns and manages a temporary file and
-/// deletes it when this handle goes out of scope
+/// tmp::file is a smart handle that manages a temporary file, ensuring
+/// its deletion when the handle goes out of scope
 ///
-/// When a `tmp::file` object is created, it creates a unique temporary file
-/// in the current user's temporary directory and opens it with
-/// for reading and writing
+/// Upon creation, a tmp::file object generates a unique temporary file
+/// in the current user's temporary directory, opening it for both
+/// reading and writing
 ///
-/// The managed file is deleted of when either of the following happens:
-/// - the managing `tmp::file` object is destroyed
-/// - the managing `tmp::file` object is assigned another path via `operator=`
+/// The temporary file is deleted of when either of the following happens:
+/// - the tmp::file object is destroyed
+/// - the tmp::file object is assigned another file using operator=
 ///
-/// `tmp::file` extends the `std::iostream` class and uses an instance
-/// of `std::filebuf` internally. It is essentially `std::fstream`
-/// without open/close methods
+/// tmp::file inherits from the std::iostream class, allowing it to be
+/// used seamlessly with standard input/output operations and simplifying file
+/// handling while maintaining the flexibility of stream operations
 ///
-/// The following example uses a `tmp::file` object to create a temporary file
-/// and write a string to it; when the function returns, the `tmp::file` object
-/// goes out of scope and the temporary file is deleted:
+/// The example below demonstrates a usage of a tmp::file object to validate
+/// a request content and then move it to persistent storage; note that after
+/// the move() call, the temporary file will not be deleted, as its ownership
+/// is transferred to the specified location:
 ///
 /// @code{.cpp}
 ///   #include <tmp/file>
 ///
 ///   auto func(std::string_view content) {
-///     auto tmpfile = tmp::file(std::ios::bin);
-///     tmpfile << content << std::flush;
-///
-///     // the temporary file is deleted recursively when the
-///     // `tmp::file` object goes out of scope and is destroyed
+///     auto tmpfile = tmp::file(std::ios::binary);
+///     tmpfile << contents << std::flush;
+///     if (validate(tmpfile)) {
+///       // Save the file to the persistent storage
+///       tmpfile.move(storage / "new_file");
+///     } else {
+///       // The file is deleted automatically
+///       throw InvalidRequestError();
+///     }
 ///   }
 /// @endcode
 class file : public std::iostream {

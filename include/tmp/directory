@@ -9,30 +9,31 @@
 
 namespace tmp {
 
-/// `tmp::directory` is a smart handle that owns and manages a temporary
-/// directory and deletes it recursively when this handle goes out of scope
+/// tmp::directory is a smart handle that manages a temporary directory,
+/// ensuring its recursive deletion when the handle goes out of scope
 ///
-/// When a `tmp::directory` object is created, it creates a unique temporary
+/// When a tmp::directory object is created, it generates a unique temporary
 /// directory in the current user's temporary directory
 ///
-/// The managed directory is deleted of when either of the following happens:
-/// - the managing `tmp::directory` object is destroyed
-/// - the managing `tmp::directory` object is assigned another path
-///   via `operator=`
+/// The temporary directory is deleted when either of the following happens:
+/// - the tmp::directory object is destroyed
+/// - the tmp::directory object is assigned another directory using operator=
 ///
-/// The following example uses a `tmp::directory` object to create a temporary
-/// directory; when the function returns, the `tmp::directory` object goes out
-/// of scope and the temporary directory is recursively deleted:
+/// The example below demonstrates a usage of a tmp::directory object to run
+/// a subprocess within it and archive its logs; when the function
+/// returns, the temporary directory is recursively deleted:
 ///
 /// @code{.cpp}
 ///   #include <tmp/directory>
 ///
 ///   auto func() {
 ///     auto tmpdir = tmp::directory("org.example.product");
-///     std::ostream(tmpdir / "file.txt") << "Hello, world!";
+///     process::exec(executable, args, tmpdir);
 ///
-///     // the temporary directory is deleted recursively when the
-///     // `tmp::directory` object goes out of scope and is destroyed
+///     return archive::glob(tmpdir, "*.log");
+///
+///     // The temporary directory is deleted recursively when the
+///     // tmp::directory object goes out of scope
 ///   }
 /// @endcode
 class directory {
