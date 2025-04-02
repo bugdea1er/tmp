@@ -6,7 +6,7 @@ name: posix
   pull_request:
 
 env:
-  CXXFLAGS: -fsanitize=address -Werror -Wall -Wextra -pedantic
+  CXXFLAGS: -fsanitize=address -Werror -Wall -Wextra -Wpedantic
   LDFLAGS: -fsanitize=address
 
 jobs:
