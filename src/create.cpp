@@ -190,7 +190,7 @@ int create_file(std::error_code& ec) {
   fs::path::string_type path = make_pattern("");
 
   int handle;
-#ifdef __linux__
+#ifdef O_TMPFILE
   handle = open(path.c_str(), O_RDWR | O_TMPFILE, S_IRUSR | S_IWUSR);
   if (handle >= 0) {
     ec.clear();
