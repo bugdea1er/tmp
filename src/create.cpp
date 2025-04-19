@@ -23,19 +23,12 @@ namespace {
 
 /// Checks if the given prefix is valid to attach to a temporary directory name
 /// @param[in] prefix The prefix to check validity for
-/// @returns `true` if the prefix is valid, `false` otherwise
-bool is_prefix_valid(const fs::path& prefix) {
-  // We also need to check that the prefix does not contain a root path
-  // because of how path concatenation works in C++
-  return prefix.empty() || (++prefix.begin() == prefix.end() &&
-                            prefix.is_relative() && !prefix.has_root_path());
-}
-
-/// Checks if the given prefix is valid to attach to a temporary directory name
-/// @param prefix The prefix to check validity for
 /// @throws std::invalid_argument if the prefix cannot be attached to the name
 void validate_prefix(const fs::path& prefix) {
-  if (!is_prefix_valid(prefix)) {
+  // We also need to check that the prefix does not contain a root path
+  // because of how path concatenation works in C++
+  if (!prefix.empty() && (++prefix.begin() != prefix.end() ||
+                         (!prefix.is_relative() && prefix.has_root_path()))) {
     throw std::invalid_argument("Cannot create a temporary directory: prefix "
                                 "must not contain a directory separator");
   }
@@ -99,37 +92,6 @@ fs::path make_pattern(std::string_view prefix) {
 }
 #endif
 
-/// Creates a temporary directory with the given prefix
-/// in the current user's temporary directory
-/// @param[in]  prefix A prefix to attach to the temporary directory name
-/// @param[out] ec     Parameter for error reporting
-/// @returns A path to the created temporary directory
-fs::path create_directory(std::string_view prefix, std::error_code& ec) {
-  if (!is_prefix_valid(prefix)) {
-    ec = std::make_error_code(std::errc::invalid_argument);
-    return fs::path();
-  }
-
-#ifdef _WIN32
-  fs::path::string_type path = make_path(prefix);
-#else
-  fs::path::string_type path = make_pattern(prefix);
-#endif
-
-#ifdef _WIN32
-  if (!CreateDirectory(path.c_str(), nullptr)) {
-    ec = std::error_code(GetLastError(), std::system_category());
-  }
-#else
-  if (mkdtemp(path.data()) == nullptr) {
-    ec = std::error_code(errno, std::system_category());
-  }
-#endif
-
-  // TODO: open and lock the directory before returning the path
-  return path;
-}
-
 #ifdef _WIN32
 /// Creates a temporary file in the current user's temporary directory
 /// and opens it for reading and writing
@@ -161,14 +123,29 @@ std::FILE* create_file(std::ios::openmode mode, std::error_code& ec) {
 fs::path create_directory(std::string_view prefix) {
   validate_prefix(prefix);    // throws std::invalid_argument with a proper text
 
+#ifdef _WIN32
+  fs::path::string_type path = make_path(prefix);
+#else
+  fs::path::string_type path = make_pattern(prefix);
+#endif
+
   std::error_code ec;
-  fs::path directory = create_directory(prefix, ec);
+#ifdef _WIN32
+  if (!CreateDirectory(path.c_str(), nullptr)) {
+    ec = std::error_code(GetLastError(), std::system_category());
+  }
+#else
+  if (mkdtemp(path.data()) == nullptr) {
+    ec = std::error_code(errno, std::system_category());
+  }
+#endif
 
   if (ec) {
     throw fs::filesystem_error("Cannot create a temporary directory", ec);
   }
 
-  return directory;
+  // TODO: open and lock the directory before returning the path
+  return path;
 }
 
 #ifdef _WIN32
