@@ -29,20 +29,13 @@ void remove(const fs::path& path) noexcept {
   }
 }
 
-/// Moves the filesystem object as if by `std::filesystem::rename`
+/// Moves the directory as if by `std::filesystem::rename`
 /// even when moving between filesystems
-/// @param[in]  from The path to move
-/// @param[in]  to   A path to the target file or directory
+/// @param[in]  from The directory to move
+/// @param[in]  to   The target path
 /// @param[out] ec   Parameter for error reporting
 /// @throws std::bad_alloc if memory allocation fails
 void move(const fs::path& from, const fs::path& to, std::error_code& ec) {
-  // FIXME: fs::is_directory can throw here
-  // FIXME: Time-of-check to time-of-use
-  if (fs::exists(to) && !fs::is_directory(to)) {
-    ec = std::make_error_code(std::errc::not_a_directory);
-    return;
-  }
-
   bool copying = false;
 
 #ifdef _WIN32
@@ -62,7 +55,7 @@ void move(const fs::path& from, const fs::path& to, std::error_code& ec) {
   copying = ec == std::errc::cross_device_link;
   if (copying) {
     fs::remove_all(to);
-    fs::copy(from, to, copy_options, ec);
+    fs::copy(from, to, fs::copy_options::recursive, ec);
   }
 #endif
 

@@ -2,7 +2,7 @@
 name: posix
 "on":
   push:
-    branches: [main]
+    branches: [main, directory-move]
   pull_request:
 
 env:
