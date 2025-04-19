@@ -3,7 +3,6 @@
 
 #include <filesystem>
 #include <string_view>
-#include <system_error>
 
 #ifdef _WIN32
 #include <ios>
