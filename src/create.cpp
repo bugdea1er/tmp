@@ -14,6 +14,7 @@
 #else
 #include <cerrno>
 #include <fcntl.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #endif
 
@@ -154,36 +155,6 @@ std::FILE* create_file(std::ios::openmode mode, std::error_code& ec) {
   ec.clear();
   return handle;
 }
-#else
-/// Creates a temporary file in the current user's temporary directory
-/// and opens it for reading and writing
-/// @param[out] ec Parameter for error reporting
-/// @returns A handle to the created temporary file
-int create_file(std::error_code& ec) {
-  fs::path::string_type path = make_pattern("");
-
-  int handle;
-#ifdef O_TMPFILE
-  handle = open(path.c_str(), O_RDWR | O_TMPFILE, S_IRUSR | S_IWUSR);
-  if (handle >= 0) {
-    ec.clear();
-    return handle;
-  }
-#endif
-
-  handle = mkstemp(path.data());
-  if (handle == -1) {
-    ec = std::error_code(errno, std::system_category());
-    return -1;
-  }
-
-  unlink(path.c_str());
-  // TODO: check that there are no hardlinks to the file
-  //       someone might have created one before we unlinked the file
-
-  ec.clear();
-  return handle;
-}
 #endif
 }    // namespace
 
@@ -218,13 +189,23 @@ std::FILE* create_file(std::ios::openmode mode) {
 }
 #else
 int create_file() {
-  std::error_code ec;
-  int handle = create_file(ec);
+  fs::path::string_type path = make_pattern("");
 
-  if (ec) {
+  int handle;
+#ifdef O_TMPFILE
+  handle = open(path.c_str(), O_RDWR | O_TMPFILE, S_IRUSR | S_IWUSR);
+  if (handle >= 0) {
+    return handle;
+  }
+#endif
+
+  handle = mkstemp(path.data());
+  if (handle == -1) {
+    std::error_code ec = std::error_code(errno, std::system_category());
     throw fs::filesystem_error("Cannot create a temporary file", ec);
   }
 
+  unlink(path.c_str());
   return handle;
 }
 #endif
