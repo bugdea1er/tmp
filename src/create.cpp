@@ -14,6 +14,7 @@
 #else
 #include <cerrno>
 #include <fcntl.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #endif
 
@@ -203,9 +204,6 @@ int create_file() {
     std::error_code ec = std::error_code(errno, std::system_category());
     throw fs::filesystem_error("Cannot create a temporary file", ec);
   }
-
-  // TODO: check that there are no hardlinks to the file
-  //       someone might have created one before we unlinked the file
 
   unlink(path.c_str());
   return handle;
