@@ -128,38 +128,13 @@ fs::path create_directory(std::string_view prefix, std::error_code& ec) {
   // TODO: open and lock the directory before returning the path
   return path;
 }
-}    // namespace
 
-fs::path create_directory(std::string_view prefix) {
-  validate_prefix(prefix);    // throws std::invalid_argument with a proper text
-
-  std::error_code ec;
-  fs::path directory = create_directory(prefix, ec);
-
-  if (ec) {
-    throw fs::filesystem_error("Cannot create a temporary directory", ec);
-  }
-
-  return directory;
-}
-
-#if defined(_WIN32)
-std::FILE* create_file(std::ios::openmode mode) {
-  std::error_code ec;
-  std::FILE* handle = create_file(mode, ec);
-
-  if (ec) {
-    if (ec == std::errc::invalid_argument) {
-      throw std::invalid_argument(
-          "Cannot create a temporary file: invalid openmode");
-    }
-
-    throw fs::filesystem_error("Cannot create a temporary file", ec);
-  }
-
-  return handle;
-}
-
+#ifdef _WIN32
+/// Creates a temporary file in the system's temporary directory,
+/// and opens it for reading and writing
+/// @param[in]  mode The file opening mode
+/// @param[out] ec   Parameter for error reporting
+/// @returns A handle to the created temporary file
 std::FILE* create_file(std::ios::openmode mode, std::error_code& ec) {
   const wchar_t* mdstr = make_mdstring(mode);
   if (mdstr == nullptr) {
@@ -180,17 +155,10 @@ std::FILE* create_file(std::ios::openmode mode, std::error_code& ec) {
   return handle;
 }
 #else
-int create_file() {
-  std::error_code ec;
-  int handle = create_file(ec);
-
-  if (ec) {
-    throw fs::filesystem_error("Cannot create a temporary file", ec);
-  }
-
-  return handle;
-}
-
+/// Creates a temporary file in the system's temporary directory,
+/// and opens it for reading and writing
+/// @param[out] ec Parameter for error reporting
+/// @returns A handle to the created temporary file
 int create_file(std::error_code& ec) {
   fs::path::string_type path = make_pattern("");
 
@@ -214,6 +182,49 @@ int create_file(std::error_code& ec) {
   //       someone might have created one before we unlinked the file
 
   ec.clear();
+  return handle;
+}
+#endif
+}    // namespace
+
+fs::path create_directory(std::string_view prefix) {
+  validate_prefix(prefix);    // throws std::invalid_argument with a proper text
+
+  std::error_code ec;
+  fs::path directory = create_directory(prefix, ec);
+
+  if (ec) {
+    throw fs::filesystem_error("Cannot create a temporary directory", ec);
+  }
+
+  return directory;
+}
+
+#ifdef _WIN32
+std::FILE* create_file(std::ios::openmode mode) {
+  std::error_code ec;
+  std::FILE* handle = create_file(mode, ec);
+
+  if (ec) {
+    if (ec == std::errc::invalid_argument) {
+      throw std::invalid_argument(
+          "Cannot create a temporary file: invalid openmode");
+    }
+
+    throw fs::filesystem_error("Cannot create a temporary file", ec);
+  }
+
+  return handle;
+}
+#else
+int create_file() {
+  std::error_code ec;
+  int handle = create_file(ec);
+
+  if (ec) {
+    throw fs::filesystem_error("Cannot create a temporary file", ec);
+  }
+
   return handle;
 }
 #endif
