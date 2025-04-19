@@ -98,8 +98,8 @@ fs::path make_pattern(std::string_view prefix) {
 }
 #endif
 
-/// Creates a temporary directory with the given prefix in the system's
-/// temporary directory
+/// Creates a temporary directory with the given prefix
+/// in the current user's temporary directory
 /// @param[in]  prefix A prefix to attach to the temporary directory name
 /// @param[out] ec     Parameter for error reporting
 /// @returns A path to the created temporary directory
@@ -130,7 +130,7 @@ fs::path create_directory(std::string_view prefix, std::error_code& ec) {
 }
 
 #ifdef _WIN32
-/// Creates a temporary file in the system's temporary directory,
+/// Creates a temporary file in the current user's temporary directory
 /// and opens it for reading and writing
 /// @param[in]  mode The file opening mode
 /// @param[out] ec   Parameter for error reporting
@@ -155,7 +155,7 @@ std::FILE* create_file(std::ios::openmode mode, std::error_code& ec) {
   return handle;
 }
 #else
-/// Creates a temporary file in the system's temporary directory,
+/// Creates a temporary file in the current user's temporary directory
 /// and opens it for reading and writing
 /// @param[out] ec Parameter for error reporting
 /// @returns A handle to the created temporary file

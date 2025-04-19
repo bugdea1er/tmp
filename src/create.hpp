@@ -11,8 +11,8 @@
 namespace tmp {
 namespace fs = std::filesystem;
 
-/// Creates a temporary directory with the given prefix in the system's
-/// temporary directory
+/// Creates a temporary directory with the given prefix
+/// in the current user's temporary directory
 /// @param[in] prefix A prefix to attach to the temporary directory name
 /// @returns A path to the created temporary directory
 /// @throws fs::filesystem_error if cannot create a temporary directory
@@ -20,7 +20,7 @@ namespace fs = std::filesystem;
 fs::path create_directory(std::string_view prefix);
 
 #ifdef _WIN32
-/// Creates a temporary file in the system's temporary directory,
+/// Creates a temporary file in the current user's temporary directory
 /// and opens it for reading and writing
 /// @param[in] mode The file opening mode
 /// @returns A handle to the created temporary file
@@ -28,7 +28,7 @@ fs::path create_directory(std::string_view prefix);
 /// @throws std::invalid_argument if the given openmode is invalid
 std::FILE* create_file(std::ios::openmode mode);
 #else
-/// Creates a temporary file in the system's temporary directory,
+/// Creates a temporary file in the current user's temporary directory
 /// and opens it for reading and writing
 /// @returns A handle to the created temporary file
 /// @throws fs::filesystem_error if cannot create a temporary file
