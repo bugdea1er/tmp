@@ -28,7 +28,7 @@ void validate_prefix(const fs::path& prefix) {
   // We also need to check that the prefix does not contain a root path
   // because of how path concatenation works in C++
   if (!prefix.empty() && (++prefix.begin() != prefix.end() ||
-                         (!prefix.is_relative() && prefix.has_root_path()))) {
+                          (!prefix.is_relative() && prefix.has_root_path()))) {
     throw std::invalid_argument("Cannot create a temporary directory: prefix "
                                 "must not contain a directory separator");
   }
