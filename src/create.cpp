@@ -23,15 +23,12 @@ namespace {
 
 /// Checks if the given prefix is valid to attach to a temporary directory name
 /// @param[in] prefix The prefix to check validity for
-/// @throws std::invalid_argument if the prefix cannot be attached to the name
-void validate_prefix(const fs::path& prefix) {
+/// @returns `true` if the prefix is valid, `false` otherwise
+bool is_prefix_valid(const fs::path& prefix) {
   // We also need to check that the prefix does not contain a root path
   // because of how path concatenation works in C++
-  if (!prefix.empty() && (++prefix.begin() != prefix.end() ||
-                          (!prefix.is_relative() && prefix.has_root_path()))) {
-    throw std::invalid_argument("Cannot create a temporary directory: prefix "
-                                "must not contain a directory separator");
-  }
+  return prefix.empty() || (++prefix.begin() == prefix.end() &&
+                            prefix.is_relative() && !prefix.has_root_path());
 }
 
 #ifdef _WIN32
@@ -121,7 +118,10 @@ std::FILE* create_file(std::ios::openmode mode, std::error_code& ec) {
 }    // namespace
 
 fs::path create_directory(std::string_view prefix) {
-  validate_prefix(prefix);    // throws std::invalid_argument with a proper text
+  if (!is_prefix_valid(prefix)) {
+    throw std::invalid_argument("Cannot create a temporary directory: "
+                                "prefix cannot contain a directory separator");
+  }
 
 #ifdef _WIN32
   fs::path::string_type path = make_path(prefix);
