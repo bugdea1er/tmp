@@ -97,21 +97,12 @@ fs::path make_pattern(std::string_view prefix) {
   return path;
 }
 #endif
-}    // namespace
 
-fs::path create_directory(std::string_view prefix) {
-  validate_prefix(prefix);    // throws std::invalid_argument with a proper text
-
-  std::error_code ec;
-  fs::path directory = create_directory(prefix, ec);
-
-  if (ec) {
-    throw fs::filesystem_error("Cannot create a temporary directory", ec);
-  }
-
-  return directory;
-}
-
+/// Creates a temporary directory with the given prefix in the system's
+/// temporary directory
+/// @param[in]  prefix A prefix to attach to the temporary directory name
+/// @param[out] ec     Parameter for error reporting
+/// @returns A path to the created temporary directory
 fs::path create_directory(std::string_view prefix, std::error_code& ec) {
   if (!is_prefix_valid(prefix)) {
     ec = std::make_error_code(std::errc::invalid_argument);
@@ -136,6 +127,20 @@ fs::path create_directory(std::string_view prefix, std::error_code& ec) {
 
   // TODO: open and lock the directory before returning the path
   return path;
+}
+}    // namespace
+
+fs::path create_directory(std::string_view prefix) {
+  validate_prefix(prefix);    // throws std::invalid_argument with a proper text
+
+  std::error_code ec;
+  fs::path directory = create_directory(prefix, ec);
+
+  if (ec) {
+    throw fs::filesystem_error("Cannot create a temporary directory", ec);
+  }
+
+  return directory;
 }
 
 #if defined(_WIN32)

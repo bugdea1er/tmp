@@ -20,13 +20,6 @@ namespace fs = std::filesystem;
 /// @throws std::invalid_argument if the prefix contains a directory separator
 fs::path create_directory(std::string_view prefix);
 
-/// Creates a temporary directory with the given prefix in the system's
-/// temporary directory
-/// @param[in]  prefix A prefix to attach to the temporary directory name
-/// @param[out] ec     Parameter for error reporting
-/// @returns A path to the created temporary directory
-fs::path create_directory(std::string_view prefix, std::error_code& ec);
-
 #if defined(_WIN32)
 /// Creates a temporary file in the system's temporary directory,
 /// and opens it for reading and writing
