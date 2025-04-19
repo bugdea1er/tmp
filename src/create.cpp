@@ -199,7 +199,7 @@ int create_file() {
 #endif
 
   handle = mkstemp(path.data());
-  errno_t create_error = errno;
+  int create_error = errno;
 
   unlink(path.c_str());
   if (handle == -1) {
