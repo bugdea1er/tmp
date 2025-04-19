@@ -199,17 +199,15 @@ int create_file() {
 #endif
 
   handle = mkstemp(path.data());
-  int create_error = errno;
-
-  unlink(path.c_str());
   if (handle == -1) {
-    std::error_code ec = std::error_code(create_error, std::system_category());
+    std::error_code ec = std::error_code(errno, std::system_category());
     throw fs::filesystem_error("Cannot create a temporary file", ec);
   }
 
   // TODO: check that there are no hardlinks to the file
   //       someone might have created one before we unlinked the file
 
+  unlink(path.c_str());
   return handle;
 }
 #endif
