@@ -38,16 +38,9 @@ void remove(const fs::path& path) noexcept {
 void move(const fs::path& from, const fs::path& to, std::error_code& ec) {
   // FIXME: fs::is_directory can throw here
   // FIXME: Time-of-check to time-of-use
-  if (fs::exists(to)) {
-    if (!fs::is_directory(from) && fs::is_directory(to)) {
-      ec = std::make_error_code(std::errc::is_a_directory);
-      return;
-    }
-
-    if (fs::is_directory(from) && !fs::is_directory(to)) {
-      ec = std::make_error_code(std::errc::not_a_directory);
-      return;
-    }
+  if (fs::exists(to) && !fs::is_directory(to)) {
+    ec = std::make_error_code(std::errc::not_a_directory);
+    return;
   }
 
   bool copying = false;
@@ -55,7 +48,7 @@ void move(const fs::path& from, const fs::path& to, std::error_code& ec) {
 #ifdef _WIN32
   // On Windows, the underlying `MoveFileExW` fails when moving a directory
   // between drives; in that case we copy the directory manually
-  copying = fs::is_directory(from) && from.root_name() != to.root_name();
+  copying = from.root_name() != to.root_name();
   if (copying) {
     fs::copy(from, to, copy_options, ec);
   } else {
