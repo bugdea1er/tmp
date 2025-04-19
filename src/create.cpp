@@ -88,33 +88,6 @@ fs::path make_pattern(std::string_view prefix) {
   return path;
 }
 #endif
-
-#ifdef _WIN32
-/// Creates a temporary file in the current user's temporary directory
-/// and opens it for reading and writing
-/// @param[in]  mode The file opening mode
-/// @param[out] ec   Parameter for error reporting
-/// @returns A handle to the created temporary file
-std::FILE* create_file(std::ios::openmode mode, std::error_code& ec) {
-  const wchar_t* mdstr = make_mdstring(mode);
-  if (mdstr == nullptr) {
-    ec = std::make_error_code(std::errc::invalid_argument);
-    return nullptr;
-  }
-
-  fs::path::string_type path = make_path("");
-
-  std::FILE* handle = _wfsopen(path.c_str(), mdstr, _SH_DENYNO);
-  DeleteFile(path.c_str());
-  if (handle == nullptr) {
-    ec = std::error_code(errno, std::system_category());
-    return nullptr;
-  }
-
-  ec.clear();
-  return handle;
-}
-#endif
 }    // namespace
 
 fs::path create_directory(std::string_view prefix) {
@@ -150,19 +123,22 @@ fs::path create_directory(std::string_view prefix) {
 
 #ifdef _WIN32
 std::FILE* create_file(std::ios::openmode mode) {
-  std::error_code ec;
-  std::FILE* handle = create_file(mode, ec);
+  const wchar_t* mdstr = make_mdstring(mode);
+  if (mdstr == nullptr) {
+    throw std::invalid_argument(
+        "Cannot create a temporary file: invalid openmode");
+  }
 
-  if (ec) {
-    if (ec == std::errc::invalid_argument) {
-      throw std::invalid_argument(
-          "Cannot create a temporary file: invalid openmode");
-    }
+  fs::path::string_type path = make_path("");
 
+  std::FILE* file = _wfsopen(path.c_str(), mdstr, _SH_DENYNO);
+  if (file == nullptr) {
+    std::error_code ec = std::error_code(errno, std::system_category());
     throw fs::filesystem_error("Cannot create a temporary file", ec);
   }
 
-  return handle;
+  DeleteFile(path.c_str());
+  return file;
 }
 #else
 int create_file() {
