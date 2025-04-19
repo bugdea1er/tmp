@@ -20,12 +20,13 @@ namespace fs = std::filesystem;
 /// @throws std::invalid_argument if the prefix contains a directory separator
 fs::path create_directory(std::string_view prefix);
 
-#if defined(_WIN32)
+#ifdef _WIN32
 /// Creates a temporary file in the system's temporary directory,
 /// and opens it for reading and writing
 /// @param[in] mode The file opening mode
 /// @returns A handle to the created temporary file
 /// @throws fs::filesystem_error if cannot create a temporary file
+/// @throws std::invalid_argument if the given openmode is invalid
 std::FILE* create_file(std::ios::openmode mode);
 #else
 /// Creates a temporary file in the system's temporary directory,
