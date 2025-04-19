@@ -117,7 +117,6 @@ fs::path create_directory(std::string_view prefix) {
     throw fs::filesystem_error("Cannot create a temporary directory", ec);
   }
 
-  // TODO: open and lock the directory before returning the path
   return path;
 }
 
