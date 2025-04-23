@@ -80,7 +80,8 @@ directory directory::copy(const fs::path& path, std::string_view prefix) {
 
   // We don't use `fs::copy(path, tmpdir)` here,
   // since there is no way to tell it to fail if `from` is not a directory;
-  // `directory_iterator` opens a path and checks if it's a directory atomically
+  // a properly implemented `directory_iterator` opens a path and checks
+  // whether it is a directory atomically
   for (const fs::directory_entry& entry : fs::directory_iterator(path)) {
     fs::copy(entry.path(), tmpdir / entry.path().filename(), copy_options);
   }
