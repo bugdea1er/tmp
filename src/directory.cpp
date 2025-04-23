@@ -78,16 +78,11 @@ directory::directory(std::string_view prefix)
 directory directory::copy(const fs::path& path, std::string_view prefix) {
   directory tmpdir = directory(prefix);
 
-  std::error_code ec;
-  if (fs::is_directory(path)) {
-    // FIXME: Time-of-check to time-of-use
-    fs::copy(path, tmpdir, copy_options, ec);
-  } else {
-    ec = std::make_error_code(std::errc::not_a_directory);
-  }
-
-  if (ec) {
-    throw fs::filesystem_error("Cannot create a temporary copy", path, ec);
+  // We don't use `fs::copy(path, tmpdir)` here,
+  // since there is no way to tell it to fail if `from` is not a directory;
+  // `directory_iterator` opens a path and checks if it's a directory atomically
+  for (const fs::directory_entry& entry : fs::directory_iterator(path)) {
+    fs::copy(entry.path(), tmpdir / entry.path().filename(), copy_options);
   }
 
   return tmpdir;
