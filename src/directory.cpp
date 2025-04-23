@@ -16,9 +16,9 @@ namespace {
 constexpr fs::copy_options copy_options =
     fs::copy_options::recursive | fs::copy_options::overwrite_existing;
 
-/// Deletes the given path recursively, ignoring any errors
-/// @param[in] path The path to delete
-void remove(const fs::path& path) noexcept {
+/// Deletes a directory recursively, ignoring any errors
+/// @param[in] path The path to the directory to delete
+void remove_directory(const fs::path& path) noexcept {
   if (!path.empty()) {
     try {
       std::error_code ec;
@@ -67,7 +67,7 @@ void move(const fs::path& from, const fs::path& to, std::error_code& ec) {
 #endif
 
   if (!ec && copying) {
-    tmp::remove(from);
+    remove_directory(from);
   }
 }
 }    // namespace
@@ -119,7 +119,7 @@ void directory::move(const fs::path& to) {
 
 directory::~directory() noexcept {
   (void)reserved;    // Old compilers do not want to accept `[[maybe_unused]]`
-  remove(*this);
+  remove_directory(*this);
 }
 
 directory::directory(directory&& other) noexcept
