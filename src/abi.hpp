@@ -2,11 +2,7 @@
 #define TMP_ABI_H
 
 #if defined _WIN32
-#if defined TMP_BUILDING_DLL
 #define abi __declspec(dllexport)
-#else
-#define abi
-#endif
 #else
 #define abi __attribute__((visibility("default")))
 #endif

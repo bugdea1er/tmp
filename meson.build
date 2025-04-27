@@ -10,13 +10,6 @@ include_directory = include_directories('include')
 filesystem_proj = subproject('filesystem')
 filesystem_dep = filesystem_proj.get_variable('filesystem_dep')
 
-default_library = get_option('default_library')
-if default_library != 'static' and host_machine.system() == 'windows'
-  dll_build_args = ['-DTMP_BUILDING_DLL']
-else
-  dll_build_args = []
-endif
-
 tmp = library(
   'tmp',
   'src/create.cpp',
@@ -27,7 +20,6 @@ tmp = library(
   gnu_symbol_visibility: 'hidden',
   version: meson.project_version(),
   dependencies: [filesystem_dep],
-  cpp_args: dll_build_args,
 )
 
 tmp_dep = declare_dependency(
