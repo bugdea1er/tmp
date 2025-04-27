@@ -16,8 +16,4 @@ target_include_directories(${PROJECT_NAME}
   PUBLIC "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
          "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
 
-if(BUILD_SHARED_LIBS)
-  target_compile_definitions(${PROJECT_NAME} PRIVATE TMP_BUILDING_DLL)
-endif()
-
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
