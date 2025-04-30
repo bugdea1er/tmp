@@ -39,8 +39,9 @@ void move_directory(const fs::path& from, const fs::path& to,
   bool copying = false;
 
 #ifdef _WIN32
-  // On Windows, the underlying `MoveFileExW` fails when moving a directory
-  // between drives; in that case we copy the directory manually
+  // On Windows, it is unspecified what error will be returned when
+  // renaming between multiple volumes; so we need to check this manually
+  // before taking any action
   copying = from.root_name() != to.root_name();
   if (copying) {
     fs::copy(from, to, fs::copy_options::recursive, ec);
