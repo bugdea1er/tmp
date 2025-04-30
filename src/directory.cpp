@@ -80,7 +80,7 @@ directory directory::copy(const fs::path& path, std::string_view prefix) {
 
   // We don't use `fs::copy(path, tmpdir)` here,
   // since there is no way to tell it to fail if `from` is not a directory;
-  // a properly implemented `directory_iterator` opens a path and checks
+  // a properly implemented `fs::directory_iterator` opens a path and checks
   // whether it is a directory atomically
   for (const fs::directory_entry& entry : fs::directory_iterator(path)) {
     fs::copy(entry.path(), tmpdir / entry.path().filename(), copy_options);
@@ -122,6 +122,8 @@ directory::directory(directory&& other) noexcept
     : pathobject(std::exchange(other.pathobject, fs::path())) {}
 
 directory& directory::operator=(directory&& other) {
+  // Here we intentionally call the throwing overload of `fs::remove_all`
+  // to report errors with exceptions when deleting the old directory
   fs::remove_all(path());
 
   pathobject = std::exchange(other.pathobject, fs::path());
