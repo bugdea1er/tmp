@@ -36,13 +36,6 @@ void remove_directory(const fs::path& path) noexcept {
 /// @param[out] ec   Parameter for error reporting
 void move_directory(const fs::path& from, const fs::path& to,
                     std::error_code& ec) {
-  // FIXME: fs::is_directory can throw here
-  // FIXME: Time-of-check to time-of-use
-  if (fs::exists(to) && !fs::is_directory(to)) {
-    ec = std::make_error_code(std::errc::not_a_directory);
-    return;
-  }
-
   bool copying = false;
 
 #ifdef _WIN32
@@ -50,7 +43,7 @@ void move_directory(const fs::path& from, const fs::path& to,
   // between drives; in that case we copy the directory manually
   copying = from.root_name() != to.root_name();
   if (copying) {
-    fs::copy(from, to, copy_options, ec);
+    fs::copy(from, to, fs::copy_options::recursive, ec);
   } else {
     fs::rename(from, to, ec);
   }
@@ -61,8 +54,7 @@ void move_directory(const fs::path& from, const fs::path& to,
   fs::rename(from, to, ec);
   copying = ec == std::errc::cross_device_link;
   if (copying) {
-    fs::remove_all(to);
-    fs::copy(from, to, copy_options, ec);
+    fs::copy(from, to, fs::copy_options::recursive, ec);
   }
 #endif
 
