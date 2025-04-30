@@ -60,7 +60,9 @@ void move_directory(const fs::path& from, const fs::path& to,
 #endif
 
   if (!ec && copying) {
-    remove_directory(from);
+    // Here we intentionally call the throwing overload of `fs::remove_all`
+    // to report errors with exceptions when deleting the old directory
+    fs::remove_all(from);
   }
 }
 }    // namespace
