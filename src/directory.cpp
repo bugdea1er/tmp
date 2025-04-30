@@ -77,17 +77,17 @@ directory::directory(std::string_view prefix)
     : pathobject(create_directory(prefix)) {}
 
 directory directory::copy(const fs::path& path, std::string_view prefix) {
-  directory tmpdir = directory(prefix);
+  directory dir = directory(prefix);
 
-  // We don't use `fs::copy(path, tmpdir)` here,
+  // We don't use `fs::copy(path, dir)` here,
   // since there is no way to tell it to fail if `from` is not a directory;
   // a properly implemented `fs::directory_iterator` opens a path and checks
   // whether it is a directory atomically
   for (const fs::directory_entry& entry : fs::directory_iterator(path)) {
-    fs::copy(entry.path(), tmpdir / entry.path().filename(), copy_options);
+    fs::copy(entry, dir / entry.path().filename(), fs::copy_options::recursive);
   }
 
-  return tmpdir;
+  return dir;
 }
 
 directory::operator const fs::path&() const noexcept {
