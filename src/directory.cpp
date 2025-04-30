@@ -28,43 +28,6 @@ void remove_directory(const fs::path& path) noexcept {
     }
   }
 }
-
-/// Moves the directory recursively as if by `std::filesystem::rename`
-/// even when moving between filesystems
-/// @param[in]  from The path to the directory to move
-/// @param[in]  to   The target path
-/// @param[out] ec   Parameter for error reporting
-void move_directory(const fs::path& from, const fs::path& to,
-                    std::error_code& ec) {
-  bool copying = false;
-
-#ifdef _WIN32
-  // On Windows, it is unspecified what error will be returned when
-  // renaming between multiple volumes; so we need to check this manually
-  // before taking any action
-  copying = from.root_name() != to.root_name();
-  if (copying) {
-    fs::copy(from, to, fs::copy_options::recursive, ec);
-  } else {
-    fs::rename(from, to, ec);
-  }
-#else
-  // On POSIX-compliant systems, the underlying `rename` function may return
-  // `EXDEV` if the implementation does not support links between file systems;
-  // so we try to rename the file, and if we fail with `EXDEV`, move it manually
-  fs::rename(from, to, ec);
-  copying = ec == std::errc::cross_device_link;
-  if (copying) {
-    fs::copy(from, to, fs::copy_options::recursive, ec);
-  }
-#endif
-
-  if (!ec && copying) {
-    // Here we intentionally call the throwing overload of `fs::remove_all`
-    // to report errors with exceptions when deleting the old directory
-    fs::remove_all(from);
-  }
-}
 }    // namespace
 
 directory::directory(std::string_view prefix)
@@ -97,12 +60,38 @@ fs::path directory::operator/(const fs::path& source) const {
 }
 
 void directory::move(const fs::path& to) {
-  std::error_code ec;
-  move_directory(*this, to, ec);
+  bool copying = false;
 
-  if (ec) {
-    throw fs::filesystem_error("Cannot move a temporary directory", path(), to,
-                               ec);
+#ifdef _WIN32
+  // On Windows, it is unspecified what error will be returned when
+  // renaming between multiple volumes; so we need to check this manually
+  // before taking any action
+  copying = path().root_name() != to.root_name();
+  if (copying) {
+    fs::copy(path(), to, fs::copy_options::recursive);
+  } else {
+    fs::rename(path(), to);
+  }
+#else
+  // On POSIX-compliant systems, the underlying `rename` function may return
+  // `EXDEV` if the implementation does not support links between file systems;
+  // so we try to rename the file, and if we fail with `EXDEV`, move it manually
+  std::error_code ec;
+  fs::rename(path(), to, ec);
+  copying = ec == std::errc::cross_device_link;
+  if (copying) {
+    fs::copy(path(), to, fs::copy_options::recursive);
+  } else {
+    // Here we can safely call `fs::rename` to throw a guaranteed
+    // implementation-defined exception
+    fs::rename(path(), to);
+  }
+#endif
+
+  if (copying) {
+    // Here we intentionally call the throwing overload of `fs::remove_all`
+    // to report errors with exceptions when deleting the old directory
+    fs::remove_all(path());
   }
 
   pathobject.clear();
