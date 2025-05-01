@@ -4,6 +4,7 @@
 #include <tmp/file>
 
 #include <array>
+#include <climits>
 #include <cstddef>
 #include <filesystem>
 #include <ios>
@@ -134,20 +135,19 @@ void copy_file(file::native_handle_type from, file::native_handle_type to,
 /// @param[out] ec   Parameter for error reporting
 void copy_file(file::native_handle_type from, file::native_handle_type to,
                std::error_code& ec) noexcept {
-  struct stat file_stat;
-  fstat(from, &file_stat);
 
-  size_t count = file_stat.st_size;
-
-  do {
-    ssize_t res = sendfile(to, from, nullptr, count);
+  while (true) {
+    ssize_t res = sendfile(to, from, nullptr, INT_MAX);
     if (res == -1) {
       ec = std::error_code(errno, std::system_category());
       return;
     }
 
-    count -= res;
-  } while (count > 0);
+    if (res == 0) {
+      break;
+    }
+  }
+
   ec.clear();
 }
 #else
