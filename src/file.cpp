@@ -16,6 +16,11 @@
 #include <copyfile.h>
 #endif
 
+#if __has_include(<sys/sendfile.h>)
+#include <sys/sendfile.h>
+#include <sys/stat.h>
+#endif
+
 #ifdef _WIN32
 #define NOMINMAX
 #define UNICODE
@@ -131,7 +136,23 @@ void copy_file(file::native_handle_type from, file::native_handle_type to,
   }
 #endif
 
-  // TODO: can be optimized using `sendfile`, `copyfile` or other system API
+#if __has_include(<sys/sendfile.h>)
+  struct stat file_stat;
+  fstat(from, &file_stat);
+
+  size_t count = file_stat.st_size;
+
+  do {
+    ssize_t res = sendfile(to, from, nullptr, count);
+    if (res == -1) {
+      ec = std::error_code(errno, std::system_category());
+      return;
+    }
+
+    count -= res;
+  } while (count > 0);
+#endif
+
   buffer_type buffer = buffer_type();
   while (true) {
 #ifdef _WIN32
