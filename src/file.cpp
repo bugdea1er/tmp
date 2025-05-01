@@ -67,11 +67,11 @@ file::native_handle_type open(const fs::path& path, bool readonly,
 
 /// Closes the given handle, ignoring any errors
 /// @param[in] handle The handle to close
-void close(file::native_handle_type handle) noexcept {
+void close_file(file::native_handle_type handle) noexcept {
 #ifdef _WIN32
   CloseHandle(handle);
 #else
-  ::close(handle);
+  close(handle);
 #endif
 }
 
@@ -142,7 +142,7 @@ file::file(std::ios::openmode mode)
 
   if (!sb.is_open()) {
 #ifndef _WIN32
-    close(handle);
+    close_file(handle);
 #endif
     throw std::invalid_argument(
         "Cannot create a temporary file: invalid openmode");
@@ -156,7 +156,7 @@ file file::copy(const fs::path& path, std::ios::openmode mode) {
   native_handle_type source = open(path, /*readonly=*/true, ec);
   if (!ec) {
     copy_file(source, tmpfile.native_handle(), ec);
-    close(source);
+    close_file(source);
   }
 
   if (ec) {
@@ -186,7 +186,7 @@ void file::move(const fs::path& to) {
   native_handle_type target = open(to, /*readonly=*/false, ec);
   if (!ec) {
     copy_file(native_handle(), target, ec);
-    close(target);
+    close_file(target);
   }
 
   if (ec) {
