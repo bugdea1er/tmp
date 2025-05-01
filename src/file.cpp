@@ -20,11 +20,19 @@
 #else
 #include <cerrno>
 #include <fcntl.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #endif
 
 namespace tmp {
 namespace {
+
+/// Implementation-defined invalid handle to the file
+#ifdef _WIN32
+const file::native_handle_type invalid_handle = nullptr;
+#else
+const file::native_handle_type invalid_handle = -1;
+#endif
 
 /// A block size for file reading
 /// @note should always be less than INT_MAX
@@ -40,8 +48,6 @@ using buffer_type = std::array<std::byte, block_size>;
 /// @returns A handle to the open file
 file::native_handle_type open_file(const fs::path& path, bool readonly,
                                    std::error_code& ec) noexcept {
-  ec.clear();
-
 #ifdef _WIN32
   DWORD access = readonly ? GENERIC_READ : GENERIC_WRITE;
   DWORD creation_disposition = readonly ? OPEN_EXISTING : CREATE_ALWAYS;
@@ -52,6 +58,24 @@ file::native_handle_type open_file(const fs::path& path, bool readonly,
                  creation_disposition, FILE_ATTRIBUTE_NORMAL, nullptr);
   if (handle == INVALID_HANDLE_VALUE) {
     ec = std::error_code(GetLastError(), std::system_category());
+    return invalid_handle;
+  }
+
+  BY_HANDLE_FILE_INFORMATION handle_info;
+  if (GetFileInformationByHandle(handle, &handle_info) == 0) {
+    ec = std::error_code(GetLastError(), std::system_category());
+    CloseHandle(handle);
+    return invalid_handle;
+  }
+
+  // Based on Microsoft's C++ STL implementation: If a file is not a reparse
+  // point and is not a directory, then it is considered a regular file
+  // https://github.com/microsoft/STL/blob/main/stl/inc/filesystem#L1982
+  if ((handle_info.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0 ||
+      (handle_info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0) {
+    ec = std::make_error_code(std::errc::not_supported);
+    CloseHandle(handle);
+    return invalid_handle;
   }
 #else
   constexpr mode_t mode = 0644;
@@ -59,9 +83,24 @@ file::native_handle_type open_file(const fs::path& path, bool readonly,
   int handle = open(path.c_str(), oflag, mode);
   if (handle == -1) {
     ec = std::error_code(errno, std::system_category());
+    return invalid_handle;
+  }
+
+  struct stat file_stat;
+  if (fstat(handle, &file_stat) == -1) {
+    ec = std::error_code(errno, std::system_category());
+    close(handle);
+    return invalid_handle;
+  }
+
+  if ((file_stat.st_mode & S_IFMT) != S_IFREG) {
+    ec = std::make_error_code(std::errc::not_supported);
+    close(handle);
+    return invalid_handle;
   }
 #endif
 
+  ec.clear();
   return handle;
 }
 
