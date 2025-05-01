@@ -162,7 +162,7 @@ void copy_file(file::native_handle_type from, file::native_handle_type to,
   while (true) {
 #ifdef _WIN32
     DWORD bytes_read;
-    if (!ReadFile(from, buffer.data(), block_size, &bytes_read, nullptr)) {
+    if (!ReadFile(from, buffer.data(), blk_size, &bytes_read, nullptr)) {
       ec = std::error_code(GetLastError(), std::system_category());
       break;
     }
