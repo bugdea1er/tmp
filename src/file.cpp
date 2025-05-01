@@ -14,11 +14,8 @@
 
 #if __has_include(<copyfile.h>)
 #include <copyfile.h>
-#endif
-
-#if __has_include(<sys/sendfile.h>)
+#elif __has_include(<sys/sendfile.h>)
 #include <sys/sendfile.h>
-#include <sys/stat.h>
 #endif
 
 #ifdef _WIN32
@@ -42,13 +39,6 @@ const file::native_handle_type invalid_handle = nullptr;
 #else
 const file::native_handle_type invalid_handle = -1;
 #endif
-
-/// A block size for file reading
-/// @note should always be less than INT_MAX
-constexpr std::size_t block_size = 4096;
-
-/// A type of buffer for I/O file operations
-using buffer_type = std::array<std::byte, block_size>;
 
 /// Opens a file and returns its handle
 /// @param[in]  path     The path to the file to open
@@ -123,20 +113,27 @@ void close_file(file::native_handle_type handle) noexcept {
 #endif
 }
 
+#if __has_include(<copyfile.h>)
 /// Copies file contents from one file descriptor to another
 /// @param[in]  from The source file descriptor
 /// @param[in]  to   The target file descriptor
 /// @param[out] ec   Parameter for error reporting
 void copy_file(file::native_handle_type from, file::native_handle_type to,
                std::error_code& ec) noexcept {
-#if __has_include(<copyfile.h>)
   if (fcopyfile(from, to, nullptr, COPYFILE_DATA) != 0) {
     ec = std::error_code(errno, std::system_category());
     return;
   }
-#endif
 
-#if __has_include(<sys/sendfile.h>)
+  ec.clear();
+}
+#elif __has_include(<sys/sendfile.h>)
+/// Copies file contents from one file descriptor to another
+/// @param[in]  from The source file descriptor
+/// @param[in]  to   The target file descriptor
+/// @param[out] ec   Parameter for error reporting
+void copy_file(file::native_handle_type from, file::native_handle_type to,
+               std::error_code& ec) noexcept {
   struct stat file_stat;
   fstat(from, &file_stat);
 
@@ -151,8 +148,22 @@ void copy_file(file::native_handle_type from, file::native_handle_type to,
 
     count -= res;
   } while (count > 0);
-#endif
+  ec.clear();
+}
+#else
+/// A block size for file reading
+/// @note should always be less than INT_MAX
+constexpr std::size_t block_size = 4096;
 
+/// A type of buffer for I/O file operations
+using buffer_type = std::array<std::byte, block_size>;
+
+/// Copies file contents from one file descriptor to another
+/// @param[in]  from The source file descriptor
+/// @param[in]  to   The target file descriptor
+/// @param[out] ec   Parameter for error reporting
+void copy_file(file::native_handle_type from, file::native_handle_type to,
+               std::error_code& ec) noexcept {
   buffer_type buffer = buffer_type();
   while (true) {
 #ifdef _WIN32
@@ -187,6 +198,7 @@ void copy_file(file::native_handle_type from, file::native_handle_type to,
 #endif
   }
 }
+#endif
 }    // namespace
 
 file::file(std::ios::openmode mode)
