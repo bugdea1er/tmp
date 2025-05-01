@@ -27,6 +27,13 @@
 namespace tmp {
 namespace {
 
+/// Implementation-defined invalid handle to the file
+#ifdef _WIN32
+const file::native_handle_type invalid_handle = nullptr;
+#else
+const file::native_handle_type invalid_handle = -1;
+#endif
+
 /// A block size for file reading
 /// @note should always be less than INT_MAX
 constexpr std::size_t block_size = 4096;
@@ -51,14 +58,14 @@ file::native_handle_type open_file(const fs::path& path, bool readonly,
                  creation_disposition, FILE_ATTRIBUTE_NORMAL, nullptr);
   if (handle == INVALID_HANDLE_VALUE) {
     ec = std::error_code(GetLastError(), std::system_category());
-    return INVALID_HANDLE_VALUE;
+    return invalid_handle;
   }
 
   BY_HANDLE_FILE_INFORMATION handle_info;
   if (GetFileInformationByHandle(handle, &handle_info) == 0) {
     ec = std::error_code(GetLastError(), std::system_category());
     CloseHandle(handle);
-    return INVALID_HANDLE_VALUE;
+    return invalid_handle;
   }
 
   // Based on Microsoft's C++ STL implementation: If a file is not a reparse
@@ -68,7 +75,7 @@ file::native_handle_type open_file(const fs::path& path, bool readonly,
       (handle_info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0) {
     ec = std::make_error_code(std::errc::not_supported);
     CloseHandle(handle);
-    return INVALID_HANDLE_VALUE;
+    return invalid_handle;
   }
 #else
   constexpr mode_t mode = 0644;
@@ -76,20 +83,20 @@ file::native_handle_type open_file(const fs::path& path, bool readonly,
   int handle = open(path.c_str(), oflag, mode);
   if (handle == -1) {
     ec = std::error_code(errno, std::system_category());
-    return -1;
+    return invalid_handle;
   }
 
   struct stat file_stat;
   if (fstat(handle, &file_stat) == -1) {
     ec = std::error_code(errno, std::system_category());
     close(handle);
-    return -1;
+    return invalid_handle;
   }
 
   if ((file_stat.st_mode & S_IFMT) != S_IFREG) {
     ec = std::make_error_code(std::errc::not_supported);
     close(handle);
-    return -1;
+    return invalid_handle;
   }
 #endif
 
