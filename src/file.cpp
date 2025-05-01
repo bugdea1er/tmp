@@ -20,6 +20,7 @@
 #else
 #include <cerrno>
 #include <fcntl.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #endif
 
@@ -40,8 +41,6 @@ using buffer_type = std::array<std::byte, block_size>;
 /// @returns A handle to the open file
 file::native_handle_type open_file(const fs::path& path, bool readonly,
                                    std::error_code& ec) noexcept {
-  ec.clear();
-
 #ifdef _WIN32
   DWORD access = readonly ? GENERIC_READ : GENERIC_WRITE;
   DWORD creation_disposition = readonly ? OPEN_EXISTING : CREATE_ALWAYS;
@@ -59,9 +58,22 @@ file::native_handle_type open_file(const fs::path& path, bool readonly,
   int handle = open(path.c_str(), oflag, mode);
   if (handle == -1) {
     ec = std::error_code(errno, std::system_category());
+    return -1;
+  }
+
+  struct stat file_stat;
+  if (fstat(handle, &file_stat) == -1) {
+    ec = std::error_code(errno, std::system_category());
+    return -1;
+  }
+
+  if ((file_stat.st_mode & S_IFMT) != S_IFREG) {
+    ec = std::make_error_code(std::errc::not_supported);
+    return -1;
   }
 #endif
 
+  ec.clear();
   return handle;
 }
 
