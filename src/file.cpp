@@ -57,6 +57,7 @@ file::native_handle_type open_file(const fs::path& path, bool readonly,
   BY_HANDLE_FILE_INFORMATION handle_info;
   if (GetFileInformationByHandle(handle, &handle_info) == 0) {
     ec = std::error_code(GetLastError(), std::system_category());
+    CloseHandle(handle);
     return INVALID_HANDLE_VALUE;
   }
 
@@ -66,6 +67,7 @@ file::native_handle_type open_file(const fs::path& path, bool readonly,
   if ((handle_info.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0 ||
       (handle_info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0) {
     ec = std::make_error_code(std::errc::not_supported);
+    CloseHandle(handle);
     return INVALID_HANDLE_VALUE;
   }
 #else
@@ -80,11 +82,13 @@ file::native_handle_type open_file(const fs::path& path, bool readonly,
   struct stat file_stat;
   if (fstat(handle, &file_stat) == -1) {
     ec = std::error_code(errno, std::system_category());
+    close(handle);
     return -1;
   }
 
   if ((file_stat.st_mode & S_IFMT) != S_IFREG) {
     ec = std::make_error_code(std::errc::not_supported);
+    close(handle);
     return -1;
   }
 #endif
