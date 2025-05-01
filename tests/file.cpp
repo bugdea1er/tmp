@@ -138,7 +138,21 @@ TEST(file, ios_flags) {
 }
 
 /// Tests creation of a temporary copy of a file
-TEST(file, copy_file) {
+TEST(file, copy_empty_file) {
+  std::ofstream original = std::ofstream("empty.txt", std::ios::binary);
+
+  file copy = file::copy("empty.txt");
+  EXPECT_TRUE(fs::exists("empty.txt"));
+  EXPECT_TRUE(is_open(copy));
+
+  // Test file copy contents
+  copy.seekg(0, std::ios::beg);
+  std::string content = std::string(std::istreambuf_iterator(copy), {});
+  EXPECT_EQ(content, "");
+}
+
+/// Tests creation of a temporary copy of a file
+TEST(file, copy_non_empty_file) {
   std::ofstream original = std::ofstream("existing.txt", std::ios::binary);
   original << "Hello, world!" << std::flush;
 
