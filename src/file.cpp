@@ -63,9 +63,8 @@ file::native_handle_type open_file(const fs::path& path, bool readonly,
   // Based on Microsoft's C++ STL implementation: If a file is not a reparse
   // point and is not a directory, then it is considered a regular file
   // https://github.com/microsoft/STL/blob/main/stl/inc/filesystem#L1982
-  DWORD attributes = handle_info.dwFileAttributes;
-  if (attributes & FILE_ATTRIBUTE_REPARSE_POINT != 0 ||
-      attributes & FILE_ATTRIBUTE_DIRECTORY != 0) {
+  if ((handle_info.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0 ||
+      (handle_info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0) {
     ec = std::make_error_code(std::errc::not_supported);
     return INVALID_HANDLE_VALUE;
   }
