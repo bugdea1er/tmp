@@ -197,6 +197,8 @@ void copy_file(file::native_handle_type from, file::native_handle_type to,
     }
 #endif
   }
+
+  ec.clear();
 }
 #endif
 }    // namespace
