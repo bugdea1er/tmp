@@ -135,7 +135,6 @@ void copy_file(file::native_handle_type from, file::native_handle_type to,
 /// @param[out] ec   Parameter for error reporting
 void copy_file(file::native_handle_type from, file::native_handle_type to,
                std::error_code& ec) noexcept {
-
   while (true) {
     ssize_t res = sendfile(to, from, nullptr, INT_MAX);
     if (res == -1) {
@@ -151,20 +150,15 @@ void copy_file(file::native_handle_type from, file::native_handle_type to,
   ec.clear();
 }
 #else
-/// A block size for file reading
-/// @note should always be less than INT_MAX
-constexpr std::size_t block_size = 4096;
-
-/// A type of buffer for I/O file operations
-using buffer_type = std::array<std::byte, block_size>;
-
 /// Copies file contents from one file descriptor to another
 /// @param[in]  from The source file descriptor
 /// @param[in]  to   The target file descriptor
 /// @param[out] ec   Parameter for error reporting
 void copy_file(file::native_handle_type from, file::native_handle_type to,
                std::error_code& ec) noexcept {
-  buffer_type buffer = buffer_type();
+  constexpr std::size_t blk_size = 4096;
+  std::array<std::byte, blk_size> buffer = std::array<std::byte, blk_size>();
+
   while (true) {
 #ifdef _WIN32
     DWORD bytes_read;
@@ -173,7 +167,7 @@ void copy_file(file::native_handle_type from, file::native_handle_type to,
       break;
     }
 #else
-    ssize_t bytes_read = read(from, buffer.data(), block_size);
+    ssize_t bytes_read = read(from, buffer.data(), blk_size);
     if (bytes_read < 0) {
       ec = std::error_code(errno, std::system_category());
       break;
