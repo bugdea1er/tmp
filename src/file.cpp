@@ -38,8 +38,8 @@ using buffer_type = std::array<std::byte, block_size>;
 /// @param[in]  readonly Whether to open file only for reading
 /// @param[out] ec       Parameter for error reporting
 /// @returns A handle to the open file
-file::native_handle_type open(const fs::path& path, bool readonly,
-                              std::error_code& ec) noexcept {
+file::native_handle_type open_file(const fs::path& path, bool readonly,
+                                   std::error_code& ec) noexcept {
   ec.clear();
 
 #ifdef _WIN32
@@ -56,7 +56,7 @@ file::native_handle_type open(const fs::path& path, bool readonly,
 #else
   constexpr mode_t mode = 0644;
   int oflag = readonly ? O_RDONLY | O_NONBLOCK : O_RDWR | O_TRUNC | O_CREAT;
-  int handle = ::open(path.c_str(), oflag, mode);
+  int handle = open(path.c_str(), oflag, mode);
   if (handle == -1) {
     ec = std::error_code(errno, std::system_category());
   }
@@ -153,7 +153,7 @@ file file::copy(const fs::path& path, std::ios::openmode mode) {
   file tmpfile = file(mode);
 
   std::error_code ec;
-  native_handle_type source = open(path, /*readonly=*/true, ec);
+  native_handle_type source = open_file(path, /*readonly=*/true, ec);
   if (!ec) {
     copy_file(source, tmpfile.native_handle(), ec);
     close_file(source);
@@ -183,7 +183,7 @@ void file::move(const fs::path& to) {
   //        other hard links, so I just copy it even within the same file system
 
   std::error_code ec;
-  native_handle_type target = open(to, /*readonly=*/false, ec);
+  native_handle_type target = open_file(to, /*readonly=*/false, ec);
   if (!ec) {
     copy_file(native_handle(), target, ec);
     close_file(target);
