@@ -12,6 +12,10 @@
 #include <system_error>
 #include <utility>
 
+#if __has_include(<copyfile.h>)
+#include <copyfile.h>
+#endif
+
 #ifdef _WIN32
 #define NOMINMAX
 #define UNICODE
@@ -120,6 +124,13 @@ void close_file(file::native_handle_type handle) noexcept {
 /// @param[out] ec   Parameter for error reporting
 void copy_file(file::native_handle_type from, file::native_handle_type to,
                std::error_code& ec) noexcept {
+#if __has_include(<copyfile.h>)
+  if (fcopyfile(from, to, nullptr, COPYFILE_DATA) != 0) {
+    ec = std::error_code(errno, std::system_category());
+    return;
+  }
+#endif
+
   // TODO: can be optimized using `sendfile`, `copyfile` or other system API
   buffer_type buffer = buffer_type();
   while (true) {
