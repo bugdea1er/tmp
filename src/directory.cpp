@@ -12,10 +12,6 @@
 namespace tmp {
 namespace {
 
-/// Options for recursive overwriting copying
-constexpr fs::copy_options copy_options =
-    fs::copy_options::recursive | fs::copy_options::overwrite_existing;
-
 /// Deletes a directory recursively, ignoring any errors
 /// @param[in] path The path to the directory to delete
 void remove_directory(const fs::path& path) noexcept {
@@ -26,49 +22,6 @@ void remove_directory(const fs::path& path) noexcept {
     } catch (const std::bad_alloc& ex) {
       static_cast<void>(ex);
     }
-  }
-}
-
-/// Moves the directory recursively as if by `std::filesystem::rename`
-/// even when moving between filesystems
-/// @param[in]  from The path to the directory to move
-/// @param[in]  to   The target path
-/// @param[out] ec   Parameter for error reporting
-void move_directory(const fs::path& from, const fs::path& to,
-                    std::error_code& ec) {
-  // FIXME: fs::is_directory can throw here
-  // FIXME: Time-of-check to time-of-use
-  if (fs::exists(to) && !fs::is_directory(to)) {
-    ec = std::make_error_code(std::errc::not_a_directory);
-    return;
-  }
-
-  bool copying = false;
-
-#ifdef _WIN32
-  // On Windows, it is unspecified what error will be returned when
-  // renaming between multiple volumes; so we need to check this manually
-  // before taking any action
-  copying = from.root_name() != to.root_name();
-  if (copying) {
-    fs::copy(from, to, copy_options, ec);
-  } else {
-    fs::rename(from, to, ec);
-  }
-#else
-  // On POSIX-compliant systems, the underlying `rename` function may return
-  // `EXDEV` if the implementation does not support links between file systems;
-  // so we try to rename the file, and if we fail with `EXDEV`, move it manually
-  fs::rename(from, to, ec);
-  copying = ec == std::errc::cross_device_link;
-  if (copying) {
-    fs::remove_all(to);
-    fs::copy(from, to, copy_options, ec);
-  }
-#endif
-
-  if (!ec && copying) {
-    remove_directory(from);
   }
 }
 }    // namespace
@@ -100,18 +53,6 @@ const fs::path& directory::path() const noexcept {
 
 fs::path directory::operator/(const fs::path& source) const {
   return path() / source;
-}
-
-void directory::move(const fs::path& to) {
-  std::error_code ec;
-  move_directory(*this, to, ec);
-
-  if (ec) {
-    throw fs::filesystem_error("Cannot move a temporary directory", path(), to,
-                               ec);
-  }
-
-  pathobject.clear();
 }
 
 directory::~directory() noexcept {

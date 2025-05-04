@@ -255,29 +255,6 @@ file::native_handle_type file::native_handle() const noexcept {
 #endif
 }
 
-void file::move(const fs::path& to) {
-  flush();
-  seekg(0, std::ios::beg);
-
-  // There is no way to create a hard link to a file without hard links
-  // on POSIX and Windows. The only option is to use `AT_EMPTY_PATH`
-  // with `linkat` on Linux platforms; but given that the file is created
-  // in tmpfs, and the persistent storage where the file is moved
-  // is not in tmpfs, this optimization is useless.
-  // So, we copy the file
-
-  std::error_code ec;
-  native_handle_type target = open_file(to, /*readonly=*/false, ec);
-  if (!ec) {
-    copy_file(native_handle(), target, ec);
-    close_file(target);
-  }
-
-  if (ec) {
-    throw fs::filesystem_error("Cannot move a temporary file", to, ec);
-  }
-}
-
 file::~file() noexcept = default;
 
 // NOLINTBEGIN(*-use-after-move)
