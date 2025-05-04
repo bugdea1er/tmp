@@ -43,7 +43,11 @@ directory::~directory() noexcept {
 
   try {
     if (!path().empty()) {
-      fs::remove_all(path());
+      // Calling the `std::error_code` overload of `fs::remove_all` should be
+      // more optimal here since it would not require creating
+      // a `fs::filesystem_error` message before we suppress the exception
+      std::error_code ec;
+      fs::remove_all(path(), ec);
     }
   } catch (...) {
     // do nothing
