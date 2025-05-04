@@ -59,7 +59,7 @@ The temporary file is deleted of when either of the following happens:
 
 `tmp::file` inherits from the `std::iostream` class, allowing it to be used seamlessly with standard input/output operations and simplifying file handling while maintaining the flexibility of stream operations.
 
-The example below demonstrates a usage of a tmp::file object to validate a request content and then move it to persistent storage; note that after the `move()` call, the temporary file will not be deleted, as its ownership is transferred to the specified location:
+The example below demonstrates a usage of a `tmp::file` object to validate a request content and then unarchive it to persistent storage:
 
 ```cpp
 #include <tmp/file>
@@ -68,8 +68,8 @@ auto func(std::string_view content) {
   auto tmpfile = tmp::file(std::ios::binary);
   tmpfile << contents << std::flush;
   if (validate(tmpfile)) {
-    // Save the file to the persistent storage
-    tmpfile.move(storage / "new_file");
+    // Unarchive the file to the persistent storage
+    archive::unzip(tmpfile, storage);
   } else {
     // The file is deleted automatically
     throw InvalidRequestError();
