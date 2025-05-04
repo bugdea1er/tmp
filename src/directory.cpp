@@ -4,7 +4,6 @@
 #include <tmp/directory>
 
 #include <filesystem>
-#include <new>
 #include <string_view>
 #include <system_error>
 #include <utility>
@@ -43,13 +42,17 @@ fs::path directory::operator/(const fs::path& source) const {
 directory::~directory() noexcept {
   (void)reserved;    // Old compilers do not want to accept `[[maybe_unused]]`
 
-  if (!path().empty()) {
-    try {
+  try {
+    if (!path().empty()) {
+      // Calling the `std::error_code` overload of `fs::remove_all` should be
+      // more optimal here since it would not require creating
+      // a `fs::filesystem_error` message before we suppress the exception
       std::error_code ec;
       fs::remove_all(path(), ec);
-    } catch (const std::bad_alloc& ex) {
-      static_cast<void>(ex);
     }
+  } catch (...) {
+    // Do nothing: if we failed to delete the temporary directory,
+    // the system should do it later
   }
 }
 
