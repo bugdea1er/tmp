@@ -81,8 +81,7 @@ public:
   /// @returns The underlying implementation-defined handle
   native_handle_type native_handle() const noexcept;
 
-  /// Links this file to the given path if it is on the same filesystem,
-  /// or copies it otherwise
+  /// Flushes buffered input and copies this file to the given path
   /// @param to The target path
   /// @throws std::filesystem::filesystem_error if cannot move the file
   void move(const std::filesystem::path& to);
