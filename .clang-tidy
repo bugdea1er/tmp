@@ -13,6 +13,7 @@ Checks: >
   -*-use-default-member-init,
   -*-noexcept-move-*,
   -bugprone-easily-swappable-parameters,
+  -bugprone-empty-catch,
   -cppcoreguidelines-avoid-do-while,
   -cppcoreguidelines-init-variables,
   -cppcoreguidelines-pro-type-member-init,

@@ -3,9 +3,7 @@
 
 #include <tmp/directory>
 
-#include <exception>
 #include <filesystem>
-#include <iostream>
 #include <string_view>
 #include <utility>
 
@@ -47,8 +45,8 @@ directory::~directory() noexcept {
     if (!path().empty()) {
       fs::remove_all(path());
     }
-  } catch (const std::exception& ex) {
-    std::cerr << "tmp::directory::~directory() error: " << ex.what() << '\n';
+  } catch (...) {
+    // do nothing
   }
 }
 
