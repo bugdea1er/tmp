@@ -34,8 +34,13 @@
 namespace tmp {
 namespace {
 
+/// RAII wrapper for native open file descriptor
+/// @note closes the file in destructor
 class file_handle {
 public:
+  /// Opens a file for reading
+  /// @param[in]  path The path to the file to open
+  /// @param[out] ec   Parameter for error reporting
   file_handle(const fs::path& path, std::error_code& ec) {
 #ifdef _WIN32
     handle = CreateFile(path.c_str(), GENERIC_READ,
@@ -82,10 +87,12 @@ public:
     ec.clear();
   }
 
+  /// Returns the underlying file handle
   operator file::native_handle_type() const noexcept {
     return handle;
   }
 
+  /// Closes the file, ignoring any errors
   ~file_handle() noexcept {
 #ifdef _WIN32
     CloseHandle(handle);
@@ -95,6 +102,7 @@ public:
   }
 
 private:
+  /// Returns the underlying file handle
   file::native_handle_type handle;
 };
 
