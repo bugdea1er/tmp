@@ -4,6 +4,7 @@
 #include <tmp/directory>
 
 #include <filesystem>
+#include <iostream>
 #include <new>
 #include <string_view>
 #include <system_error>
@@ -43,13 +44,12 @@ fs::path directory::operator/(const fs::path& source) const {
 directory::~directory() noexcept {
   (void)reserved;    // Old compilers do not want to accept `[[maybe_unused]]`
 
-  if (!path().empty()) {
-    try {
-      std::error_code ec;
-      fs::remove_all(path(), ec);
-    } catch (const std::bad_alloc& ex) {
-      static_cast<void>(ex);
+  try {
+    if (!path().empty()) {
+      fs::remove_all(path());
     }
+  } catch (const std::exception& ex) {
+    std::cerr << "tmp::directory::~directory() error: " << ex.what() << '\n';
   }
 }
 
