@@ -98,16 +98,6 @@ file::native_handle_type open_file(const fs::path& path,
   return handle;
 }
 
-/// Closes the given handle, ignoring any errors
-/// @param[in] handle The handle to close
-void close_file(file::native_handle_type handle) noexcept {
-#ifdef _WIN32
-  CloseHandle(handle);
-#else
-  close(handle);
-#endif
-}
-
 #if __has_include(<copyfile.h>)
 /// Copies file contents from one file descriptor to another
 /// @param[in]  from The source file descriptor
@@ -191,78 +181,30 @@ void copy_file(file::native_handle_type from, file::native_handle_type to,
 #endif
 }    // namespace
 
-file::file(std::ios::openmode mode)
-    : std::iostream(std::addressof(sb))
-#if defined(_MSC_VER)
-      ,
-      underlying(create_file(mode), &std::fclose),
-      sb(underlying.get())
-#elif defined(_LIBCPP_VERSION)
-      ,
-      handle(create_file())
-#endif
-{
-#ifndef _MSC_VER
-  mode |= std::ios::in | std::ios::out;
-
-#if defined(__GLIBCXX__)
-  int handle = create_file();
-  sb = __gnu_cxx::stdio_filebuf<char>(handle, mode);
-#elif defined(_LIBCPP_VERSION)
-  sb.__open(handle, mode);
-#endif
-#endif
-
-  if (!sb.is_open()) {
-#ifndef _WIN32
-    close_file(handle);
-#endif
-    throw std::invalid_argument(
-        "Cannot create a temporary file: invalid openmode");
-  }
-}
-
-file file::copy(const fs::path& path, std::ios::openmode mode) {
-  file tmpfile = file(mode);
-
+/// Copies file contents from the given path to the given file descriptor
+/// @param[in] from The path to the source file
+/// @param[in] to   The target file descriptor
+/// @throws std::filesystem::filesystem_error if cannot copy the file
+void copy_file(const fs::path& from, file::native_handle_type to) {
   std::error_code ec;
-  native_handle_type source = open_file(path, ec);
+  file::native_handle_type source = open_file(from, ec);
   if (!ec) {
-    copy_file(source, tmpfile.native_handle(), ec);
-    close_file(source);
+    copy_file(source, to, ec);
+    close(source);
   }
 
   if (ec) {
-    throw fs::filesystem_error("Cannot create a temporary copy", path, ec);
+    throw fs::filesystem_error("Cannot create a temporary copy", from, ec);
   }
-
-  return tmpfile;
 }
 
-file::native_handle_type file::native_handle() const noexcept {
-#if defined(__GLIBCXX__)
-  return sb.fd();
-#elif defined(_LIBCPP_VERSION)
-  return handle;
-#else    // MSVC
-  return reinterpret_cast<void*>(_get_osfhandle(_fileno(underlying.get())));
+/// Closes the given handle, ignoring any errors
+/// @param[in] handle The handle to close
+void close_file(file::native_handle_type handle) noexcept {
+#ifdef _WIN32
+  CloseHandle(handle);
+#else
+  close(handle);
 #endif
 }
-
-file::~file() noexcept = default;
-
-// NOLINTBEGIN(*-use-after-move)
-file::file(file&& other) noexcept
-    : std::iostream(std::move(other)),
-#if defined(_MSC_VER)
-      underlying(std::move(other.underlying)),
-#elif defined(_LIBCPP_VERSION)
-      handle(other.handle),
-#endif
-      sb(std::move(other.sb)) {
-  set_rdbuf(std::addressof(sb));
-}
-// NOLINTEND(*-use-after-move)
-
-file& file::operator=(file&& other) = default;
 }    // namespace tmp

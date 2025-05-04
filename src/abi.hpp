@@ -7,10 +7,15 @@
 #define abi __attribute__((visibility("default")))
 #endif
 
+#include <filesystem>
+
 namespace tmp {
 
 class abi directory;
-class abi file;
+
+int create_file(void) abi;
+void copy_file(const std::filesystem::path& from, int to) abi;
+void close_file(int handle) noexcept abi;
 }    // namespace tmp
 
 #endif    // TMP_ABI_H
