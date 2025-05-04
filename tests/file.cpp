@@ -195,7 +195,7 @@ TEST(file, move_to_existing_file) {
 
   {
     file tmpfile = file();
-    tmpfile << "Hello, world!" << std::flush;
+    tmpfile << "Hello, world!";
 
     tmpfile.move(to);
   }
