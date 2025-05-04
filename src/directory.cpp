@@ -10,21 +10,6 @@
 #include <utility>
 
 namespace tmp {
-namespace {
-
-/// Deletes a directory recursively, ignoring any errors
-/// @param[in] path The path to the directory to delete
-void remove_directory(const fs::path& path) noexcept {
-  if (!path.empty()) {
-    try {
-      std::error_code ec;
-      fs::remove_all(path, ec);
-    } catch (const std::bad_alloc& ex) {
-      static_cast<void>(ex);
-    }
-  }
-}
-}    // namespace
 
 directory::directory(std::string_view prefix)
     : pathobject(create_directory(prefix)) {}
@@ -57,7 +42,15 @@ fs::path directory::operator/(const fs::path& source) const {
 
 directory::~directory() noexcept {
   (void)reserved;    // Old compilers do not want to accept `[[maybe_unused]]`
-  remove_directory(*this);
+
+  if (!path().empty()) {
+    try {
+      std::error_code ec;
+      fs::remove_all(path(), ec);
+    } catch (const std::bad_alloc& ex) {
+      static_cast<void>(ex);
+    }
+  }
 }
 
 directory::directory(directory&& other) noexcept
