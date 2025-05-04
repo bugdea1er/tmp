@@ -3,11 +3,10 @@
 
 #include <tmp/directory>
 
+#include <exception>
 #include <filesystem>
 #include <iostream>
-#include <new>
 #include <string_view>
-#include <system_error>
 #include <utility>
 
 namespace tmp {
