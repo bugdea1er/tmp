@@ -41,21 +41,17 @@ const file::native_handle_type invalid_handle = nullptr;
 const file::native_handle_type invalid_handle = -1;
 #endif
 
-/// Opens a file and returns its handle
+/// Opens a file for reading and returns its handle
 /// @param[in]  path     The path to the file to open
-/// @param[in]  readonly Whether to open file only for reading
 /// @param[out] ec       Parameter for error reporting
 /// @returns A handle to the open file
-file::native_handle_type open_file(const fs::path& path, bool readonly,
+file::native_handle_type open_file(const fs::path& path,
                                    std::error_code& ec) noexcept {
 #ifdef _WIN32
-  DWORD access = readonly ? GENERIC_READ : GENERIC_WRITE;
-  DWORD creation_disposition = readonly ? OPEN_EXISTING : CREATE_ALWAYS;
-  DWORD share_mode = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
-
   HANDLE handle =
-      CreateFile(path.c_str(), access, share_mode, nullptr,
-                 creation_disposition, FILE_ATTRIBUTE_NORMAL, nullptr);
+      CreateFile(path.c_str(), GENERIC_READ,
+                 FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                 nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
   if (handle == INVALID_HANDLE_VALUE) {
     ec = std::error_code(GetLastError(), std::system_category());
     return invalid_handle;
@@ -78,9 +74,7 @@ file::native_handle_type open_file(const fs::path& path, bool readonly,
     return invalid_handle;
   }
 #else
-  constexpr mode_t mode = 0644;
-  int oflag = readonly ? O_RDONLY | O_NONBLOCK : O_RDWR | O_TRUNC | O_CREAT;
-  int handle = open(path.c_str(), oflag, mode);
+  int handle = open(path.c_str(), O_RDONLY | O_NONBLOCK);
   if (handle == -1) {
     ec = std::error_code(errno, std::system_category());
     return invalid_handle;
@@ -232,7 +226,7 @@ file file::copy(const fs::path& path, std::ios::openmode mode) {
   file tmpfile = file(mode);
 
   std::error_code ec;
-  native_handle_type source = open_file(path, /*readonly=*/true, ec);
+  native_handle_type source = open_file(path, ec);
   if (!ec) {
     copy_file(source, tmpfile.native_handle(), ec);
     close_file(source);
@@ -253,29 +247,6 @@ file::native_handle_type file::native_handle() const noexcept {
 #else    // MSVC
   return reinterpret_cast<void*>(_get_osfhandle(_fileno(underlying.get())));
 #endif
-}
-
-void file::move(const fs::path& to) {
-  flush();
-  seekg(0, std::ios::beg);
-
-  // There is no way to create a hard link to a file without hard links
-  // on POSIX and Windows. The only option is to use `AT_EMPTY_PATH`
-  // with `linkat` on Linux platforms; but given that the file is created
-  // in tmpfs, and the persistent storage where the file is moved
-  // is not in tmpfs, this optimization is useless.
-  // So, we copy the file
-
-  std::error_code ec;
-  native_handle_type target = open_file(to, /*readonly=*/false, ec);
-  if (!ec) {
-    copy_file(native_handle(), target, ec);
-    close_file(target);
-  }
-
-  if (ec) {
-    throw fs::filesystem_error("Cannot move a temporary file", to, ec);
-  }
 }
 
 file::~file() noexcept = default;

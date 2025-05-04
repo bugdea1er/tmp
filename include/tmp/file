@@ -28,10 +28,8 @@ namespace tmp {
 /// used seamlessly with standard input/output operations and simplifying file
 /// handling while maintaining the flexibility of stream operations
 ///
-/// The example below demonstrates a usage of a tmp::file object to validate
-/// a request content and then move it to persistent storage; note that after
-/// the move() call, the temporary file will not be deleted, as its ownership
-/// is transferred to the specified location:
+/// The example below demonstrates a usage of a `tmp::file` object to validate
+/// a request content and then unarchive it to persistent storage:
 ///
 /// @code{.cpp}
 ///   #include <tmp/file>
@@ -40,8 +38,8 @@ namespace tmp {
 ///     auto tmpfile = tmp::file(std::ios::binary);
 ///     tmpfile << contents << std::flush;
 ///     if (validate(tmpfile)) {
-///       // Save the file to the persistent storage
-///       tmpfile.move(storage / "new_file");
+///       // Unarchive the file to the persistent storage
+///       archive::unzip(tmpfile, storage);
 ///     } else {
 ///       // The file is deleted automatically
 ///       throw InvalidRequestError();
@@ -80,11 +78,6 @@ public:
   /// Returns an implementation-defined handle to this file
   /// @returns The underlying implementation-defined handle
   native_handle_type native_handle() const noexcept;
-
-  /// Flushes buffered input and copies this file to the given path
-  /// @param to The target path
-  /// @throws std::filesystem::filesystem_error if cannot move the file
-  void move(const std::filesystem::path& to);
 
   /// Closes and deletes this file
   ~file() noexcept override;
