@@ -51,7 +51,8 @@ directory::~directory() noexcept {
       fs::remove_all(path(), ec);
     }
   } catch (...) {
-    // do nothing
+    // Do nothing: if we failed to delete the temporary directory,
+    // the system should do it later
   }
 }
 
