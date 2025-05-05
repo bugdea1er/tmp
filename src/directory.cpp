@@ -20,8 +20,18 @@ directory directory::copy(const fs::path& path, std::string_view prefix) {
   // since there is no way to tell it to fail if `from` is not a directory;
   // a properly implemented `fs::directory_iterator` opens a path and checks
   // whether it is a directory atomically
-  for (const fs::directory_entry& entry : fs::directory_iterator(path)) {
-    fs::copy(entry, dir / entry.path().filename(), fs::copy_options::recursive);
+
+  std::error_code ec;
+  for (fs::directory_iterator it = fs::directory_iterator(path, ec);
+       !ec && it != fs::directory_iterator(); it.increment(ec)) {
+    fs::copy(*it, dir / it->path().filename(), fs::copy_options::recursive, ec);
+    if (ec) {
+      break;
+    }
+  }
+
+  if (ec) {
+    throw fs::filesystem_error("Cannot create a temporary copy", path, ec);
   }
 
   return dir;
