@@ -11,6 +11,12 @@
 #include <string_view>
 #include <utility>
 
+#ifdef _WIN32
+#define NOMINMAX
+#define UNICODE
+#include <Windows.h>
+#endif
+
 namespace tmp {
 namespace {
 
@@ -125,7 +131,13 @@ TEST(directory, copy_file) {
 TEST(directory, copy_directory_without_permissions) {
   directory tmpdir = directory();
   std::ofstream(tmpdir / "file") << "Hello, world!";
+
+#ifdef _WIN32
+  HANDLE handle = CreateFile((tmpdir / "file").c_str(), GENERIC_READ, 0, NULL,
+                             OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+#else
   fs::permissions(tmpdir / "file", fs::perms::none);
+#endif
 
   try {
     directory::copy(tmpdir);
@@ -135,7 +147,11 @@ TEST(directory, copy_directory_without_permissions) {
     EXPECT_EQ(ex.path2(), fs::path());
   }
 
+#ifdef _WIN32
+  CloseHandle(handle);
+#else
   fs::permissions(tmpdir / "file", fs::perms::all);
+#endif
 }
 
 /// Tests `operator/` of directory
