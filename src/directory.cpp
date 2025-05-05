@@ -27,7 +27,7 @@ void remove_directory(const directory& directory) noexcept {
     // the system should do it later
   }
 }
-}
+}    // namespace
 
 directory::directory(std::string_view prefix)
     : pathobject(create_directory(prefix)) {}
