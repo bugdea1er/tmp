@@ -106,8 +106,8 @@ public:
 #endif
   }
 
-  file_handle(file_handle&&) noexcept = default;
-  file_handle& operator=(file_handle&&) = default;
+  file_handle(file_handle&&) noexcept = delete;
+  file_handle& operator=(file_handle&&) = delete;
   file_handle(const file_handle&) = delete;
   file_handle& operator=(const file_handle&) = delete;
 
