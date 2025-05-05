@@ -41,11 +41,17 @@ public:
   /// Opens a file for reading
   /// @param[in]  path The path to the file to open
   /// @param[out] ec   Parameter for error reporting
-  file_handle(const fs::path& path, std::error_code& ec) {
+  file_handle(const fs::path& path, std::error_code& ec)
 #ifdef _WIN32
-    handle = CreateFile(path.c_str(), GENERIC_READ,
-                        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                        nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+      : handle(
+            CreateFile(path.c_str(), GENERIC_READ,
+                       FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                       nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr))
+#else
+      : handle(open(path.c_str(), O_RDONLY | O_NONBLOCK))
+#endif
+  {
+#ifdef _WIN32
     if (handle == INVALID_HANDLE_VALUE) {
       ec = std::error_code(GetLastError(), std::system_category());
       return;
@@ -66,7 +72,6 @@ public:
       return;
     }
 #else
-    handle = open(path.c_str(), O_RDONLY | O_NONBLOCK);
     if (handle == -1) {
       ec = std::error_code(errno, std::system_category());
       return;
@@ -100,6 +105,11 @@ public:
     close(handle);
 #endif
   }
+
+  file_handle(file_handle&&) noexcept = default;
+  file_handle& operator=(file_handle&&) = default;
+  file_handle(const file_handle&) = delete;
+  file_handle& operator=(const file_handle&) = delete;
 
 private:
   /// Returns the underlying file handle
