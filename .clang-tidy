@@ -13,6 +13,7 @@ Checks: >
   -*-use-default-member-init,
   -*-noexcept-move-*,
   -bugprone-easily-swappable-parameters,
+  -bugprone-empty-catch,
   -cppcoreguidelines-avoid-do-while,
   -cppcoreguidelines-init-variables,
   -cppcoreguidelines-pro-type-member-init,
@@ -26,5 +27,5 @@ Checks: >
   -readability-named-parameter
 
 CheckOptions:
-  readability-identifier-length.IgnoredParameterNames: 'ec|to'
-  readability-identifier-length.IgnoredVariableNames: 'ec|to'
+  readability-identifier-length.IgnoredParameterNames: 'ec|to|it'
+  readability-identifier-length.IgnoredVariableNames: 'ec|to|it'
