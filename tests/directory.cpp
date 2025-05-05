@@ -11,6 +11,12 @@
 #include <string_view>
 #include <utility>
 
+#ifdef _WIN32
+#define NOMINMAX
+#define UNICODE
+#include <Windows.h>
+#endif
+
 namespace tmp {
 namespace {
 
@@ -85,6 +91,8 @@ TEST(directory, create_invalid_prefix) {
 TEST(directory, copy_directory) {
   directory tmpdir = directory();
   std::ofstream(tmpdir / "file") << "Hello, world!";
+  fs::create_directory(tmpdir / "dir");
+  std::ofstream(tmpdir / "dir" / "file2") << "Goodbye, world!";
 
   directory copy = directory::copy(tmpdir);
   EXPECT_TRUE(fs::exists(tmpdir));
@@ -93,15 +101,57 @@ TEST(directory, copy_directory) {
 
   EXPECT_TRUE(fs::is_directory(copy));
 
-  std::ifstream stream = std::ifstream(copy / "file");
-  std::string content = std::string(std::istreambuf_iterator(stream), {});
-  EXPECT_EQ(content, "Hello, world!");
+  {
+    std::ifstream stream = std::ifstream(copy / "file");
+    std::string content = std::string(std::istreambuf_iterator(stream), {});
+    EXPECT_EQ(content, "Hello, world!");
+  }
+
+  {
+    std::ifstream stream = std::ifstream(copy / "dir" / "file2");
+    std::string content = std::string(std::istreambuf_iterator(stream), {});
+    EXPECT_EQ(content, "Goodbye, world!");
+  }
 }
 
 /// Tests creation of a temporary copy of a file
 TEST(directory, copy_file) {
   std::ofstream("existing.txt", std::ios::binary) << "Hello, world!";
-  EXPECT_THROW(directory::copy("existing.txt"), fs::filesystem_error);
+
+  try {
+    directory::copy("existing.txt");
+    FAIL();
+  } catch (const fs::filesystem_error& ex) {
+    EXPECT_EQ(ex.path1(), "existing.txt");
+    EXPECT_EQ(ex.path2(), fs::path());
+  }
+}
+
+/// Tests creation of a temporary copy without permissions
+TEST(directory, copy_directory_without_permissions) {
+  directory tmpdir = directory();
+  std::ofstream(tmpdir / "file") << "Hello, world!";
+
+#ifdef _WIN32
+  HANDLE handle = CreateFile((tmpdir / "file").c_str(), GENERIC_READ, 0, NULL,
+                             OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+#else
+  fs::permissions(tmpdir / "file", fs::perms::none);
+#endif
+
+  try {
+    directory::copy(tmpdir);
+    FAIL();
+  } catch (const fs::filesystem_error& ex) {
+    EXPECT_EQ(ex.path1(), tmpdir);
+    EXPECT_EQ(ex.path2(), fs::path());
+  }
+
+#ifdef _WIN32
+  CloseHandle(handle);
+#else
+  fs::permissions(tmpdir / "file", fs::perms::all);
+#endif
 }
 
 /// Tests `operator/` of directory
