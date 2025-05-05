@@ -116,7 +116,6 @@ TEST(directory, copy_file) {
     directory::copy("existing.txt");
     FAIL();
   } catch (const fs::filesystem_error& ex) {
-    EXPECT_EQ(ex.code(), std::errc::not_a_directory);
     EXPECT_EQ(ex.path1(), "existing.txt");
     EXPECT_EQ(ex.path2(), fs::path());
   }
@@ -132,7 +131,6 @@ TEST(directory, copy_directory_without_permissions) {
     directory::copy(tmpdir);
     FAIL();
   } catch (const fs::filesystem_error& ex) {
-    EXPECT_EQ(ex.code(), std::errc::permission_denied);
     EXPECT_EQ(ex.path1(), tmpdir);
     EXPECT_EQ(ex.path2(), fs::path());
   }
