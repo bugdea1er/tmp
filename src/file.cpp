@@ -34,13 +34,6 @@
 namespace tmp {
 namespace {
 
-/// Implementation-defined invalid handle to the file
-#ifdef _WIN32
-const file::native_handle_type invalid_handle = nullptr;
-#else
-const file::native_handle_type invalid_handle = -1;
-#endif
-
 /// Opens a file for reading and returns its handle
 /// @param[in]  path     The path to the file to open
 /// @param[out] ec       Parameter for error reporting
@@ -54,14 +47,14 @@ file::native_handle_type open_file(const fs::path& path,
                  nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
   if (handle == INVALID_HANDLE_VALUE) {
     ec = std::error_code(GetLastError(), std::system_category());
-    return invalid_handle;
+    return handle;
   }
 
   BY_HANDLE_FILE_INFORMATION handle_info;
   if (GetFileInformationByHandle(handle, &handle_info) == 0) {
     ec = std::error_code(GetLastError(), std::system_category());
     CloseHandle(handle);
-    return invalid_handle;
+    return handle;
   }
 
   // Based on Microsoft's C++ STL implementation: If a file is not a reparse
@@ -71,26 +64,26 @@ file::native_handle_type open_file(const fs::path& path,
       (handle_info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0) {
     ec = std::make_error_code(std::errc::not_supported);
     CloseHandle(handle);
-    return invalid_handle;
+    return handle;
   }
 #else
   int handle = open(path.c_str(), O_RDONLY | O_NONBLOCK);
   if (handle == -1) {
     ec = std::error_code(errno, std::system_category());
-    return invalid_handle;
+    return handle;
   }
 
   struct stat file_stat;
   if (fstat(handle, &file_stat) == -1) {
     ec = std::error_code(errno, std::system_category());
     close(handle);
-    return invalid_handle;
+    return handle;
   }
 
   if ((file_stat.st_mode & S_IFMT) != S_IFREG) {
     ec = std::make_error_code(std::errc::not_supported);
     close(handle);
-    return invalid_handle;
+    return handle;
   }
 #endif
 
