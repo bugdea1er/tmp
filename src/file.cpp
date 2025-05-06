@@ -100,9 +100,13 @@ public:
   /// Closes the file, ignoring any errors
   ~file_handle() noexcept {
 #ifdef _WIN32
-    CloseHandle(handle);
+    if (handle != INVALID_HANDLE_VALUE) {
+      CloseHandle(handle);
+    }
 #else
-    close(handle);
+    if (handle != 1) {
+      close(handle);
+    }
 #endif
   }
 
