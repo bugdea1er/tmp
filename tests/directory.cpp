@@ -120,7 +120,7 @@ TEST(directory, copy_file) {
 
   try {
     directory::copy("existing.txt");
-    FAIL();
+    FAIL() << "Expected exception";
   } catch (const fs::filesystem_error& ex) {
     EXPECT_EQ(ex.path1(), "existing.txt");
     EXPECT_EQ(ex.path2(), fs::path());
@@ -141,7 +141,7 @@ TEST(directory, copy_directory_without_permissions) {
 
   try {
     directory::copy(tmpdir);
-    FAIL();
+    FAIL() << "Expected exception";
   } catch (const fs::filesystem_error& ex) {
     EXPECT_EQ(ex.path1(), tmpdir);
     EXPECT_EQ(ex.path2(), fs::path());

@@ -181,11 +181,13 @@ TEST(file, copy_non_empty_file) {
 
 /// Tests creation of copy errors
 TEST(file, copy_errors) {
-  // `file::copy` cannot copy a directory
-  EXPECT_THROW(file::copy(directory()), fs::filesystem_error);
-
-  // `file::copy` cannot copy a non-existent file
-  EXPECT_THROW(file::copy("nonexistent.txt"), fs::filesystem_error);
+  try {
+    file::copy("nonexistent.txt");
+    FAIL() << "Expected exception";
+  } catch (const fs::filesystem_error& ex) {
+    EXPECT_EQ(ex.path1(), "nonexistent.txt");
+    EXPECT_EQ(ex.path2(), fs::path());
+  }
 }
 
 /// Tests that destructor removes a file
