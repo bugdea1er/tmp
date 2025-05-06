@@ -34,72 +34,91 @@
 namespace tmp {
 namespace {
 
-/// Opens a file for reading and returns its handle
-/// @param[in]  path     The path to the file to open
-/// @param[out] ec       Parameter for error reporting
-/// @returns A handle to the open file
-file::native_handle_type open_file(const fs::path& path,
-                                   std::error_code& ec) noexcept {
+/// RAII wrapper for native open file descriptor
+/// @note closes the file in destructor
+class file_handle {
+public:
+  /// Opens a file for reading
+  /// @param[in]  path The path to the file to open
+  /// @param[out] ec   Parameter for error reporting
+  file_handle(const fs::path& path, std::error_code& ec)
 #ifdef _WIN32
-  HANDLE handle =
-      CreateFile(path.c_str(), GENERIC_READ,
-                 FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                 nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-  if (handle == INVALID_HANDLE_VALUE) {
-    ec = std::error_code(GetLastError(), std::system_category());
-    return handle;
-  }
-
-  BY_HANDLE_FILE_INFORMATION handle_info;
-  if (GetFileInformationByHandle(handle, &handle_info) == 0) {
-    ec = std::error_code(GetLastError(), std::system_category());
-    CloseHandle(handle);
-    return handle;
-  }
-
-  // Based on Microsoft's C++ STL implementation: If a file is not a reparse
-  // point and is not a directory, then it is considered a regular file
-  // https://github.com/microsoft/STL/blob/main/stl/inc/filesystem#L1982
-  if ((handle_info.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0 ||
-      (handle_info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0) {
-    ec = std::make_error_code(std::errc::not_supported);
-    CloseHandle(handle);
-    return handle;
-  }
+      : handle(
+            CreateFile(path.c_str(), GENERIC_READ,
+                       FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                       nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr))
 #else
-  int handle = open(path.c_str(), O_RDONLY | O_NONBLOCK);
-  if (handle == -1) {
-    ec = std::error_code(errno, std::system_category());
-    return handle;
-  }
+      : handle(open(path.c_str(), O_RDONLY | O_NONBLOCK))
+#endif
+  {
+#ifdef _WIN32
+    if (handle == INVALID_HANDLE_VALUE) {
+      ec = std::error_code(GetLastError(), std::system_category());
+      return;
+    }
 
-  struct stat file_stat;
-  if (fstat(handle, &file_stat) == -1) {
-    ec = std::error_code(errno, std::system_category());
-    close(handle);
-    return handle;
-  }
+    BY_HANDLE_FILE_INFORMATION handle_info;
+    if (GetFileInformationByHandle(handle, &handle_info) == 0) {
+      ec = std::error_code(GetLastError(), std::system_category());
+      return;
+    }
 
-  if ((file_stat.st_mode & S_IFMT) != S_IFREG) {
-    ec = std::make_error_code(std::errc::not_supported);
-    close(handle);
-    return handle;
-  }
+    // Based on Microsoft's C++ STL implementation: If a file is not a reparse
+    // point and is not a directory, then it is considered a regular file
+    // https://github.com/microsoft/STL/blob/main/stl/inc/filesystem#L1982
+    if ((handle_info.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0 ||
+        (handle_info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0) {
+      ec = std::make_error_code(std::errc::not_supported);
+      return;
+    }
+#else
+    if (handle == -1) {
+      ec = std::error_code(errno, std::system_category());
+      return;
+    }
+
+    struct stat file_stat;
+    if (fstat(handle, &file_stat) == -1) {
+      ec = std::error_code(errno, std::system_category());
+      return;
+    }
+
+    if ((file_stat.st_mode & S_IFMT) != S_IFREG) {
+      ec = std::make_error_code(std::errc::not_supported);
+      return;
+    }
 #endif
 
-  ec.clear();
-  return handle;
-}
+    ec.clear();
+  }
 
-/// Closes the given handle, ignoring any errors
-/// @param[in] handle The handle to close
-void close_file(file::native_handle_type handle) noexcept {
+  /// Returns the underlying file handle
+  operator file::native_handle_type() const noexcept {
+    return handle;
+  }
+
+  /// Closes the file, ignoring any errors
+  ~file_handle() noexcept {
 #ifdef _WIN32
-  CloseHandle(handle);
+    if (handle != INVALID_HANDLE_VALUE) {
+      CloseHandle(handle);
+    }
 #else
-  close(handle);
+    if (handle != 1) {
+      close(handle);
+    }
 #endif
-}
+  }
+
+  file_handle(file_handle&&) noexcept = delete;
+  file_handle& operator=(file_handle&&) = delete;
+  file_handle(const file_handle&) = delete;
+  file_handle& operator=(const file_handle&) = delete;
+
+private:
+  /// Returns the underlying file handle
+  file::native_handle_type handle;
+};
 
 #if __has_include(<copyfile.h>)
 /// Copies file contents from one file descriptor to another
@@ -208,7 +227,7 @@ file::file(std::ios::openmode mode)
 
   if (!sb.is_open()) {
 #ifndef _WIN32
-    close_file(handle);
+    close(handle);
 #endif
     throw std::invalid_argument(
         "Cannot create a temporary file: invalid openmode");
@@ -219,10 +238,9 @@ file file::copy(const fs::path& path, std::ios::openmode mode) {
   file tmpfile = file(mode);
 
   std::error_code ec;
-  native_handle_type source = open_file(path, ec);
+  file_handle source = file_handle(path, ec);
   if (!ec) {
     copy_file(source, tmpfile.native_handle(), ec);
-    close_file(source);
   }
 
   if (ec) {
