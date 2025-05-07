@@ -5,7 +5,9 @@
 
 #include <filesystem>
 #include <string_view>
+#include <sys/fcntl.h>
 #include <system_error>
+#include <unistd.h>
 #include <utility>
 
 namespace tmp {
@@ -30,7 +32,15 @@ void remove_directory(const directory& directory) noexcept {
 }    // namespace
 
 directory::directory(std::string_view prefix)
-    : pathobject(create_directory(prefix)) {}
+    : pathobject(create_directory(prefix)),
+      handle(open(pathobject.c_str(), O_DIRECTORY | O_SHLOCK)) {
+  if (handle == -1) {
+    // TODO: try again
+    // TODO: does constructor delete path here?
+    std::error_code ec = std::error_code(errno, std::system_category());
+    throw fs::filesystem_error("Cannot create a temporary directory", ec);
+  }
+}
 
 directory directory::copy(const fs::path& path, std::string_view prefix) {
   directory dir = directory(prefix);
@@ -69,17 +79,20 @@ fs::path directory::operator/(const fs::path& source) const {
 }
 
 directory::~directory() noexcept {
-  (void)handle;    // Old compilers do not want to accept `[[maybe_unused]]`
+  close(handle);
   remove_directory(*this);
 }
 
 directory::directory(directory&& other) noexcept
-    : pathobject(std::exchange(other.pathobject, fs::path())) {}
+    : pathobject(std::exchange(other.pathobject, fs::path())),
+      handle(std::exchange(other.handle, -1)) {}
 
 directory& directory::operator=(directory&& other) noexcept {
+  close(handle);
   remove_directory(*this);
 
   pathobject = std::exchange(other.pathobject, fs::path());
+  handle = std::exchange(other.handle, -1);
   return *this;
 }
 }    // namespace tmp
