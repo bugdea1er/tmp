@@ -69,7 +69,7 @@ fs::path directory::operator/(const fs::path& source) const {
 }
 
 directory::~directory() noexcept {
-  (void)reserved;    // Old compilers do not want to accept `[[maybe_unused]]`
+  (void)handle;    // Old compilers do not want to accept `[[maybe_unused]]`
   remove_directory(*this);
 }
 

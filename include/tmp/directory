@@ -78,8 +78,8 @@ private:
   /// This directory path
   std::filesystem::path pathobject;
 
-  /// Memory reserved for future use
-  file::native_handle_type reserved;
+  /// Implementation-defined handle to this directory
+  file::native_handle_type handle;
 };
 }    // namespace tmp
 
