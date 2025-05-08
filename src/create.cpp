@@ -141,24 +141,27 @@ std::FILE* create_file(std::ios::openmode mode) {
 }
 #else
 int create_file() {
-  fs::path::string_type path = make_pattern("");
+  fs::path temp_directory_path = fs::temp_directory_path();
+  int fd;
 
-  int handle;
 #ifdef O_TMPFILE
-  handle = open(path.c_str(), O_RDWR | O_TMPFILE, S_IRUSR | S_IWUSR);
-  if (handle >= 0) {
-    return handle;
+  // `O_TMPFILE` requires support by the underlying filesystem; if an unnamed
+  // file cannot be created, we fall back to the generic method of creation
+  fd = open(temp_directory_path.c_str(), O_RDWR | O_TMPFILE, S_IRUSR | S_IWUSR);
+  if (fd != -1) {
+    return fd;
   }
 #endif
 
-  handle = mkstemp(path.data());
-  if (handle == -1) {
+  std::string path = temp_directory_path / "XXXXXX";
+  fd = mkstemp(path.data());
+  if (fd == -1) {
     std::error_code ec = std::error_code(errno, std::system_category());
     throw fs::filesystem_error("Cannot create a temporary file", ec);
   }
 
   unlink(path.c_str());
-  return handle;
+  return fd;
 }
 #endif
 }    // namespace tmp
