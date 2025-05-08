@@ -76,17 +76,6 @@ const wchar_t* make_mdstring(std::ios::openmode mode) noexcept {
     return nullptr;
   }
 }
-#else
-/// Creates a temporary path pattern with the given prefix
-/// @note prefix must be valid
-/// @param[in] prefix A prefix to attach to the path pattern
-/// @returns A path pattern for the unique temporary path
-fs::path make_pattern(std::string_view prefix) {
-  fs::path path = fs::temp_directory_path() / prefix;
-  path += prefix.empty() ? "XXXXXX" : ".XXXXXX";
-
-  return path;
-}
 #endif
 }    // namespace
 
@@ -99,7 +88,8 @@ fs::path create_directory(std::string_view prefix) {
 #ifdef _WIN32
   fs::path::string_type path = make_path(prefix);
 #else
-  fs::path::string_type path = make_pattern(prefix);
+  std::string path = fs::temp_directory_path() / prefix;
+  path += prefix.empty() ? "XXXXXX" : ".XXXXXX";
 #endif
 
   std::error_code ec;
