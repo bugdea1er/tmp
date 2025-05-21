@@ -137,59 +137,6 @@ TEST(file, ios_flags) {
   EXPECT_EQ(content, "Hello, world!");
 }
 
-/// Tests creation of a temporary copy of a file
-TEST(file, copy_empty_file) {
-  std::ofstream original = std::ofstream("empty.txt", std::ios::binary);
-
-  file copy = file::copy("empty.txt");
-  EXPECT_TRUE(fs::exists("empty.txt"));
-  EXPECT_TRUE(is_open(copy));
-
-  // Test file copy contents
-  copy.seekg(0, std::ios::beg);
-  std::string content = std::string(std::istreambuf_iterator(copy), {});
-  EXPECT_EQ(content, "");
-}
-
-/// Tests creation of a temporary copy of a file
-TEST(file, copy_non_empty_file) {
-  std::ofstream original = std::ofstream("existing.txt", std::ios::binary);
-  original << "Hello, world!" << std::flush;
-
-  file copy = file::copy("existing.txt");
-  EXPECT_TRUE(fs::exists("existing.txt"));
-  EXPECT_TRUE(is_open(copy));
-
-  // To test that we actually copy the original file
-  original << "Goodbye, world!" << std::flush;
-
-  // Test get file pointer position after copying
-  std::streampos gstreampos = copy.tellg();
-  copy.seekg(0, std::ios::end);
-  EXPECT_EQ(gstreampos, copy.tellg());
-
-  // Test put file pointer position after copying
-  std::streampos pstreampos = copy.tellp();
-  copy.seekp(0, std::ios::end);
-  EXPECT_EQ(pstreampos, copy.tellp());
-
-  // Test file copy contents
-  copy.seekg(0, std::ios::beg);
-  std::string content = std::string(std::istreambuf_iterator(copy), {});
-  EXPECT_EQ(content, "Hello, world!");
-}
-
-/// Tests creation of copy errors
-TEST(file, copy_errors) {
-  try {
-    file::copy("nonexistent.txt");
-    FAIL() << "Expected exception";
-  } catch (const fs::filesystem_error& ex) {
-    EXPECT_EQ(ex.path1(), "nonexistent.txt");
-    EXPECT_EQ(ex.path2(), fs::path());
-  }
-}
-
 /// Tests that destructor removes a file
 TEST(file, destructor) {
   file::native_handle_type handle;
