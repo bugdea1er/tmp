@@ -1,8 +1,7 @@
-#define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS    // NOLINT
 
 #include "create.hpp"
 
-#include <corecrt_io.h>
 #include <fcntl.h>
 #include <filesystem>
 #include <iostream>
@@ -14,10 +13,10 @@
 #define UNICODE
 #include <Windows.h>
 #include <array>
+#include <corecrt_io.h>
 #include <cwchar>
 #else
 #include <cerrno>
-#include <fcntl.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #endif
