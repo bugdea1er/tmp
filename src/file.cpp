@@ -3,7 +3,6 @@
 
 #include <tmp/file>
 
-#include <cstddef>
 #include <filesystem>
 #include <ios>
 #include <istream>
@@ -18,8 +17,6 @@
 #define UNICODE
 #include <Windows.h>
 #include <corecrt_io.h>
-#else
-#include <unistd.h>
 #endif
 
 namespace tmp {

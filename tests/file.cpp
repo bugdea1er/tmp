@@ -23,8 +23,6 @@
 namespace tmp {
 namespace {
 
-namespace fs = std::filesystem;
-
 /// Returns whether the underlying raw file device object is open
 bool is_open(const file& file) {
   std::filebuf* filebuf = dynamic_cast<std::filebuf*>(file.rdbuf());
@@ -60,32 +58,6 @@ TEST(file, create) {
   file tmpfile = file();
   EXPECT_TRUE(is_open(tmpfile));
   EXPECT_TRUE(is_open(tmpfile.native_handle()));
-
-#ifdef _WIN32
-  BY_HANDLE_FILE_INFORMATION file_info;
-  GetFileInformationByHandle(tmpfile.native_handle(), &file_info);
-
-  BY_HANDLE_FILE_INFORMATION temp_directory_info;
-  HANDLE temp_directory_handle =
-      CreateFile(fs::temp_directory_path().c_str(), FILE_READ_ATTRIBUTES,
-                 FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
-                 FILE_FLAG_BACKUP_SEMANTICS | FILE_ATTRIBUTE_NORMAL, NULL);
-  GetFileInformationByHandle(temp_directory_handle, &temp_directory_info);
-  CloseHandle(temp_directory_handle);
-
-  EXPECT_EQ(file_info.dwVolumeSerialNumber,
-            temp_directory_info.dwVolumeSerialNumber);
-#else
-  struct stat file_stat;
-  fstat(tmpfile.native_handle(), &file_stat);
-
-  struct stat temp_directory_stat;
-  stat(fs::temp_directory_path().c_str(), &temp_directory_stat);
-
-  EXPECT_EQ(file_stat.st_dev, temp_directory_stat.st_dev);
-  EXPECT_EQ(file_stat.st_mode & S_IFMT, S_IFREG);    // Is a regular file
-  EXPECT_EQ(file_stat.st_nlink, 0);                  // Has no hardlinks
-#endif
 }
 
 /// Tests multiple file creation

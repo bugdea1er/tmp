@@ -124,36 +124,19 @@ std::FILE* create_file(std::ios::openmode mode, std::error_code& ec) {
 /// @param[in] mode The file opening mode
 /// @returns A suitable mode string
 const char* make_mdstring(std::ios::openmode mode) noexcept {
-  switch (static_cast<int>(mode & ~std::ios::ate)) {
-  case std::ios::out:
-  case std::ios::out | std::ios::trunc:
-    return "w";
-  case std::ios::out | std::ios::app:
-  case std::ios::app:
-    return "a";
-  case std::ios::in:
-    return "r";
-  case std::ios::in | std::ios::out:
+  unsigned filtered = mode & ~std::ios::in & ~std::ios::out & ~std::ios::ate;
+  switch (filtered) {
+  case 0:
     return "r+";
-  case std::ios::in | std::ios::out | std::ios::trunc:
+  case std::ios::trunc:
     return "w+";
-  case std::ios::in | std::ios::out | std::ios::app:
-  case std::ios::in | std::ios::app:
+  case std::ios::app:
     return "a+";
-  case std::ios::out | std::ios::binary:
-  case std::ios::out | std::ios::trunc | std::ios::binary:
-    return "wb";
-  case std::ios::out | std::ios::app | std::ios::binary:
-  case std::ios::app | std::ios::binary:
-    return "ab";
-  case std::ios::in | std::ios::binary:
-    return "rb";
-  case std::ios::in | std::ios::out | std::ios::binary:
+  case std::ios::binary:
     return "r+b";
-  case std::ios::in | std::ios::out | std::ios::trunc | std::ios::binary:
+  case std::ios::trunc | std::ios::binary:
     return "w+b";
-  case std::ios::in | std::ios::out | std::ios::app | std::ios::binary:
-  case std::ios::in | std::ios::app | std::ios::binary:
+  case std::ios::app | std::ios::binary:
     return "a+b";
   default:
     return nullptr;
@@ -205,8 +188,6 @@ std::FILE* create_file(std::ios::openmode mode) {
 }
 #else
 std::FILE* create_file(std::ios::openmode mode) {
-  mode |= std::ios::in | std::ios::out;
-
   const char* mdstr = make_mdstring(mode);
   if (mdstr == nullptr) {
     throw std::invalid_argument(
