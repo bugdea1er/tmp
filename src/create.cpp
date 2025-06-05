@@ -1,5 +1,9 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include "create.hpp"
 
+#include <corecrt_io.h>
+#include <fcntl.h>
 #include <filesystem>
 #include <iostream>
 #include <stdexcept>
@@ -58,7 +62,7 @@ fs::path make_path(std::string_view prefix) {
 }
 
 /// Makes a mode string for opening a temporary file using `_wfsopen`
-/// @param mode The file opening mode
+/// @param[in] mode The file opening mode
 /// @returns A suitable mode string
 const wchar_t* make_mdstring(std::ios::openmode mode) noexcept {
   switch (mode & ~std::ios::in & ~std::ios::out & ~std::ios::ate) {
@@ -75,6 +79,46 @@ const wchar_t* make_mdstring(std::ios::openmode mode) noexcept {
   default:
     return nullptr;
   }
+}
+
+/// Creates and opens a temporary file in the current user's temporary directory
+/// @param[in]  mode The file opening mode
+/// @param[out] ec   Parameter for error reporting
+/// @returns A handle to the created temporary file
+/// @throws std::invalid_argument if the given openmode is invalid
+std::FILE* create_file(std::ios::openmode mode, std::error_code& ec) {
+  const wchar_t* mdstr = make_mdstring(mode);
+  if (mdstr == nullptr) {
+    throw std::invalid_argument(
+        "Cannot create a temporary file: invalid openmode");
+  }
+
+  std::FILE* file = std::tmpfile();
+  if (file == nullptr) {
+    ec.assign(errno, std::generic_category());
+    return nullptr;
+  }
+
+  HANDLE handle = reinterpret_cast<void*>(_get_osfhandle(_fileno(file)));
+
+  std::wstring path;
+  path.resize(MAX_PATH);
+  DWORD ret = GetFinalPathNameByHandle(handle, path.data(), MAX_PATH, 0);
+  if (ret == 0) {
+    ec.assign(GetLastError(), std::system_category());
+    return nullptr;
+  }
+
+  path.resize(ret);
+
+  file = _wfreopen(path.c_str(), make_mdstring(mode), file);
+  if (file == nullptr) {
+    ec.assign(errno, std::generic_category());
+    return nullptr;
+  }
+
+  ec.clear();
+  return file;
 }
 #endif
 }    // namespace
@@ -112,21 +156,12 @@ fs::path create_directory(std::string_view prefix) {
 
 #ifdef _WIN32
 std::FILE* create_file(std::ios::openmode mode) {
-  const wchar_t* mdstr = make_mdstring(mode);
-  if (mdstr == nullptr) {
-    throw std::invalid_argument(
-        "Cannot create a temporary file: invalid openmode");
-  }
-
-  fs::path::string_type path = make_path("");
-
-  std::FILE* file = _wfsopen(path.c_str(), mdstr, _SH_DENYNO);
+  std::error_code ec;
+  std::FILE* file = create_file(mode, ec);
   if (file == nullptr) {
-    std::error_code ec = std::error_code(errno, std::system_category());
     throw fs::filesystem_error("Cannot create a temporary file", ec);
   }
 
-  DeleteFile(path.c_str());
   return file;
 }
 #else

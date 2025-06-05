@@ -75,7 +75,6 @@ TEST(file, create) {
 
   EXPECT_EQ(file_info.dwVolumeSerialNumber,
             temp_directory_info.dwVolumeSerialNumber);
-  EXPECT_EQ(file_info.nNumberOfLinks, 0);    // Has no hardlinks
 #else
   struct stat file_stat;
   fstat(tmpfile.native_handle(), &file_stat);
