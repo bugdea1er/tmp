@@ -143,7 +143,6 @@ int create_file() {
   }
 #endif
 
-  // First we create the file with a unique name, then immediately unlink it while keeping it open
   std::string path = temp_directory_path / "XXXXXX";
   fd = mkstemp(path.data());
   if (fd == -1) {
