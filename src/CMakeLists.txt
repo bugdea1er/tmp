@@ -1,6 +1,6 @@
 find_package(Filesystem REQUIRED)
 
-add_library(${PROJECT_NAME} create.cpp file.cpp directory.cpp)
+add_library(${PROJECT_NAME} file.cpp directory.cpp)
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 target_link_libraries(${PROJECT_NAME} PUBLIC std::filesystem)
 
