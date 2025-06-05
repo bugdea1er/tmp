@@ -78,7 +78,7 @@ public:
 
 private:
   /// The underlying C file stream
-  std::unique_ptr<std::FILE, int(*)(std::FILE*)> underlying;
+  std::unique_ptr<std::FILE, int (*)(std::FILE*)> underlying;
 
 #ifdef __GLIBCXX__
   /// The underlying raw file device object
