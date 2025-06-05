@@ -8,6 +8,7 @@
 #include <filesystem>
 #include <ios>
 #include <istream>
+#include <system_error>
 #include <utility>
 
 #ifdef __GLIBCXX__
@@ -77,25 +78,15 @@ const fs::path::value_type* make_mdstring(std::ios::openmode mode) noexcept {
   }
 }
 
+/// Reopens the given temporary file with the given open mode
+/// @param[in]  mdstring The temporary file opening mode
+/// @param[out] file     The file to reopen
+/// @param[out] ec       Parameter for error reporting
+void reopen_file(const fs::path::value_type* mdstring, std::FILE* file,
+                 std::error_code& ec) noexcept {
+  ec.clear();
+
 #ifdef _WIN32
-/// Creates and opens a temporary file in the current user's temporary directory
-/// @param[in]  mode The file opening mode
-/// @param[out] ec   Parameter for error reporting
-/// @returns A handle to the created temporary file
-/// @throws std::invalid_argument if the given openmode is invalid
-std::FILE* create_file(std::ios::openmode mode, std::error_code& ec) {
-  const wchar_t* mdstr = make_mdstring(mode);
-  if (mdstr == nullptr) {
-    throw std::invalid_argument(
-        "Cannot create a temporary file: invalid openmode");
-  }
-
-  std::FILE* file = std::tmpfile();
-  if (file == nullptr) {
-    ec.assign(errno, std::generic_category());
-    return nullptr;
-  }
-
   HANDLE handle = get_native_handle(file);
 
   std::wstring path;
@@ -103,60 +94,49 @@ std::FILE* create_file(std::ios::openmode mode, std::error_code& ec) {
   DWORD ret = GetFinalPathNameByHandle(handle, path.data(), MAX_PATH, 0);
   if (ret == 0) {
     ec.assign(GetLastError(), std::system_category());
-    return nullptr;
+    return;
   }
 
   path.resize(ret);
 
-  file = _wfreopen(path.c_str(), make_mdstring(mode), file);
+  file = _wfreopen(path.c_str(), mdstring, file);
   if (file == nullptr) {
     ec.assign(errno, std::generic_category());
-    return nullptr;
   }
-
-  ec.clear();
-  return file;
-}
+#else
+  file = std::freopen(nullptr, mdstring, file);
+  if (file == nullptr) {
+    ec.assign(errno, std::generic_category());
+  }
 #endif
+}
 
 /// Creates and opens a temporary file in the current user's temporary directory
 /// @param[in] mode The file opening mode
 /// @returns A handle to the created temporary file
 /// @throws fs::filesystem_error if cannot create a temporary file
 /// @throws std::invalid_argument if the given openmode is invalid
-std::FILE* create_file(std::ios::openmode mode);
-
-#ifdef _WIN32
 std::FILE* create_file(std::ios::openmode mode) {
-  std::error_code ec;
-  std::FILE* file = create_file(mode, ec);
-  if (file == nullptr) {
-    throw fs::filesystem_error("Cannot create a temporary file", ec);
-  }
-
-  return file;
-}
-#else
-std::FILE* create_file(std::ios::openmode mode) {
-  const char* mdstr = make_mdstring(mode);
-  if (mdstr == nullptr) {
+  const fs::path::value_type* mdstring = make_mdstring(mode);
+  if (mdstring == nullptr) {
     throw std::invalid_argument(
         "Cannot create a temporary file: invalid openmode");
   }
 
+  std::error_code ec;
   std::FILE* file = std::tmpfile();
-  if (file != nullptr) {
-    file = freopen(nullptr, mdstr, file);
+  if (file == nullptr) {
+    ec.assign(errno, std::generic_category());
+  } else {
+    reopen_file(mdstring, file, ec);
   }
 
-  if (file == nullptr) {
-    std::error_code ec = std::error_code(errno, std::system_category());
+  if (ec) {
     throw fs::filesystem_error("Cannot create a temporary file", ec);
   }
 
   return file;
 }
-#endif
 }    // namespace
 
 file::file(std::ios::openmode mode)
