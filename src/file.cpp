@@ -37,27 +37,47 @@ file::native_handle_type get_native_handle(std::FILE* file) noexcept {
 #endif
 }
 
-#ifdef _WIN32
-/// Makes a mode string for opening a temporary file using `_wfsopen`
+/// Makes a mode string for opening a temporary file
 /// @param[in] mode The file opening mode
 /// @returns A suitable mode string
-const wchar_t* make_mdstring(std::ios::openmode mode) noexcept {
-  switch (mode & ~std::ios::in & ~std::ios::out & ~std::ios::ate) {
-  case std::ios::openmode():
-  case std::ios::trunc:
-    return L"w+xTD";
+const fs::path::value_type* make_mdstring(std::ios::openmode mode) noexcept {
+  // - `std::ios::in` and `std::ios::out` are always applied
+  // - `std::ios::trunc` has no effect on the empty file
+  // - `std::ios::noreplace` has no effect for temporary files
+  // - any other platform dependent flag is not supported
+  unsigned filtered = mode & std::ios::app & std::ios::binary;
+
+  switch (filtered) {
+  case 0:
+#ifdef _WIN32
+    return L"w+TD";
+#else
+    return "w+";
+#endif
   case std::ios::app:
+#ifdef _WIN32
     return L"a+TD";
+#else
+    return "a+";
+#endif
   case std::ios::binary:
-  case std::ios::trunc | std::ios::binary:
-    return L"w+bxTD";
+#ifdef _WIN32
+    return L"w+bTD";
+#else
+    return "w+b";
+#endif
   case std::ios::app | std::ios::binary:
+#ifdef _WIN32
     return L"a+bTD";
+#else
+    return "a+b";
+#endif
   default:
     return nullptr;
   }
 }
 
+#ifdef _WIN32
 /// Creates and opens a temporary file in the current user's temporary directory
 /// @param[in]  mode The file opening mode
 /// @param[out] ec   Parameter for error reporting
@@ -96,29 +116,6 @@ std::FILE* create_file(std::ios::openmode mode, std::error_code& ec) {
 
   ec.clear();
   return file;
-}
-#else
-/// Makes a mode string for opening a file using `fopen`
-/// @param[in] mode The file opening mode
-/// @returns A suitable mode string
-const char* make_mdstring(std::ios::openmode mode) noexcept {
-  unsigned filtered = mode & ~std::ios::in & ~std::ios::out & ~std::ios::ate;
-  switch (filtered) {
-  case 0:
-    return "r+";
-  case std::ios::trunc:
-    return "w+";
-  case std::ios::app:
-    return "a+";
-  case std::ios::binary:
-    return "r+b";
-  case std::ios::trunc | std::ios::binary:
-    return "w+b";
-  case std::ios::app | std::ios::binary:
-    return "a+b";
-  default:
-    return nullptr;
-  }
 }
 #endif
 
