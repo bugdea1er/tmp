@@ -16,8 +16,6 @@
 #endif
 
 #ifdef _WIN32
-#define NOMINMAX
-#define UNICODE
 #include <Windows.h>
 #include <corecrt_io.h>
 #endif
@@ -41,7 +39,7 @@ file::native_handle_type get_native_handle(std::FILE* file) noexcept {
 /// Makes a mode string for opening a temporary file
 /// @param[in] mode The file opening mode
 /// @returns A suitable mode string
-const fs::path::value_type* make_mdstring(std::ios::openmode mode) noexcept {
+const char* make_mdstring(std::ios::openmode mode) noexcept {
   // - `std::ios::in` and `std::ios::out` are always applied
   // - `std::ios::trunc` has no effect on the empty file
   // - `std::ios::noreplace` has no effect for temporary files
@@ -51,25 +49,25 @@ const fs::path::value_type* make_mdstring(std::ios::openmode mode) noexcept {
   switch (filtered) {
   case 0:
 #ifdef _WIN32
-    return L"w+TD";
+    return "w+TD";
 #else
     return "w+";
 #endif
   case std::ios::app:
 #ifdef _WIN32
-    return L"a+TD";
+    return "a+TD";
 #else
     return "a+";
 #endif
   case std::ios::binary:
 #ifdef _WIN32
-    return L"w+bTD";
+    return "w+bTD";
 #else
     return "w+b";
 #endif
   case std::ios::app | std::ios::binary:
 #ifdef _WIN32
-    return L"a+bTD";
+    return "a+bTD";
 #else
     return "a+b";
 #endif
@@ -82,16 +80,16 @@ const fs::path::value_type* make_mdstring(std::ios::openmode mode) noexcept {
 /// @param[in]  mdstring The temporary file opening mode
 /// @param[out] file     The file to reopen
 /// @param[out] ec       Parameter for error reporting
-void reopen_file(const fs::path::value_type* mdstring, std::FILE* file,
+void reopen_file(const char* mdstring, std::FILE* file,
                  std::error_code& ec) noexcept {
   ec.clear();
 
 #ifdef _WIN32
   HANDLE handle = get_native_handle(file);
 
-  std::wstring path;
+  std::string path;
   path.resize(MAX_PATH);
-  DWORD ret = GetFinalPathNameByHandle(handle, path.data(), MAX_PATH, 0);
+  DWORD ret = GetFinalPathNameByHandleA(handle, path.data(), MAX_PATH, 0);
   if (ret == 0) {
     ec.assign(GetLastError(), std::system_category());
     return;
@@ -99,7 +97,7 @@ void reopen_file(const fs::path::value_type* mdstring, std::FILE* file,
 
   path.resize(ret);
 
-  file = _wfreopen(path.c_str(), mdstring, file);
+  file = freopen(path.c_str(), mdstring, file);
   if (file == nullptr) {
     ec.assign(errno, std::generic_category());
   }
@@ -117,7 +115,7 @@ void reopen_file(const fs::path::value_type* mdstring, std::FILE* file,
 /// @throws fs::filesystem_error if cannot create a temporary file
 /// @throws std::invalid_argument if the given openmode is invalid
 std::FILE* create_file(std::ios::openmode mode) {
-  const fs::path::value_type* mdstring = make_mdstring(mode);
+  const char* mdstring = make_mdstring(mode);
   if (mdstring == nullptr) {
     throw std::invalid_argument(
         "Cannot create a temporary file: invalid openmode");
