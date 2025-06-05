@@ -40,11 +40,16 @@ file::native_handle_type get_native_handle(std::FILE* file) noexcept {
 /// @param[in] mode The file opening mode
 /// @returns A suitable mode string
 const char* make_mdstring(std::ios::openmode mode) noexcept {
+  // Special case: the C++ standard forbids `app` and `trunc` at the same time
+  if ((mode & std::ios::app) != 0 && (mode & std::ios::trunc) != 0) {
+    return nullptr;
+  }
+
   // - `std::ios::in` and `std::ios::out` are always applied
   // - `std::ios::trunc` has no effect on the empty file
   // - `std::ios::noreplace` has no effect for temporary files
   // - any other platform dependent flag is not supported
-  unsigned filtered = mode & std::ios::app & std::ios::binary;
+  unsigned filtered = mode & (std::ios::app | std::ios::binary);
 
   switch (filtered) {
   case 0:
