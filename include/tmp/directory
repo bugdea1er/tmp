@@ -44,15 +44,6 @@ public:
   /// @throws std::invalid_argument if the prefix contains a directory separator
   explicit directory(std::string_view prefix = "");
 
-  /// Creates a unique temporary copy recursively from the given directory path
-  /// @param path   A path to make a temporary copy from
-  /// @param prefix A prefix to add to the temporary directory name
-  /// @returns The new temporary directory
-  /// @throws std::filesystem::filesystem_error if cannot create a copy
-  /// @throws std::invalid_argument if the prefix contains a directory separator
-  static directory copy(const std::filesystem::path& path,
-                        std::string_view prefix = "");
-
   /// Returns the path of this directory
   /// @returns The full path of this directory
   operator const std::filesystem::path&() const noexcept;

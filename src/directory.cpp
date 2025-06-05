@@ -32,30 +32,6 @@ void remove_directory(const directory& directory) noexcept {
 directory::directory(std::string_view prefix)
     : pathobject(create_directory(prefix)) {}
 
-directory directory::copy(const fs::path& path, std::string_view prefix) {
-  directory dir = directory(prefix);
-
-  // We don't use `fs::copy(path, dir)` here,
-  // since there is no way to tell it to fail if `from` is not a directory;
-  // a properly implemented `fs::directory_iterator` opens a path and checks
-  // whether it is a directory atomically
-
-  std::error_code ec;
-  for (fs::directory_iterator it = fs::directory_iterator(path, ec);
-       !ec && it != fs::directory_iterator(); it.increment(ec)) {
-    fs::copy(*it, dir / it->path().filename(), fs::copy_options::recursive, ec);
-    if (ec) {
-      break;
-    }
-  }
-
-  if (ec) {
-    throw fs::filesystem_error("Cannot create a temporary copy", path, ec);
-  }
-
-  return dir;
-}
-
 directory::operator const fs::path&() const noexcept {
   return pathobject;
 }
