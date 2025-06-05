@@ -26,6 +26,16 @@ namespace {
 
 namespace fs = std::filesystem;
 
+/// Returns an implementation-defined handle to the file
+/// @returns The underlying implementation-defined handle
+file::native_handle_type get_native_handle(std::FILE* file) noexcept {
+#ifdef _WIN32
+  return reinterpret_cast<HANDLE>(_get_osfhandle(_fileno(file)));
+#else
+  return fileno(file);
+#endif
+}
+
 #ifdef _WIN32
 /// Makes a mode string for opening a temporary file using `_wfsopen`
 /// @param[in] mode The file opening mode
@@ -65,7 +75,7 @@ std::FILE* create_file(std::ios::openmode mode, std::error_code& ec) {
     return nullptr;
   }
 
-  HANDLE handle = reinterpret_cast<void*>(_get_osfhandle(_fileno(file)));
+  HANDLE handle = get_native_handle(file);
 
   std::wstring path;
   path.resize(MAX_PATH);
@@ -159,7 +169,7 @@ file::file(std::ios::openmode mode)
 #if defined(_MSC_VER)
   sb = std::filebuf(underlying.get());
 #elif defined(_LIBCPP_VERSION)
-  sb.__open(fileno(underlying.get()), mode);
+  sb.__open(get_native_handle(underlying.get()), mode);
 #else
   sb = __gnu_cxx::stdio_filebuf<char>(underlying.get(), mode);
 #endif
@@ -171,11 +181,7 @@ file::file(std::ios::openmode mode)
 }
 
 file::native_handle_type file::native_handle() const noexcept {
-#ifdef _WIN32
-  return reinterpret_cast<void*>(_get_osfhandle(_fileno(underlying.get())));
-#else
-  return fileno(underlying.get());
-#endif
+  return get_native_handle(underlying.get());
 }
 
 file::~file() noexcept = default;
