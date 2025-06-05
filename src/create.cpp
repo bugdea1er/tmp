@@ -119,6 +119,29 @@ std::FILE* create_file(std::ios::openmode mode, std::error_code& ec) {
   ec.clear();
   return file;
 }
+#else
+/// Makes a mode string for opening a file using `fopen`
+/// @param[in] mode The file opening mode
+/// @returns A suitable mode string
+const char* make_mdstring(std::ios::openmode mode) noexcept {
+  unsigned filtered = mode & ~std::ios::in & ~std::ios::out & ~std::ios::ate;
+  switch (filtered) {
+  case 0:
+    return "r+";
+  case std::ios::trunc:
+    return "w+";
+  case std::ios::app:
+    return "a+";
+  case std::ios::binary:
+    return "r+b";
+  case std::ios::trunc | std::ios::binary:
+    return "w+b";
+  case std::ios::app | std::ios::binary:
+    return "a+b";
+  default:
+    return nullptr;
+  }
+}
 #endif
 }    // namespace
 
@@ -164,28 +187,24 @@ std::FILE* create_file(std::ios::openmode mode) {
   return file;
 }
 #else
-int create_file() {
-  fs::path temp_directory_path = fs::temp_directory_path();
-  int fd;
-
-#ifdef O_TMPFILE
-  // `O_TMPFILE` requires support by the underlying filesystem; if an unnamed
-  // file cannot be created, we fall back to the generic method of creation
-  fd = open(temp_directory_path.c_str(), O_RDWR | O_TMPFILE, S_IRUSR | S_IWUSR);
-  if (fd != -1) {
-    return fd;
+std::FILE* create_file(std::ios::openmode mode) {
+  const char* mdstr = make_mdstring(mode);
+  if (mdstr == nullptr) {
+    throw std::invalid_argument(
+        "Cannot create a temporary file: invalid openmode");
   }
-#endif
 
-  std::string path = temp_directory_path / "XXXXXX";
-  fd = mkstemp(path.data());
-  if (fd == -1) {
+  std::FILE* file = std::tmpfile();
+  if (file != nullptr) {
+    file = freopen(nullptr, mdstr, file);
+  }
+
+  if (file == nullptr) {
     std::error_code ec = std::error_code(errno, std::system_category());
     throw fs::filesystem_error("Cannot create a temporary file", ec);
   }
 
-  unlink(path.c_str());
-  return fd;
+  return file;
 }
 #endif
 }    // namespace tmp
