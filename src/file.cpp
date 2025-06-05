@@ -102,6 +102,7 @@ void reopen_file(const char* mdstring, std::FILE* file,
 
   path.resize(ret);
 
+  // FIXME: freopen loses shared access rules
   file = freopen(path.c_str(), mdstring, file);
   if (file == nullptr) {
     ec.assign(errno, std::generic_category());
