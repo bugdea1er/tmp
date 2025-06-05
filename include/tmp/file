@@ -77,32 +77,15 @@ public:
   file& operator=(const file&) = delete;    ///< not CopyAssignable
 
 private:
-#if defined(__GLIBCXX__)
-  // In GNU libstdc++ we can just use the `__gnu_cxx::stdio_filebuf` extension,
-  // which has everything we need
+  /// The underlying C file stream
+  std::unique_ptr<std::FILE, int(*)(std::FILE*)> underlying;
 
+#ifdef __GLIBCXX__
   /// The underlying raw file device object
   mutable __gnu_cxx::stdio_filebuf<char> sb;
-#elif defined(_LIBCPP_VERSION)
-  // In LLVM libc++ we use the public `std::filebuf::__open` method
-  // and save a native handle to return in `file::native_handle()`
-
-  /// The underlying native handle to the file
-  int handle;
-
-  /// The underlying raw file device object
-  std::filebuf sb;
-#elif defined(_MSC_VER)
-  // In Microsoft STL we use the `std::filebuf::filebuf(std::FILE*)`
-  // extension and save a pointer to that file to close it ourselves
-
-  /// The underlying C file stream
-  std::unique_ptr<std::FILE, decltype(&std::fclose)> underlying;
-
-  /// The underlying raw file device object
-  std::filebuf sb;
 #else
-#error "Target platform not supported"
+  /// The underlying raw file device object
+  std::filebuf sb;
 #endif
 };
 }    // namespace tmp
