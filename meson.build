@@ -12,7 +12,6 @@ filesystem_dep = filesystem_proj.get_variable('filesystem_dep')
 
 tmp = library(
   'tmp',
-  'src/create.cpp',
   'src/file.cpp',
   'src/directory.cpp',
   install: true,
