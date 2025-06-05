@@ -109,7 +109,6 @@ const char* make_mdstring(std::ios::openmode mode) noexcept {
 }
 #endif
 
-
 /// Creates and opens a temporary file in the current user's temporary directory
 /// @param[in] mode The file opening mode
 /// @returns A handle to the created temporary file
@@ -148,7 +147,7 @@ std::FILE* create_file(std::ios::openmode mode) {
   return file;
 }
 #endif
-}
+}    // namespace
 
 file::file(std::ios::openmode mode)
     : std::iostream(std::addressof(sb)),
