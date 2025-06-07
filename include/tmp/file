@@ -66,7 +66,10 @@ public:
 
   /// Returns an implementation-defined handle to this file
   /// @returns The underlying implementation-defined handle
-  native_handle_type native_handle() const noexcept;
+  native_handle_type native_handle() const noexcept {
+    extern native_handle_type get_native_handle(std::FILE* file) noexcept;
+    return get_native_handle(underlying.get());
+  }
 
   /// Closes and deletes this file
   ~file() noexcept override;

@@ -25,17 +25,6 @@ namespace {
 
 namespace fs = std::filesystem;
 
-/// Returns an implementation-defined handle to the file
-/// @param[in] file The file to the native handle for
-/// @returns The underlying implementation-defined handle
-file::native_handle_type get_native_handle(std::FILE* file) noexcept {
-#ifdef _WIN32
-  return reinterpret_cast<HANDLE>(_get_osfhandle(_fileno(file)));
-#else
-  return fileno(file);
-#endif
-}
-
 /// Makes a mode string for opening a temporary file
 /// @param[in] mode The file opening mode
 /// @returns A suitable mode string
@@ -143,6 +132,17 @@ std::FILE* create_file(std::ios::openmode mode) {
 }
 }    // namespace
 
+/// Returns an implementation-defined handle to the file
+/// @param[in] file The file to the native handle for
+/// @returns The underlying implementation-defined handle
+file::native_handle_type abi get_native_handle(std::FILE* file) noexcept {
+#ifdef _WIN32
+  return reinterpret_cast<HANDLE>(_get_osfhandle(_fileno(file)));
+#else
+  return fileno(file);
+#endif
+}
+
 file::file(std::ios::openmode mode)
     : std::iostream(std::addressof(sb)),
       underlying(create_file(mode), &std::fclose) {
@@ -160,10 +160,6 @@ file::file(std::ios::openmode mode)
     throw std::invalid_argument(
         "Cannot create a temporary file: invalid openmode");
   }
-}
-
-file::native_handle_type file::native_handle() const noexcept {
-  return get_native_handle(underlying.get());
 }
 
 file::~file() noexcept = default;
