@@ -5,17 +5,10 @@
 #include <filesystem>
 #include <fstream>
 #include <ios>
-#include <iterator>
 #include <stdexcept>
 #include <string>
 #include <string_view>
 #include <utility>
-
-#ifdef _WIN32
-#define NOMINMAX
-#define UNICODE
-#include <Windows.h>
-#endif
 
 namespace tmp {
 namespace {
