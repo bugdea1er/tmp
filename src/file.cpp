@@ -11,10 +11,6 @@
 #include <system_error>
 #include <utility>
 
-#ifdef __GLIBCXX__
-#include <ext/stdio_filebuf.h>
-#endif
-
 #ifdef _WIN32
 #include <Windows.h>
 #include <corecrt_io.h>
@@ -24,17 +20,6 @@ namespace tmp {
 namespace {
 
 namespace fs = std::filesystem;
-
-/// Returns an implementation-defined handle to the file
-/// @param[in] file The file to the native handle for
-/// @returns The underlying implementation-defined handle
-file::native_handle_type get_native_handle(std::FILE* file) noexcept {
-#ifdef _WIN32
-  return reinterpret_cast<HANDLE>(_get_osfhandle(_fileno(file)));
-#else
-  return fileno(file);
-#endif
-}
 
 /// Makes a mode string for opening a temporary file
 /// @param[in] mode The file opening mode
@@ -114,6 +99,7 @@ void reopen_file(const char* mdstring, std::FILE* file,
   }
 #endif
 }
+}    // namespace
 
 /// Creates and opens a temporary file in the current user's temporary directory
 /// @param[in] mode The file opening mode
@@ -141,41 +127,15 @@ std::FILE* create_file(std::ios::openmode mode) {
 
   return file;
 }
-}    // namespace
 
-file::file(std::ios::openmode mode)
-    : std::iostream(std::addressof(sb)),
-      underlying(create_file(mode), &std::fclose) {
-  mode |= std::ios::in | std::ios::out;
-
-#if defined(_MSC_VER)
-  sb = std::filebuf(underlying.get());
-#elif defined(_LIBCPP_VERSION)
-  sb.__open(get_native_handle(underlying.get()), mode);
+/// Returns an implementation-defined handle to the file
+/// @param[in] file The file to the native handle for
+/// @returns The underlying implementation-defined handle
+file::native_handle_type get_native_handle(std::FILE* file) noexcept {
+#ifdef _WIN32
+  return reinterpret_cast<HANDLE>(_get_osfhandle(_fileno(file)));
 #else
-  sb = __gnu_cxx::stdio_filebuf<char>(underlying.get(), mode);
+  return fileno(file);
 #endif
-
-  if (!sb.is_open()) {
-    throw std::invalid_argument(
-        "Cannot create a temporary file: invalid openmode");
-  }
 }
-
-file::native_handle_type file::native_handle() const noexcept {
-  return get_native_handle(underlying.get());
-}
-
-file::~file() noexcept = default;
-
-// NOLINTBEGIN(*-use-after-move)
-file::file(file&& other) noexcept
-    : std::iostream(std::move(other)),
-      underlying(std::move(other.underlying)),
-      sb(std::move(other.sb)) {
-  set_rdbuf(std::addressof(sb));
-}
-// NOLINTEND(*-use-after-move)
-
-file& file::operator=(file&& other) = default;
 }    // namespace tmp
