@@ -28,5 +28,5 @@ Checks: >
   -readability-named-parameter
 
 CheckOptions:
-  readability-identifier-length.IgnoredParameterNames: 'ec|to|it|fd'
-  readability-identifier-length.IgnoredVariableNames: 'ec|to|it|fd'
+  readability-identifier-length.IgnoredParameterNames: 'ec|to'
+  readability-identifier-length.IgnoredVariableNames: 'ec|to'
