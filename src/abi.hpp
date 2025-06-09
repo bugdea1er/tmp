@@ -14,12 +14,12 @@ namespace tmp {
 
 class abi directory;
 
-std::FILE* abi create_file(std::ios::openmode mode);
+abi std::FILE* create_file(std::ios::openmode mode);
 
 #ifdef _WIN32
-void* abi get_native_handle(std::FILE* file) noexcept;
+abi void* get_native_handle(std::FILE* file) noexcept;
 #else
-int abi get_native_handle(std::FILE* file) noexcept;
+abi int get_native_handle(std::FILE* file) noexcept;
 #endif
 }    // namespace tmp
 

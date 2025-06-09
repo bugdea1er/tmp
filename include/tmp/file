@@ -13,12 +13,12 @@
 
 namespace tmp {
 
-std::FILE* create_file(std::ios::openmode mode);
+extern std::FILE* create_file(std::ios::openmode mode);
 
 #ifdef _WIN32
-void* get_native_handle(std::FILE* file) noexcept;
+extern void* get_native_handle(std::FILE* file) noexcept;
 #else
-int get_native_handle(std::FILE* file) noexcept;
+extern int get_native_handle(std::FILE* file) noexcept;
 #endif
 
 /// tmp::file is a smart handle that manages a temporary file, ensuring
@@ -77,7 +77,7 @@ public:
     mode |= std::ios::in | std::ios::out;
 
 #if defined(_MSC_VER)
-    sb = std::filebuf(underlying.get());
+    sb = std::basic_filebuf<charT, traits>(underlying.get());
 #elif defined(_LIBCPP_VERSION)
     sb.__open(get_native_handle(underlying.get()), mode);
 #else
