@@ -14,6 +14,7 @@
 #include <cwchar>
 #else
 #include <cerrno>
+#include <fcntl.h>
 #include <unistd.h>
 #endif
 
@@ -60,43 +61,66 @@ fs::path make_path(std::string_view prefix) {
 #endif
 
 /// Creates a temporary directory in the current user's temporary directory
-/// @param[in] prefix A prefix to attach to the temporary directory name
+/// @param[in]  prefix A prefix to attach to the temporary directory name
+/// @param[out] ec     Parameter for error reporting
 /// @returns A path to the created temporary directory
-/// @throws fs::filesystem_error if cannot create a temporary directory
 /// @throws std::invalid_argument if the prefix contains a directory separator
-fs::path create_directory(std::string_view prefix) {
+fs::path create_directory(std::string_view prefix, std::error_code& ec) {
   if (!is_prefix_valid(prefix)) {
     throw std::invalid_argument("Cannot create a temporary directory: "
                                 "prefix cannot contain a directory separator");
   }
 
-  std::error_code ec;
 #ifdef _WIN32
   fs::path path = make_path(prefix);
   if (!CreateDirectory(path.c_str(), nullptr)) {
-    ec = std::error_code(GetLastError(), std::system_category());
+    ec.assign(GetLastError(), std::system_category());
   }
 #else
   std::string path = fs::temp_directory_path() / prefix;
   path += prefix.empty() ? "XXXXXX" : ".XXXXXX";
 
   if (mkdtemp(path.data()) == nullptr) {
-    ec = std::error_code(errno, std::system_category());
+    ec.assign(errno, std::system_category());
   }
 #endif
-
-  if (ec) {
-    throw fs::filesystem_error("Cannot create a temporary directory", ec);
-  }
 
   return path;
 }
 
+/// Opens a directory, obtaining a shared lock
+file::native_handle_type open_directory(const fs::path& path,
+                                        std::error_code& ec) {
+#ifdef _WIN32
+  HANDLE handle =
+    CreateFile(path.c_str(), GENERIC_READ | GENERIC_WRITE,
+               FILE_SHARE_READ | FILE_SHARE_WRITE,
+               nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+
+  if (handle == INVALID_HANDLE_VALUE) {
+    ec.assign(GetLastError(), std::generic_category());
+  }
+#else
+  int handle = open(path.c_str(), O_DIRECTORY | O_SHLOCK);
+  if (handle == -1) {
+    ec.assign(errno, std::system_category());
+  }
+#endif
+
+  return handle;
+}
+
 /// Deletes a directory recursively, ignoring any errors
 /// @param[in] directory The directory to delete
-void remove_directory(const directory& directory) noexcept {
+void remove_directory(const directory& directory, file::native_handle_type handle) noexcept {
   try {
     if (!directory.path().empty()) {
+#ifdef _WIN32
+      CloseHandle(handle);
+#else
+      close(handle);
+#endif
+
       // Calling the `std::error_code` overload of `fs::remove_all` should be
       // more optimal here since it would not require creating
       // a `fs::filesystem_error` message before we suppress the exception
@@ -110,8 +134,18 @@ void remove_directory(const directory& directory) noexcept {
 }
 }    // namespace
 
-directory::directory(std::string_view prefix)
-    : pathobject(create_directory(prefix)) {}
+directory::directory(std::string_view prefix) {
+  std::error_code ec;
+  pathobject = create_directory(prefix, ec);
+  if (!ec) {
+    handle = open_directory(pathobject, ec);
+  }
+
+  if (ec) {
+    // TODO: will pathobject be deleted and handle be closed here?
+    throw fs::filesystem_error("Cannot create a temporary directory", ec);
+  }
+}
 
 directory::operator const fs::path&() const noexcept {
   return pathobject;
@@ -127,16 +161,18 @@ fs::path directory::operator/(const fs::path& source) const {
 
 directory::~directory() noexcept {
   (void)handle;    // Old compilers do not want to accept `[[maybe_unused]]`
-  remove_directory(*this);
+  remove_directory(*this, handle);
 }
 
 directory::directory(directory&& other) noexcept
-    : pathobject(std::exchange(other.pathobject, fs::path())) {}
+    : pathobject(std::exchange(other.pathobject, fs::path())),
+      handle(other.handle) {}
 
 directory& directory::operator=(directory&& other) noexcept {
-  remove_directory(*this);
+  remove_directory(*this, handle);
 
   pathobject = std::exchange(other.pathobject, fs::path());
+  handle = other.handle;
   return *this;
 }
 }    // namespace tmp
