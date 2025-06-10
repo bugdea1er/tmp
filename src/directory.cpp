@@ -70,19 +70,16 @@ fs::path create_directory(std::string_view prefix) {
                                 "prefix cannot contain a directory separator");
   }
 
-#ifdef _WIN32
-  fs::path::string_type path = make_path(prefix);
-#else
-  std::string path = fs::temp_directory_path() / prefix;
-  path += prefix.empty() ? "XXXXXX" : ".XXXXXX";
-#endif
-
   std::error_code ec;
 #ifdef _WIN32
+  fs::path path = make_path(prefix);
   if (!CreateDirectory(path.c_str(), nullptr)) {
     ec = std::error_code(GetLastError(), std::system_category());
   }
 #else
+  std::string path = fs::temp_directory_path() / prefix;
+  path += prefix.empty() ? "XXXXXX" : ".XXXXXX";
+
   if (mkdtemp(path.data()) == nullptr) {
     ec = std::error_code(errno, std::system_category());
   }
