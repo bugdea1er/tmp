@@ -68,14 +68,8 @@ TEST(file, create_multiple) {
   EXPECT_NE(fst.native_handle(), snd.native_handle());
 }
 
-/// Tests error handling with invalid open mode
-TEST(file, create_invalid_openmode) {
-  // C++ standard forbids opening a filebuf with `trunc | app`
-  EXPECT_THROW(file(std::ios::trunc | std::ios::app), std::invalid_argument);
-}
-
-/// Tests file default open mode
-TEST(file, openmode_default) {
+/// Tests file open mode
+TEST(file, openmode) {
   file tmpfile = file();
   tmpfile << "Hello, World!" << std::flush;
   tmpfile.seekg(0);
@@ -84,28 +78,6 @@ TEST(file, openmode_default) {
   tmpfile.seekg(0);
   std::string content = std::string(std::istreambuf_iterator(tmpfile), {});
   EXPECT_EQ(content, "Goodbye!orld!");
-}
-
-/// Tests file `app` open mode
-TEST(file, openmode_append) {
-  file tmpfile = file(std::ios::app);
-  tmpfile << "Hello, World!" << std::flush;
-  tmpfile.seekg(0);
-  tmpfile << "Goodbye!" << std::flush;
-
-  tmpfile.seekg(0);
-  std::string content = std::string(std::istreambuf_iterator(tmpfile), {});
-  EXPECT_EQ(content, "Hello, World!Goodbye!");
-}
-
-/// Tests that file adds std::ios::in and std::ios::out flags
-TEST(file, ios_flags) {
-  file tmpfile = file(std::ios::binary);
-  tmpfile << "Hello, world!" << std::flush;
-
-  tmpfile.seekg(0, std::ios::beg);
-  std::string content = std::string(std::istreambuf_iterator(tmpfile), {});
-  EXPECT_EQ(content, "Hello, world!");
 }
 
 /// Tests that destructor removes a file

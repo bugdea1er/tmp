@@ -51,7 +51,7 @@ auto func() {
 
 ### Temporary files
 
-`tmp::file` is a smart handle that manages a temporary file, ensuring its deletion when the handle goes out of scope. Upon creation, a `tmp::file` object generates a unique temporary file in the current user's temporary directory, opening it for both reading and writing.
+`tmp::file` is a smart handle that manages a binary temporary file, ensuring its deletion when the handle goes out of scope. Upon creation, a `tmp::file` object generates a unique temporary file, opening it for both reading and writing in binary format.
 
 The temporary file is deleted of when either of the following happens:
 - the `tmp::file` object is destroyed
@@ -65,7 +65,7 @@ The example below demonstrates a usage of a `tmp::file` object to validate a req
 #include <tmp/file>
 
 auto func(std::string_view content) {
-  auto tmpfile = tmp::file(std::ios::binary);
+  auto tmpfile = tmp::file();
   tmpfile << contents << std::flush;
   if (validate(tmpfile)) {
     // Unarchive the file to the persistent storage

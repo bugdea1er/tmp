@@ -13,12 +13,11 @@
 
 namespace tmp {
 
-/// tmp::file is a smart handle that manages a temporary file, ensuring
+/// tmp::file is a smart handle that manages a binary temporary file, ensuring
 /// its deletion when the handle goes out of scope
 ///
-/// Upon creation, a tmp::file object generates a unique temporary file
-/// in the current user's temporary directory, opening it for both
-/// reading and writing
+/// Upon creation, a tmp::file object generates a unique temporary file,
+/// opening it for reading and writing in binary format
 ///
 /// The temporary file is deleted of when either of the following happens:
 /// - the tmp::file object is destroyed
@@ -35,7 +34,7 @@ namespace tmp {
 ///   #include <tmp/file>
 ///
 ///   auto func(std::string_view content) {
-///     auto tmpfile = tmp::file(std::ios::binary);
+///     auto tmpfile = tmp::file();
 ///     tmpfile << contents << std::flush;
 ///     if (validate(tmpfile)) {
 ///       // Unarchive the file to the persistent storage
@@ -57,12 +56,10 @@ public:
 #error "Target platform not supported"
 #endif
 
-  /// Creates a unique file in the current user's temporary directory
-  /// and opens it with `mode | std::ios::in | std::ios::out`
-  /// @param mode The file opening mode
+  /// Creates and opens a binary temporary file as if by POSIX `tmpfile`
   /// @throws std::filesystem::filesystem_error if cannot create a file
   /// @throws std::invalid_argument if the given open mode is invalid
-  explicit file(std::ios::openmode mode = std::ios::in | std::ios::out);
+  explicit file();
 
   /// Returns an implementation-defined handle to this file
   /// @returns The underlying implementation-defined handle
