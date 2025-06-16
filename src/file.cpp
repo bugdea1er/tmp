@@ -25,8 +25,10 @@ namespace {
 
 namespace fs = std::filesystem;
 
+#ifndef _MSC_VER
 /// Open mode for binary temporary files
 constexpr auto mode = std::ios::binary | std::ios::in | std::ios::out;
+#endif
 
 /// Returns an implementation-defined handle to the file
 /// @param[in] file The file to the native handle for
