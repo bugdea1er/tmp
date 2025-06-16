@@ -58,7 +58,6 @@ public:
 
   /// Creates and opens a binary temporary file as if by POSIX `tmpfile`
   /// @throws std::filesystem::filesystem_error if cannot create a file
-  /// @throws std::invalid_argument if the given open mode is invalid
   explicit file();
 
   /// Returns an implementation-defined handle to this file
