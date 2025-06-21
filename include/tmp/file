@@ -13,7 +13,15 @@
 
 namespace tmp {
 
-/// tmp::file is a smart handle that manages a binary temporary file, ensuring
+extern std::FILE* create_file();
+
+#ifdef _WIN32
+extern void* get_native_handle(std::FILE* file) noexcept;
+#else
+extern int get_native_handle(std::FILE* file) noexcept;
+#endif
+
+/// tmp::file is a smart handle that manages a temporary file, ensuring
 /// its deletion when the handle goes out of scope
 ///
 /// Upon creation, a tmp::file object generates a unique temporary file,
@@ -45,7 +53,8 @@ namespace tmp {
 ///     }
 ///   }
 /// @endcode
-class file : public std::iostream {
+template<class charT, class traits = std::char_traits<charT>>
+class basic_file : public std::basic_iostream<charT, traits> {
 public:
   /// Implementation-defined handle type to the file
 #if defined(_WIN32)
@@ -58,19 +67,44 @@ public:
 
   /// Creates and opens a binary temporary file as if by POSIX `tmpfile`
   /// @throws std::filesystem::filesystem_error if cannot create a file
-  explicit file();
+  explicit basic_file()
+      : std::basic_iostream<charT, traits>(std::addressof(sb)),
+        underlying(create_file(), &std::fclose) {
+    constexpr auto mode = std::ios::binary | std::ios::in | std::ios::out;
+
+#if defined(_MSC_VER)
+    sb = std::basic_filebuf<charT, traits>(underlying.get());
+#elif defined(_LIBCPP_VERSION)
+    sb.__open(get_native_handle(underlying.get()), mode);
+#else
+    sb = __gnu_cxx::stdio_filebuf<charT, traits>(underlying.get(), mode);
+#endif
+
+    if (!sb.is_open()) {
+      throw std::invalid_argument(
+          "Cannot create a temporary file: invalid openmode");
+    }
+  }
 
   /// Returns an implementation-defined handle to this file
   /// @returns The underlying implementation-defined handle
-  native_handle_type native_handle() const noexcept;
+  native_handle_type native_handle() const noexcept {
+    return get_native_handle(underlying.get());
+  }
 
   /// Closes and deletes this file
-  ~file() noexcept override;
+  ~basic_file() noexcept override = default;
 
-  file(file&&) noexcept;                    ///< MoveConstructible
-  file& operator=(file&&);                  ///< MoveAssignable
-  file(const file&) = delete;               ///< not CopyConstructible
-  file& operator=(const file&) = delete;    ///< not CopyAssignable
+  basic_file(basic_file&& other) noexcept    ///< MoveConstructible
+      : std::basic_iostream<charT, traits>(std::move(other)),
+        underlying(std::move(other.underlying)),
+        sb(std::move(other.sb)) {
+    std::basic_iostream<charT, traits>::set_rdbuf(std::addressof(sb));
+  }
+
+  basic_file& operator=(basic_file&&) = default;    ///< MoveAssignable
+  basic_file(const basic_file&) = delete;           ///< not CopyConstructible
+  basic_file& operator=(const basic_file&) = delete;    ///< not CopyAssignable
 
 private:
   /// The underlying C file stream
@@ -78,18 +112,25 @@ private:
 
 #ifdef __GLIBCXX__
   /// The underlying raw file device object
-  mutable __gnu_cxx::stdio_filebuf<char> sb;
+  mutable __gnu_cxx::stdio_filebuf<charT, traits> sb;
 #else
   /// The underlying raw file device object
-  std::filebuf sb;
+  std::basic_filebuf<charT, traits> sb;
 #endif
 };
+
+using file = basic_file<char>;
+using wfile = basic_file<wchar_t>;
 }    // namespace tmp
 
-/// The template specialization of `std::hash` for `tmp::file`
-template<> struct std::hash<tmp::file> {
-  std::size_t operator()(const tmp::file& file) const noexcept {
-    return std::hash<tmp::file::native_handle_type>()(file.native_handle());
+/// The template specialization of `std::hash` for `tmp::basic_file`
+template<class charT, class traits>
+struct std::hash<tmp::basic_file<charT, traits>> {
+  std::size_t
+  operator()(const tmp::basic_file<charT, traits>& file) const noexcept {
+    return std::hash<
+        typename tmp::basic_file<charT, traits>::native_handle_type>()(
+        file.native_handle());
   }
 };
 

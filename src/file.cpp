@@ -11,35 +11,14 @@
 #include <system_error>
 #include <utility>
 
-#ifdef __GLIBCXX__
-#include <ext/stdio_filebuf.h>
-#endif
-
 #ifdef _WIN32
 #include <Windows.h>
 #include <corecrt_io.h>
 #endif
 
 namespace tmp {
-namespace {
 
 namespace fs = std::filesystem;
-
-#ifndef _MSC_VER
-/// Open mode for binary temporary files
-constexpr auto mode = std::ios::binary | std::ios::in | std::ios::out;
-#endif
-
-/// Returns an implementation-defined handle to the file
-/// @param[in] file The file to the native handle for
-/// @returns The underlying implementation-defined handle
-file::native_handle_type get_native_handle(std::FILE* file) noexcept {
-#ifdef _WIN32
-  return reinterpret_cast<HANDLE>(_get_osfhandle(_fileno(file)));
-#else
-  return fileno(file);
-#endif
-}
 
 /// Creates and opens a binary temporary file as if by POSIX `tmpfile`
 /// @returns A pointer to the file stream associated with the temporary file
@@ -53,39 +32,15 @@ std::FILE* create_file() {
 
   return file;
 }
-}    // namespace
 
-file::file()
-    : std::iostream(std::addressof(sb)),
-      underlying(create_file(), &std::fclose) {
-#if defined(_MSC_VER)
-  sb = std::filebuf(underlying.get());
-#elif defined(_LIBCPP_VERSION)
-  sb.__open(get_native_handle(underlying.get()), mode);
+/// Returns an implementation-defined handle to the file
+/// @param[in] file The file to the native handle for
+/// @returns The underlying implementation-defined handle
+file::native_handle_type get_native_handle(std::FILE* file) noexcept {
+#ifdef _WIN32
+  return reinterpret_cast<HANDLE>(_get_osfhandle(_fileno(file)));
 #else
-  sb = __gnu_cxx::stdio_filebuf<char>(underlying.get(), mode);
+  return fileno(file);
 #endif
-
-  if (!sb.is_open()) {
-    std::error_code ec = std::make_error_code(std::io_errc::stream);
-    throw fs::filesystem_error("Cannot create a temporary file", ec);
-  }
 }
-
-file::native_handle_type file::native_handle() const noexcept {
-  return get_native_handle(underlying.get());
-}
-
-file::~file() noexcept = default;
-
-// NOLINTBEGIN(*-use-after-move)
-file::file(file&& other) noexcept
-    : std::iostream(std::move(other)),
-      underlying(std::move(other.underlying)),
-      sb(std::move(other.sb)) {
-  set_rdbuf(std::addressof(sb));
-}
-// NOLINTEND(*-use-after-move)
-
-file& file::operator=(file&& other) = default;
 }    // namespace tmp
