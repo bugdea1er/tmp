@@ -1,6 +1,8 @@
 #ifndef TMP_ABI_H
 #define TMP_ABI_H
 
+#include <cstdio>
+
 #ifdef _WIN32
 #define abi __declspec(dllexport)
 #else
@@ -10,7 +12,14 @@
 namespace tmp {
 
 class abi directory;
-class abi file;
+
+abi std::FILE* create_file();
+
+#ifdef _WIN32
+abi void* get_native_handle(std::FILE* file) noexcept;
+#else
+abi int get_native_handle(std::FILE* file) noexcept;
+#endif
 }    // namespace tmp
 
 #endif    // TMP_ABI_H
