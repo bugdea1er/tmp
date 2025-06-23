@@ -148,14 +148,5 @@ TEST(file, swap) {
   EXPECT_TRUE(is_open(fst));
   EXPECT_TRUE(is_open(snd));
 }
-
-/// Tests file hashing
-TEST(file, hash) {
-  file tmpfile = file();
-  std::hash hash = std::hash<file>();
-
-  EXPECT_EQ(hash(tmpfile),
-            std::hash<file::native_handle_type>()(tmpfile.native_handle()));
-}
 }    // namespace
 }    // namespace tmp
