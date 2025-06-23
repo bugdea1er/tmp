@@ -183,15 +183,5 @@ TYPED_TEST(file, swap) {
   EXPECT_TRUE(is_open(fst));
   EXPECT_TRUE(is_open(snd));
 }
-
-/// Tests file hashing
-TYPED_TEST(file, hash) {
-  basic_file<TypeParam> tmpfile = basic_file<TypeParam>();
-  std::hash hash = std::hash<basic_file<TypeParam>>();
-
-  EXPECT_EQ(hash(tmpfile),
-            std::hash<typename basic_file<TypeParam>::native_handle_type>()(
-                tmpfile.native_handle()));
-}
 }    // namespace
 }    // namespace tmp

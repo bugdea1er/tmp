@@ -21,7 +21,7 @@ extern void* get_native_handle(std::FILE* file) noexcept;
 extern int get_native_handle(std::FILE* file) noexcept;
 #endif
 
-/// tmp::file is a smart handle that manages a temporary file, ensuring
+/// tmp::file is a smart handle that manages a binary temporary file, ensuring
 /// its deletion when the handle goes out of scope
 ///
 /// Upon creation, a tmp::file object generates a unique temporary file,
@@ -122,16 +122,5 @@ private:
 using file = basic_file<char>;
 using wfile = basic_file<wchar_t>;
 }    // namespace tmp
-
-/// The template specialization of `std::hash` for `tmp::basic_file`
-template<class charT, class traits>
-struct std::hash<tmp::basic_file<charT, traits>> {
-  std::size_t
-  operator()(const tmp::basic_file<charT, traits>& file) const noexcept {
-    return std::hash<
-        typename tmp::basic_file<charT, traits>::native_handle_type>()(
-        file.native_handle());
-  }
-};
 
 #endif    // TMP_FILE_H

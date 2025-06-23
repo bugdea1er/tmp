@@ -4,21 +4,28 @@
 
 #include <tmp/file>
 
-#include <fcntl.h>
+#include <cstdio>
 #include <filesystem>
 #include <ios>
-#include <istream>
 #include <system_error>
-#include <utility>
+#include <type_traits>
 
 #ifdef _WIN32
 #include <Windows.h>
-#include <corecrt_io.h>
+#include <io.h>
 #endif
 
 namespace tmp {
 
 namespace fs = std::filesystem;
+
+// Confirm that native_handle_type matches `TriviallyCopyable` named requirement
+static_assert(std::is_trivially_copyable_v<file::native_handle_type>);
+
+#ifdef _WIN32
+// Confirm that `HANDLE` is as implemented in `file`
+static_assert(std::is_same_v<HANDLE, file::native_handle_type>);
+#endif
 
 /// Creates and opens a binary temporary file as if by POSIX `tmpfile`
 /// @returns A pointer to the file stream associated with the temporary file

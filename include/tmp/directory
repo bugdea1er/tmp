@@ -74,12 +74,4 @@ private:
 };
 }    // namespace tmp
 
-/// The template specialization of `std::hash` for `tmp::directory`
-template<> struct std::hash<tmp::directory> {
-  std::size_t operator()(const tmp::directory& directory) const noexcept {
-    // `std::hash<std::filesystem::path>` was not included in the C++17 standard
-    return filesystem::hash_value(directory);
-  }
-};
-
 #endif    // TMP_DIRECTORY_H
