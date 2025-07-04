@@ -142,7 +142,4 @@ wfile::basic_file(wfile&& other) noexcept
       sb(std::move(other.sb)) {                   // NOLINT(*-use-after-move)
   set_rdbuf(std::addressof(sb));
 }
-
-template<> file& file::operator=(file&&) = default;
-template<> wfile& wfile::operator=(wfile&&) = default;
 }    // namespace tmp

@@ -91,7 +91,7 @@ public:
   ~basic_file() noexcept override;
 
   basic_file(basic_file&& other) noexcept;
-  basic_file& operator=(basic_file&&);
+  basic_file& operator=(basic_file&&) = default;
   basic_file(const basic_file&) = delete;
   basic_file& operator=(const basic_file&) = delete;
 

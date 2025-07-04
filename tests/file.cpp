@@ -18,7 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <tmp/directory>
+#define _CRT_SECURE_NO_WARNINGS    // NOLINT
+
 #include <tmp/file>
 
 #include <gtest/gtest.h>
