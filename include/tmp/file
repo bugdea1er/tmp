@@ -88,7 +88,7 @@ public:
   native_handle_type native_handle() const noexcept;
 
   /// Closes and deletes this file
-  ~basic_file() noexcept override = default;
+  ~basic_file() noexcept override;
 
   basic_file(basic_file&& other) noexcept;
   basic_file& operator=(basic_file&&);

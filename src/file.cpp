@@ -124,6 +124,9 @@ template<> wfile::native_handle_type wfile::native_handle() const noexcept {
   return get_native_handle(underlying.get());
 }
 
+template<> file::~basic_file() noexcept = default;
+template<> wfile::~basic_file() noexcept = default;
+
 template<>
 file::basic_file(file&& other) noexcept
     : std::iostream(std::move(other)),
