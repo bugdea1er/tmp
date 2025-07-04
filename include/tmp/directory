@@ -82,10 +82,10 @@ public:
   /// Deletes this directory recursively
   ~directory() noexcept;
 
-  directory(directory&&) noexcept;                    ///< MoveConstructible
-  directory& operator=(directory&&) noexcept;         ///< MoveAssignable
-  directory(const directory&) = delete;               ///< not CopyConstructible
-  directory& operator=(const directory&) = delete;    ///< not CopyAssignable
+  directory(directory&&) noexcept;
+  directory& operator=(directory&&) noexcept;
+  directory(const directory&) = delete;
+  directory& operator=(const directory&) = delete;
 
 private:
   /// This directory path

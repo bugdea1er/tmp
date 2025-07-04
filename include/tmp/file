@@ -89,10 +89,10 @@ public:
   /// Closes and deletes this file
   ~file() noexcept override;
 
-  file(file&&) noexcept;                    ///< MoveConstructible
-  file& operator=(file&&);                  ///< MoveAssignable
-  file(const file&) = delete;               ///< not CopyConstructible
-  file& operator=(const file&) = delete;    ///< not CopyAssignable
+  file(file&&) noexcept;
+  file& operator=(file&&);
+  file(const file&) = delete;
+  file& operator=(const file&) = delete;
 
 private:
   /// The underlying C file stream
