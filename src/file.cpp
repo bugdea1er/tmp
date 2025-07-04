@@ -82,7 +82,8 @@ std::FILE* create_file() {
 }
 }    // namespace
 
-file::file()
+template<>
+abi file::basic_file()
     : std::iostream(std::addressof(sb)),
       underlying(create_file(), &std::fclose) {
 #if defined(_MSC_VER)
@@ -94,25 +95,55 @@ file::file()
 #endif
 
   if (!sb.is_open()) {
-    std::error_code ec = std::make_error_code(std::io_errc::stream);
-    throw fs::filesystem_error("Cannot create a temporary file", ec);
+    throw std::invalid_argument(
+        "Cannot create a temporary file: invalid openmode");
   }
 }
 
-file::native_handle_type file::native_handle() const noexcept {
+template<>
+abi wfile::basic_file()
+    : std::wiostream(std::addressof(sb)),
+      underlying(create_file(), &std::fclose) {
+  constexpr auto mode = std::ios::binary | std::ios::in | std::ios::out;
+
+#if defined(_MSC_VER)
+  sb = std::wfilebuf(underlying.get());
+#elif defined(_LIBCPP_VERSION)
+  sb.__open(get_native_handle(underlying.get()), mode);
+#else
+  sb = __gnu_cxx::stdio_filebuf<wchar_t>(underlying.get(), mode);
+#endif
+
+  if (!sb.is_open()) {
+    throw std::invalid_argument(
+        "Cannot create a temporary file: invalid openmode");
+  }
+}
+
+template<> abi file::native_handle_type file::native_handle() const noexcept {
   return get_native_handle(underlying.get());
 }
 
-file::~file() noexcept = default;
+template<> abi wfile::native_handle_type wfile::native_handle() const noexcept {
+  return get_native_handle(underlying.get());
+}
 
-// NOLINTBEGIN(*-use-after-move)
-file::file(file&& other) noexcept
+template<>
+abi file::basic_file(file&& other) noexcept
     : std::iostream(std::move(other)),
       underlying(std::move(other.underlying)),
       sb(std::move(other.sb)) {
   set_rdbuf(std::addressof(sb));
 }
-// NOLINTEND(*-use-after-move)
 
-file& file::operator=(file&& other) = default;
+template<>
+abi wfile::basic_file(wfile&& other) noexcept
+    : std::wiostream(std::move(other)),
+      underlying(std::move(other.underlying)),
+      sb(std::move(other.sb)) {
+  set_rdbuf(std::addressof(sb));
+}
+
+template<> abi file& file::operator=(file&&) = default;
+template<> abi wfile& wfile::operator=(wfile&&) = default;
 }    // namespace tmp

@@ -30,7 +30,6 @@
 namespace tmp {
 
 class abi directory;
-class abi file;
 }    // namespace tmp
 
 #endif    // TMP_ABI_H
