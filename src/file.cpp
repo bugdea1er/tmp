@@ -83,7 +83,7 @@ std::FILE* create_file() {
 }    // namespace
 
 template<>
-abi file::basic_file()
+file::basic_file()
     : std::iostream(std::addressof(sb)),
       underlying(create_file(), &std::fclose) {
 #if defined(_MSC_VER)
@@ -101,7 +101,7 @@ abi file::basic_file()
 }
 
 template<>
-abi wfile::basic_file()
+wfile::basic_file()
     : std::wiostream(std::addressof(sb)),
       underlying(create_file(), &std::fclose) {
   constexpr auto mode = std::ios::binary | std::ios::in | std::ios::out;
@@ -120,16 +120,16 @@ abi wfile::basic_file()
   }
 }
 
-template<> abi file::native_handle_type file::native_handle() const noexcept {
+template<> file::native_handle_type file::native_handle() const noexcept {
   return get_native_handle(underlying.get());
 }
 
-template<> abi wfile::native_handle_type wfile::native_handle() const noexcept {
+template<> wfile::native_handle_type wfile::native_handle() const noexcept {
   return get_native_handle(underlying.get());
 }
 
 template<>
-abi file::basic_file(file&& other) noexcept
+file::basic_file(file&& other) noexcept
     : std::iostream(std::move(other)),
       underlying(std::move(other.underlying)),
       sb(std::move(other.sb)) {
@@ -137,13 +137,13 @@ abi file::basic_file(file&& other) noexcept
 }
 
 template<>
-abi wfile::basic_file(wfile&& other) noexcept
+wfile::basic_file(wfile&& other) noexcept
     : std::wiostream(std::move(other)),
       underlying(std::move(other.underlying)),
       sb(std::move(other.sb)) {
   set_rdbuf(std::addressof(sb));
 }
 
-template<> abi file& file::operator=(file&&) = default;
-template<> abi wfile& wfile::operator=(wfile&&) = default;
+template<> file& file::operator=(file&&) = default;
+template<> wfile& wfile::operator=(wfile&&) = default;
 }    // namespace tmp
