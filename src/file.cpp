@@ -80,39 +80,66 @@ std::FILE* create_file() {
 
   return file;
 }
-}    // namespace
 
-file::file()
-    : std::iostream(std::addressof(sb)),
-      underlying(create_file(), &std::fclose) {
+/// Returns a file device for the given file stream
+/// @param[in] file The file stream
+/// @returns The new file device
+/// @throws std::invalid_argument if failed to open the file stream
+template<typename filebuf> filebuf open_filebuf(std::FILE* file) {
 #if defined(_MSC_VER)
-  sb = std::filebuf(underlying.get());
+  filebuf sb = filebuf(file);
 #elif defined(_LIBCPP_VERSION)
-  sb.__open(get_native_handle(underlying.get()), mode);
+  filebuf sb;
+  sb.__open(get_native_handle(file), mode);
 #else
-  sb = __gnu_cxx::stdio_filebuf<char>(underlying.get(), mode);
+  filebuf sb = filebuf(file, mode);
 #endif
 
   if (!sb.is_open()) {
-    std::error_code ec = std::make_error_code(std::io_errc::stream);
-    throw fs::filesystem_error("Cannot create a temporary file", ec);
+    throw std::invalid_argument(
+        "Cannot create a temporary file: invalid openmode");
   }
-}
 
-file::native_handle_type file::native_handle() const noexcept {
+  return sb;
+}
+}    // namespace
+
+template<>
+file::basic_file()
+    : std::iostream(std::addressof(sb)),
+      underlying(create_file(), &std::fclose),
+      sb(open_filebuf<decltype(sb)>(underlying.get())) {}
+
+template<>
+wfile::basic_file()
+    : std::wiostream(std::addressof(sb)),
+      underlying(create_file(), &std::fclose),
+      sb(open_filebuf<decltype(sb)>(underlying.get())) {}
+
+template<> file::native_handle_type file::native_handle() const noexcept {
   return get_native_handle(underlying.get());
 }
 
-file::~file() noexcept = default;
+template<> wfile::native_handle_type wfile::native_handle() const noexcept {
+  return get_native_handle(underlying.get());
+}
 
-// NOLINTBEGIN(*-use-after-move)
-file::file(file&& other) noexcept
+template<> file::~basic_file() noexcept = default;
+template<> wfile::~basic_file() noexcept = default;
+
+template<>
+file::basic_file(file&& other) noexcept
     : std::iostream(std::move(other)),
-      underlying(std::move(other.underlying)),
-      sb(std::move(other.sb)) {
+      underlying(std::move(other.underlying)),    // NOLINT(*-use-after-move)
+      sb(std::move(other.sb)) {                   // NOLINT(*-use-after-move)
   set_rdbuf(std::addressof(sb));
 }
-// NOLINTEND(*-use-after-move)
 
-file& file::operator=(file&& other) = default;
+template<>
+wfile::basic_file(wfile&& other) noexcept
+    : std::wiostream(std::move(other)),
+      underlying(std::move(other.underlying)),    // NOLINT(*-use-after-move)
+      sb(std::move(other.sb)) {                   // NOLINT(*-use-after-move)
+  set_rdbuf(std::addressof(sb));
+}
 }    // namespace tmp
