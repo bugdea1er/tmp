@@ -116,18 +116,6 @@ void remove_directory(const directory& directory) noexcept {
 directory::directory(std::string_view prefix)
     : pathobject(create_directory(prefix)) {}
 
-directory::operator const fs::path&() const noexcept {
-  return pathobject;
-}
-
-const fs::path& directory::path() const noexcept {
-  return pathobject;
-}
-
-fs::path directory::operator/(const fs::path& source) const {
-  return path() / source;
-}
-
 directory::~directory() noexcept {
   (void)handle;    // Old compilers do not want to accept `[[maybe_unused]]`
   remove_directory(*this);

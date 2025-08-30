@@ -51,16 +51,22 @@ public:
 
   /// Returns the path of this directory
   /// @returns The full path of this directory
-  operator const std::filesystem::path&() const noexcept;
+  operator const std::filesystem::path&() const noexcept {
+    return pathobject;
+  }
 
   /// Returns the path of this directory
   /// @returns The full path of this directory
-  const std::filesystem::path& path() const noexcept;
+  const std::filesystem::path& path() const noexcept {
+    return pathobject;
+  }
 
   /// Concatenates this directory path with a given path name
   /// @param source A path name
   /// @returns The result of path concatenation
-  std::filesystem::path operator/(const std::filesystem::path& source) const;
+  std::filesystem::path operator/(const std::filesystem::path& source) const {
+    return path() / source;
+  }
 
   /// Deletes this directory recursively
   ~directory() noexcept;
