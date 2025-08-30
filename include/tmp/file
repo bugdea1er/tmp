@@ -70,10 +70,10 @@ public:
   native_handle_type native_handle() const noexcept;
 
   /// Closes and deletes this file
-  ~file() noexcept override;
+  ~file() noexcept override = default;
 
   file(file&&) noexcept;
-  file& operator=(file&&);
+  file& operator=(file&&) = default;
   file(const file&) = delete;
   file& operator=(const file&) = delete;
 
