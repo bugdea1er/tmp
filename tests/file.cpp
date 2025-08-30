@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: (c) 2024 Ilya Andreev <bugdealer@icloud.com>
 // SPDX-License-Identifier: MIT
 
-#include <tmp/directory>
 #include <tmp/file>
 
 #include <gtest/gtest.h>

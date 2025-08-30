@@ -117,7 +117,6 @@ directory::directory(std::string_view prefix)
     : pathobject(create_directory(prefix)) {}
 
 directory::~directory() noexcept {
-  (void)handle;    // Old compilers do not want to accept `[[maybe_unused]]`
   remove_directory(*this);
 }
 

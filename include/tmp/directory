@@ -6,8 +6,6 @@
 #ifndef TMP_DIRECTORY_H
 #define TMP_DIRECTORY_H
 
-#include <tmp/file>
-
 #include <cstddef>
 #include <filesystem>
 #include <string_view>
@@ -79,9 +77,6 @@ public:
 private:
   /// This directory path
   std::filesystem::path pathobject;
-
-  /// Implementation-defined handle to this directory
-  file::native_handle_type handle;
 };
 }    // namespace tmp
 
