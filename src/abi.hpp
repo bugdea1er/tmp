@@ -12,7 +12,6 @@
 
 namespace tmp {
 
-class abi directory;
 class abi file;
 }    // namespace tmp
 
