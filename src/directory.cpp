@@ -20,7 +20,7 @@
 #include <unistd.h>
 #endif
 
-namespace tmp {
+namespace tmp::detail {
 namespace {
 
 namespace fs = std::filesystem;
@@ -112,4 +112,4 @@ void remove_all(const fs::path& path) noexcept {
     // the system should do it later
   }
 }
-}    // namespace tmp
+}    // namespace tmp::detail

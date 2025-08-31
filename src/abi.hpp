@@ -14,7 +14,7 @@
 #define abi __attribute__((visibility("default")))
 #endif
 
-namespace tmp {
+namespace tmp::detail {
 
 auto abi create_directory(std::string_view prefix) -> std::filesystem::path;
 auto abi remove_all(const std::filesystem::path& path) noexcept -> void;
@@ -25,7 +25,9 @@ auto abi get_native_handle(std::FILE* file) noexcept ->
     void*;
 #elif __has_include(<unistd.h>)
     int;
+#else
+#error "Target platform not supported"
 #endif
-}    // namespace tmp
+}    // namespace tmp::detail
 
 #endif    // TMP_ABI_H
