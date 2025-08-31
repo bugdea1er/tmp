@@ -85,13 +85,4 @@ file::file()
 file::native_handle_type file::native_handle() const noexcept {
   return get_native_handle(underlying.get());
 }
-
-// NOLINTBEGIN(*-use-after-move)
-file::file(file&& other) noexcept
-    : std::iostream(std::move(other)),
-      underlying(std::move(other.underlying)),
-      sb(std::move(other.sb)) {
-  set_rdbuf(std::addressof(sb));
-}
-// NOLINTEND(*-use-after-move)
 }    // namespace tmp

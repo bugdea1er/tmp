@@ -65,17 +65,32 @@ public:
   /// @throws std::filesystem::filesystem_error if cannot create a file
   explicit file();
 
+  file(const file&) = delete;
+  file& operator=(const file&) = delete;
+
+  /// Moves the ownership of the file managed by `other` to a new handle
+  /// @note After the move, `other` is not associated with a file
+  /// @param other Another file that will be moved from
+  file(file&& other) noexcept
+      : std::iostream(std::move(other)),
+        underlying(std::move(other.underlying)),
+        sb(std::move(other.sb)) {
+    set_rdbuf(std::addressof(sb));
+  }
+
+  /// Deletes and closes the managed temporary file, then moves the ownership
+  /// of the file managed by `other` to `this`
+  /// @note After the assignment, `other` is not associated with a file
+  /// @param other Another file that will be moved from
+  /// @returns `*this`
+  file& operator=(file&& other) = default;
+
   /// Returns an implementation-defined handle to this file
   /// @returns The underlying implementation-defined handle
   native_handle_type native_handle() const noexcept;
 
   /// Closes and deletes this file
   ~file() noexcept override = default;
-
-  file(file&&) noexcept;
-  file& operator=(file&&) = default;
-  file(const file&) = delete;
-  file& operator=(const file&) = delete;
 
 private:
   /// The underlying C file stream
