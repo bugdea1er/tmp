@@ -6,7 +6,7 @@ name: windows
   pull_request:
 
 env:
-  CXXFLAGS: /WX /W3 /wd4251
+  CXXFLAGS: /WX /W3 /wd4244
 
 jobs:
   cmake:
