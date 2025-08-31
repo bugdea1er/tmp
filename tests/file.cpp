@@ -26,8 +26,9 @@ namespace tmp {
 namespace {
 
 /// Returns whether the underlying raw file device object is open
-bool is_open(const file& file) {
-  std::filebuf* filebuf = dynamic_cast<std::filebuf*>(file.rdbuf());
+template<class charT, class traits>
+bool is_open(const basic_file<charT, traits>& file) {
+  auto filebuf = dynamic_cast<std::basic_filebuf<charT, traits>*>(file.rdbuf());
   return filebuf != nullptr && filebuf->is_open();
 }
 
@@ -43,36 +44,68 @@ bool is_open(file::native_handle_type handle) {
 #endif
 }
 
-/// Tests file type traits and member types
-TEST(file, type_traits) {
-  using traits = std::char_traits<char>;
+template<typename charT>
+constexpr std::basic_string<charT> convert_string(const char* string) {
+  if constexpr (std::is_same_v<charT, char>) {
+    return std::basic_string<charT>(string);
+  }
 
-  static_assert(std::is_base_of_v<std::basic_iostream<char>, file>);
-  static_assert(std::is_same_v<file::char_type, char>);
-  static_assert(std::is_same_v<file::traits_type, traits>);
-  static_assert(std::is_same_v<file::int_type, traits::int_type>);
-  static_assert(std::is_same_v<file::pos_type, traits::pos_type>);
-  static_assert(std::is_same_v<file::off_type, traits::off_type>);
+  if constexpr (std::is_same_v<charT, wchar_t>) {
+    std::mbstate_t state = std::mbstate_t();
+
+    std::basic_string<charT> result;
+    result.resize(std::mbsrtowcs(nullptr, &string, 0, &state));
+
+    std::size_t ret =
+        std::mbsrtowcs(result.data(), &string, result.size(), &state);
+    assert(ret == result.size());
+    return result;
+  }
+
+  throw std::invalid_argument("Unknown character type");
+}
+
+template<typename charT> class file : public testing::Test {};
+
+using char_types = testing::Types<char, wchar_t>;
+TYPED_TEST_SUITE(file, char_types, testing::internal::DefaultNameGenerator);
+
+/// Tests file type traits and member types
+TYPED_TEST(file, type_traits) {
+  using traits = std::char_traits<TypeParam>;
+
+  static_assert(
+      std::is_base_of_v<std::basic_iostream<TypeParam>, basic_file<TypeParam>>);
+  static_assert(
+      std::is_same_v<typename basic_file<TypeParam>::char_type, TypeParam>);
+  static_assert(
+      std::is_same_v<typename basic_file<TypeParam>::traits_type, traits>);
+  static_assert(std::is_same_v<typename basic_file<TypeParam>::int_type,
+                               typename traits::int_type>);
+  static_assert(std::is_same_v<typename basic_file<TypeParam>::pos_type,
+                               typename traits::pos_type>);
+  static_assert(std::is_same_v<typename basic_file<TypeParam>::off_type,
+                               typename traits::off_type>);
 }
 
 /// Tests file creation
-TEST(file, create) {
-  file tmpfile = file();
+TYPED_TEST(file, create) {
+  basic_file<TypeParam> tmpfile = basic_file<TypeParam>();
   EXPECT_TRUE(is_open(tmpfile));
   EXPECT_TRUE(is_open(tmpfile.native_handle()));
 }
 
 /// Tests multiple file creation
-TEST(file, create_multiple) {
-  file fst = file();
-  file snd = file();
+TYPED_TEST(file, create_multiple) {
+  basic_file<TypeParam> fst = basic_file<TypeParam>();
+  basic_file<TypeParam> snd = basic_file<TypeParam>();
 
   EXPECT_NE(fst.native_handle(), snd.native_handle());
 }
 
 /// Tests file open mode
-TEST(file, openmode) {
-  file tmpfile = file();
+TYPED_TEST(file, openmode) {
+  basic_file<TypeParam> tmpfile = basic_file<TypeParam>();
   tmpfile << "Hello, World!" << std::flush;
   tmpfile.seekg(0);
   tmpfile << "Goodbye!" << std::flush;
@@ -83,11 +116,11 @@ TEST(file, openmode) {
 }
 
 /// Tests that destructor removes a file
-TEST(file, destructor) {
-  file::native_handle_type handle;
+TYPED_TEST(file, destructor) {
+  typename basic_file<TypeParam>::native_handle_type handle;
 
   {
-    file tmpfile = file();
+    basic_file<TypeParam> tmpfile = basic_file<TypeParam>();
     handle = tmpfile.native_handle();
   }
 
@@ -95,30 +128,32 @@ TEST(file, destructor) {
 }
 
 /// Tests file move constructor
-TEST(file, move_constructor) {
-  file fst = file();
+TYPED_TEST(file, move_constructor) {
+  basic_file<TypeParam> fst = basic_file<TypeParam>();
   fst << "Hello!";
 
-  file snd = file(std::move(fst));
+  basic_file<TypeParam> snd = basic_file<TypeParam>(std::move(fst));
 
   EXPECT_TRUE(is_open(snd));
 
   snd.seekg(0);
-  std::string content;
+  std::basic_string<TypeParam> content;
   snd >> content;
-  EXPECT_EQ(content, "Hello!");
+  EXPECT_EQ(content, convert_string<TypeParam>("Hello!"));
 }
 
 /// Tests file move assignment operator
-TEST(file, move_assignment) {
-  file fst = file();
+TYPED_TEST(file, move_assignment) {
+  basic_file<TypeParam> fst = basic_file<TypeParam>();
 
   {
-    file snd = file();
+    basic_file<TypeParam> snd = basic_file<TypeParam>();
     snd << "Hello!";
 
-    file::native_handle_type fst_handle = fst.native_handle();
-    file::native_handle_type snd_handle = snd.native_handle();
+    typename basic_file<TypeParam>::native_handle_type fst_handle =
+        fst.native_handle();
+    typename basic_file<TypeParam>::native_handle_type snd_handle =
+        snd.native_handle();
 
     fst = std::move(snd);
 
@@ -130,18 +165,20 @@ TEST(file, move_assignment) {
   EXPECT_TRUE(is_open(fst));
 
   fst.seekg(0);
-  std::string content;
+  std::basic_string<TypeParam> content;
   fst >> content;
-  EXPECT_EQ(content, "Hello!");
+  EXPECT_EQ(content, convert_string<TypeParam>("Hello!"));
 }
 
 /// Tests file swapping
-TEST(file, swap) {
-  file fst = file();
-  file snd = file();
+TYPED_TEST(file, swap) {
+  basic_file<TypeParam> fst = basic_file<TypeParam>();
+  basic_file<TypeParam> snd = basic_file<TypeParam>();
 
-  file::native_handle_type fst_handle = fst.native_handle();
-  file::native_handle_type snd_handle = snd.native_handle();
+  typename basic_file<TypeParam>::native_handle_type fst_handle =
+      fst.native_handle();
+  typename basic_file<TypeParam>::native_handle_type snd_handle =
+      snd.native_handle();
 
   std::swap(fst, snd);
 

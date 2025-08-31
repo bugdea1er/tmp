@@ -64,29 +64,30 @@ extern "C++" file_native_handle get_native_handle(std::FILE* file) noexcept;
 ///     }
 ///   }
 /// @endcode
-class file : public std::iostream {
+template<class charT, class traits = std::char_traits<charT>>
+class basic_file : public std::basic_iostream<charT, traits> {
 public:
   /// Implementation-defined handle type to the file
   using native_handle_type = file_native_handle;
 
   /// Creates and opens a binary temporary file as if by POSIX `tmpfile`
   /// @throws std::filesystem::filesystem_error if cannot create a file
-  explicit file()
-      : std::iostream(std::addressof(sb)),
+  explicit basic_file()
+      : std::basic_iostream<charT, traits>(std::addressof(sb)),
         underlying(create_file(), &std::fclose),
         sb(open_filebuf(underlying.get())) {}
 
-  file(const file&) = delete;
-  file& operator=(const file&) = delete;
+  basic_file(const basic_file&) = delete;
+  basic_file& operator=(const basic_file&) = delete;
 
   /// Moves the ownership of the file managed by `other` to a new handle
   /// @note After the move, `other` is not associated with a file
   /// @param other Another file that will be moved from
-  file(file&& other) noexcept
-      : std::iostream(std::move(other)),
+  basic_file(basic_file&& other) noexcept
+      : std::basic_iostream<charT, traits>(std::move(other)),
         underlying(std::move(other.underlying)),
         sb(std::move(other.sb)) {
-    set_rdbuf(std::addressof(sb));
+    std::basic_iostream<charT, traits>::set_rdbuf(std::addressof(sb));
   }
 
   /// Deletes and closes the managed temporary file, then moves the ownership
@@ -94,7 +95,7 @@ public:
   /// @note After the assignment, `other` is not associated with a file
   /// @param other Another file that will be moved from
   /// @returns `*this`
-  file& operator=(file&& other) = default;
+  basic_file& operator=(basic_file&& other) = default;
 
   /// Returns an implementation-defined handle to this file
   /// @returns The underlying implementation-defined handle
@@ -103,7 +104,7 @@ public:
   }
 
   /// Closes and deletes this file
-  ~file() noexcept override = default;
+  ~basic_file() noexcept override = default;
 
 private:
   /// The underlying C file stream
@@ -111,10 +112,10 @@ private:
 
 #ifdef __GLIBCXX__
   /// The underlying raw file device object
-  mutable __gnu_cxx::stdio_filebuf<char> sb;
+  mutable __gnu_cxx::stdio_filebuf<charT, traits> sb;
 #else
   /// The underlying raw file device object
-  std::filebuf sb;
+  std::basic_filebuf<charT, traits> sb;
 #endif
 
   /// Returns a file device for the given file stream
@@ -122,13 +123,14 @@ private:
   /// @returns The new file device
   /// @throws std::filesystem::filesystem_error if cannot open the file stream
   decltype(sb) open_filebuf(std::FILE* file) {
+    constexpr auto mode = std::ios::binary | std::ios::in | std::ios::out;
     decltype(sb) sb;
 #if defined(_MSC_VER)
-    sb = std::filebuf(file);
+    sb = std::basic_filebuf<charT, traits>(file);
 #elif defined(_LIBCPP_VERSION)
-    sb.__open(get_native_handle(file), binary | in | out);
+    sb.__open(get_native_handle(file), mode);
 #else
-    sb = __gnu_cxx::stdio_filebuf<char>(file, binary | in | out);
+    sb = __gnu_cxx::stdio_filebuf<charT, traits>(file, mode);
 #endif
 
     if (!sb.is_open()) {
@@ -140,6 +142,9 @@ private:
     return sb;
   }
 };
+
+using file = basic_file<char>;
+using wfile = basic_file<wchar_t>;
 }    // namespace tmp
 
 #endif    // TMP_FILE_H
