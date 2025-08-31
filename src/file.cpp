@@ -9,13 +9,8 @@
 
 #include <cstdio>
 #include <filesystem>
-#include <ios>
 #include <system_error>
 #include <type_traits>
-
-#ifdef __GLIBCXX__
-#include <ext/stdio_filebuf.h>
-#endif
 
 #ifdef _WIN32
 #include <Windows.h>
