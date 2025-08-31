@@ -20,17 +20,14 @@
 
 namespace tmp {
 
-/// Implementation-defined handle type to the file
-#if defined(_WIN32)
-using file_native_handle = void*;    // HANDLE
-#elif __has_include(<unistd.h>)
-using file_native_handle = int;    // POSIX file descriptor
-#else
-#error "Target platform not supported"
-#endif
-
+namespace detail {
 extern "C++" std::FILE* create_file();
-extern "C++" file_native_handle get_native_handle(std::FILE* file) noexcept;
+#if defined(_WIN32)
+extern "C++" void* get_native_handle(std::FILE* file) noexcept;
+#elif __has_include(<unistd.h>)
+extern "C++" int get_native_handle(std::FILE* file) noexcept;
+#endif
+}    // namespace detail
 
 /// tmp::file is a smart handle that manages a binary temporary file, ensuring
 /// its deletion when the handle goes out of scope
@@ -68,13 +65,14 @@ template<class charT, class traits = std::char_traits<charT>>
 class basic_file : public std::basic_iostream<charT, traits> {
 public:
   /// Implementation-defined handle type to the file
-  using native_handle_type = file_native_handle;
+  using native_handle_type =
+      std::invoke_result_t<decltype(detail::get_native_handle), std::FILE*>;
 
   /// Creates and opens a binary temporary file as if by POSIX `tmpfile`
   /// @throws std::filesystem::filesystem_error if cannot create a file
   explicit basic_file()
       : std::basic_iostream<charT, traits>(std::addressof(sb)),
-        underlying(create_file(), &std::fclose),
+        underlying(detail::create_file(), &std::fclose),
         sb(open_filebuf(underlying.get())) {}
 
   basic_file(const basic_file&) = delete;
@@ -100,7 +98,7 @@ public:
   /// Returns an implementation-defined handle to this file
   /// @returns The underlying implementation-defined handle
   native_handle_type native_handle() const noexcept {
-    return get_native_handle(underlying.get());
+    return detail::get_native_handle(underlying.get());
   }
 
   /// Closes and deletes this file
@@ -128,7 +126,7 @@ private:
 #if defined(_MSC_VER)
     sb = std::basic_filebuf<charT, traits>(file);
 #elif defined(_LIBCPP_VERSION)
-    sb.__open(get_native_handle(file), mode);
+    sb.__open(detail::get_native_handle(file), mode);
 #else
     sb = __gnu_cxx::stdio_filebuf<charT, traits>(file, mode);
 #endif

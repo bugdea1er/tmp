@@ -13,8 +13,10 @@
 
 namespace tmp {
 
+namespace detail {
 extern "C++" std::filesystem::path create_directory(std::string_view prefix);
 extern "C++" void remove_all(const std::filesystem::path& path) noexcept;
+}    // namespace detail
 
 /// tmp::directory is a smart handle that manages a temporary directory,
 /// ensuring its recursive deletion when the handle goes out of scope
@@ -50,7 +52,7 @@ public:
   /// @throws std::filesystem::filesystem_error if cannot create a directory
   /// @throws std::invalid_argument if the prefix contains a directory separator
   explicit directory(std::string_view prefix = "")
-      : pathobject(create_directory(prefix)) {}
+      : pathobject(detail::create_directory(prefix)) {}
 
   directory(const directory&) = delete;
   directory& operator=(const directory&) = delete;
@@ -67,7 +69,7 @@ public:
   /// @param other Another directory that will be moved from
   /// @returns `*this`
   directory& operator=(directory&& other) noexcept {
-    remove_all(*this);
+    detail::remove_all(*this);
     pathobject = std::exchange(other.pathobject, std::filesystem::path());
 
     return *this;
@@ -94,7 +96,7 @@ public:
 
   /// Deletes this directory recursively
   ~directory() noexcept {
-    remove_all(*this);
+    detail::remove_all(*this);
   }
 
 private:

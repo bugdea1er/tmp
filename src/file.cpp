@@ -17,7 +17,7 @@
 #include <io.h>
 #endif
 
-namespace tmp {
+namespace tmp::detail {
 
 namespace fs = std::filesystem;
 
@@ -52,4 +52,4 @@ file::native_handle_type get_native_handle(std::FILE* file) noexcept {
   return fileno(file);
 #endif
 }
-}    // namespace tmp
+}    // namespace tmp::detail
