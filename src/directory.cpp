@@ -22,6 +22,7 @@
 
 namespace tmp {
 namespace {
+
 namespace fs = std::filesystem;
 
 /// Checks if the given prefix is valid to attach to a temporary directory name

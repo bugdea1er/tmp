@@ -4,6 +4,7 @@
 #ifndef TMP_ABI_H
 #define TMP_ABI_H
 
+#include <cstdio>
 #include <filesystem>
 #include <string_view>
 
@@ -15,10 +16,16 @@
 
 namespace tmp {
 
-std::filesystem::path abi create_directory(std::string_view prefix);
-void abi remove_all(const std::filesystem::path& path) noexcept;
+auto abi create_directory(std::string_view prefix) -> std::filesystem::path;
+auto abi remove_all(const std::filesystem::path& path) noexcept -> void;
 
-class abi file;
+auto abi create_file() -> std::FILE*;
+auto abi get_native_handle(std::FILE* file) noexcept ->
+#if defined(_WIN32)
+    void*;
+#elif __has_include(<unistd.h>)
+    int;
+#endif
 }    // namespace tmp
 
 #endif    // TMP_ABI_H

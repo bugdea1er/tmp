@@ -7,16 +7,30 @@
 #define TMP_FILE_H
 
 #include <cstddef>
+#include <cstdio>
 #include <filesystem>
 #include <fstream>
 #include <ios>
 #include <istream>
+#include <memory>
 
 #ifdef __GLIBCXX__
 #include <ext/stdio_filebuf.h>
 #endif
 
 namespace tmp {
+
+/// Implementation-defined handle type to the file
+#if defined(_WIN32)
+using file_native_handle = void*;    // HANDLE
+#elif __has_include(<unistd.h>)
+using file_native_handle = int;    // POSIX file descriptor
+#else
+#error "Target platform not supported"
+#endif
+
+extern "C++" std::FILE* create_file();
+extern "C++" file_native_handle get_native_handle(std::FILE* file) noexcept;
 
 /// tmp::file is a smart handle that manages a binary temporary file, ensuring
 /// its deletion when the handle goes out of scope
@@ -53,17 +67,27 @@ namespace tmp {
 class file : public std::iostream {
 public:
   /// Implementation-defined handle type to the file
-#if defined(_WIN32)
-  using native_handle_type = void*;    // HANDLE
-#elif __has_include(<unistd.h>)
-  using native_handle_type = int;    // POSIX file descriptor
-#else
-#error "Target platform not supported"
-#endif
+  using native_handle_type = file_native_handle;
 
   /// Creates and opens a binary temporary file as if by POSIX `tmpfile`
   /// @throws std::filesystem::filesystem_error if cannot create a file
-  explicit file();
+  explicit file()
+      : std::iostream(std::addressof(sb)),
+        underlying(create_file(), &std::fclose) {
+#if defined(_MSC_VER)
+    sb = std::filebuf(underlying.get());
+#elif defined(_LIBCPP_VERSION)
+    sb.__open(fileno(underlying.get()), binary | in | out);
+#else
+    sb = __gnu_cxx::stdio_filebuf<char>(underlying.get(), binary | in | out);
+#endif
+
+    if (!sb.is_open()) {
+      std::error_code ec = std::make_error_code(std::io_errc::stream);
+      throw std::filesystem::filesystem_error("Cannot create a temporary file",
+                                              ec);
+    }
+  }
 
   file(const file&) = delete;
   file& operator=(const file&) = delete;
@@ -87,7 +111,9 @@ public:
 
   /// Returns an implementation-defined handle to this file
   /// @returns The underlying implementation-defined handle
-  native_handle_type native_handle() const noexcept;
+  native_handle_type native_handle() const noexcept {
+    return get_native_handle(underlying.get());
+  }
 
   /// Closes and deletes this file
   ~file() noexcept override = default;
