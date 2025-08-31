@@ -73,21 +73,8 @@ public:
   /// @throws std::filesystem::filesystem_error if cannot create a file
   explicit file()
       : std::iostream(std::addressof(sb)),
-        underlying(create_file(), &std::fclose) {
-#if defined(_MSC_VER)
-    sb = std::filebuf(underlying.get());
-#elif defined(_LIBCPP_VERSION)
-    sb.__open(fileno(underlying.get()), binary | in | out);
-#else
-    sb = __gnu_cxx::stdio_filebuf<char>(underlying.get(), binary | in | out);
-#endif
-
-    if (!sb.is_open()) {
-      std::error_code ec = std::make_error_code(std::io_errc::stream);
-      throw std::filesystem::filesystem_error("Cannot create a temporary file",
-                                              ec);
-    }
-  }
+        underlying(create_file(), &std::fclose),
+        sb(open_filebuf(underlying.get())) {}
 
   file(const file&) = delete;
   file& operator=(const file&) = delete;
@@ -129,6 +116,29 @@ private:
   /// The underlying raw file device object
   std::filebuf sb;
 #endif
+
+  /// Returns a file device for the given file stream
+  /// @param file The file stream
+  /// @returns The new file device
+  /// @throws std::filesystem::filesystem_error if cannot open the file stream
+  decltype(sb) open_filebuf(std::FILE* file) {
+    decltype(sb) sb;
+#if defined(_MSC_VER)
+    sb = std::filebuf(file);
+#elif defined(_LIBCPP_VERSION)
+    sb.__open(get_native_handle(file), binary | in | out);
+#else
+    sb = __gnu_cxx::stdio_filebuf<char>(file, binary | in | out);
+#endif
+
+    if (!sb.is_open()) {
+      std::error_code ec = std::make_error_code(std::io_errc::stream);
+      throw std::filesystem::filesystem_error("Cannot create a temporary file",
+                                              ec);
+    }
+
+    return sb;
+  }
 };
 }    // namespace tmp
 

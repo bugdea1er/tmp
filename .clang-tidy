@@ -30,5 +30,5 @@ Checks: >
   -readability-redundant-declaration
 
 CheckOptions:
-  readability-identifier-length.IgnoredParameterNames: 'ec'
-  readability-identifier-length.IgnoredVariableNames: 'ec'
+  readability-identifier-length.IgnoredParameterNames: 'ec|sb'
+  readability-identifier-length.IgnoredVariableNames: 'ec|sb'
