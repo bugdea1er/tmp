@@ -4,6 +4,9 @@
 #ifndef TMP_ABI_H
 #define TMP_ABI_H
 
+#include <filesystem>
+#include <string_view>
+
 #ifdef _WIN32
 #define abi __declspec(dllexport)
 #else
@@ -11,6 +14,9 @@
 #endif
 
 namespace tmp {
+
+std::filesystem::path abi create_directory(std::string_view prefix);
+void abi remove_all(const std::filesystem::path& path) noexcept;
 
 class abi file;
 }    // namespace tmp

@@ -67,7 +67,7 @@ fs::path make_path(std::string_view prefix) {
 /// @returns A path to the created temporary directory
 /// @throws fs::filesystem_error if cannot create a temporary directory
 /// @throws std::invalid_argument if the prefix contains a directory separator
-fs::path abi create_directory(std::string_view prefix) {
+fs::path create_directory(std::string_view prefix) {
   if (!is_prefix_valid(prefix)) {
     throw std::invalid_argument("Cannot create a temporary directory: "
                                 "prefix cannot contain a directory separator");
@@ -97,7 +97,7 @@ fs::path abi create_directory(std::string_view prefix) {
 
 /// Deletes a path recursively, ignoring any errors
 /// @param path The path to delete
-void abi remove_all(const fs::path& path) noexcept {
+void remove_all(const fs::path& path) noexcept {
   try {
     if (!path.empty()) {
       // Calling the `std::error_code` overload of `fs::remove_all` should be
