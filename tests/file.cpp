@@ -28,13 +28,13 @@ namespace {
 /// Test fixture for `basic_file` tests
 template<class charT> class file : public testing::Test {
 public:
-  /// Returns whether the underlying raw file device object is open
-  bool is_open(const basic_file<charT>& file) {
-    auto filebuf = dynamic_cast<std::basic_filebuf<charT>*>(file.rdbuf());
+  /// Returns whether the file device object is open
+  bool is_open(const std::basic_streambuf<charT>* streambuf) {
+    auto filebuf = dynamic_cast<const std::basic_filebuf<charT>*>(streambuf);
     return filebuf != nullptr && filebuf->is_open();
   }
 
-  /// Checks if the given file handle is valid
+  /// Returns whether the given file handle is open
   bool is_open(typename basic_file<charT>::native_handle_type handle) {
 #ifdef _WIN32
     BY_HANDLE_FILE_INFORMATION info;
@@ -83,7 +83,7 @@ TYPED_TEST(file, type_traits) {
 /// Tests file creation
 TYPED_TEST(file, create) {
   basic_file<TypeParam> tmpfile = basic_file<TypeParam>();
-  EXPECT_TRUE(TestFixture::is_open(tmpfile));
+  EXPECT_TRUE(TestFixture::is_open(tmpfile.rdbuf()));
   EXPECT_TRUE(TestFixture::is_open(tmpfile.native_handle()));
 }
 
@@ -126,7 +126,7 @@ TYPED_TEST(file, move_constructor) {
 
   basic_file<TypeParam> snd = basic_file<TypeParam>(std::move(fst));
 
-  EXPECT_TRUE(TestFixture::is_open(snd));
+  EXPECT_TRUE(TestFixture::is_open(snd.rdbuf()));
 
   snd.seekg(0);
   std::basic_string<TypeParam> content;
@@ -152,7 +152,7 @@ TYPED_TEST(file, move_assignment) {
     EXPECT_EQ(fst.native_handle(), snd_handle);
   }
 
-  EXPECT_TRUE(TestFixture::is_open(fst));
+  EXPECT_TRUE(TestFixture::is_open(fst.rdbuf()));
 
   fst.seekg(0);
   std::basic_string<TypeParam> content;
@@ -172,8 +172,8 @@ TYPED_TEST(file, swap) {
 
   EXPECT_EQ(fst.native_handle(), snd_handle);
   EXPECT_EQ(snd.native_handle(), fst_handle);
-  EXPECT_TRUE(TestFixture::is_open(fst));
-  EXPECT_TRUE(TestFixture::is_open(snd));
+  EXPECT_TRUE(TestFixture::is_open(fst.rdbuf()));
+  EXPECT_TRUE(TestFixture::is_open(snd.rdbuf()));
 }
 }    // namespace
 }    // namespace tmp
