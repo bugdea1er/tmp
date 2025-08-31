@@ -9,8 +9,12 @@
 #include <cstddef>
 #include <filesystem>
 #include <string_view>
+#include <utility>
 
 namespace tmp {
+
+extern "C++" std::filesystem::path create_directory(std::string_view prefix);
+extern "C++" void remove_all(const std::filesystem::path& path) noexcept;
 
 /// tmp::directory is a smart handle that manages a temporary directory,
 /// ensuring its recursive deletion when the handle goes out of scope
@@ -45,7 +49,29 @@ public:
   /// @param prefix A prefix to add to the temporary directory name
   /// @throws std::filesystem::filesystem_error if cannot create a directory
   /// @throws std::invalid_argument if the prefix contains a directory separator
-  explicit directory(std::string_view prefix = "");
+  explicit directory(std::string_view prefix = "")
+      : pathobject(create_directory(prefix)) {}
+
+  directory(const directory&) = delete;
+  directory& operator=(const directory&) = delete;
+
+  /// Moves the ownership of the directory managed by `other` to a new handle
+  /// @note After the move, `other` is not associated with a directory
+  /// @param other Another directory that will be moved from
+  directory(directory&& other) noexcept
+      : pathobject(std::exchange(other.pathobject, std::filesystem::path())) {}
+
+  /// Deletes the managed temporary directory, then moves the ownership
+  /// of the directory managed by `other` to `this`
+  /// @note After the assignment, `other` is not associated with a directory
+  /// @param other Another directory that will be moved from
+  /// @returns `*this`
+  directory& operator=(directory&& other) noexcept {
+    remove_all(*this);
+    pathobject = std::exchange(other.pathobject, std::filesystem::path());
+
+    return *this;
+  }
 
   /// Returns the path of this directory
   /// @returns The full path of this directory
@@ -67,12 +93,9 @@ public:
   }
 
   /// Deletes this directory recursively
-  ~directory() noexcept;
-
-  directory(directory&&) noexcept;
-  directory& operator=(directory&&) noexcept;
-  directory(const directory&) = delete;
-  directory& operator=(const directory&) = delete;
+  ~directory() noexcept {
+    remove_all(*this);
+  }
 
 private:
   /// This directory path

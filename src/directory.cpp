@@ -22,11 +22,10 @@
 
 namespace tmp {
 namespace {
-
 namespace fs = std::filesystem;
 
 /// Checks if the given prefix is valid to attach to a temporary directory name
-/// @param[in] prefix The prefix to check validity for
+/// @param prefix The prefix to check validity for
 /// @returns `true` if the prefix is valid, `false` otherwise
 bool is_prefix_valid(const fs::path& prefix) {
   // We also need to check that the prefix does not contain a root path
@@ -38,7 +37,7 @@ bool is_prefix_valid(const fs::path& prefix) {
 #ifdef _WIN32
 /// Creates a temporary path with the given prefix
 /// @note prefix must be valid
-/// @param[in] prefix A prefix to attach to the path pattern
+/// @param prefix A prefix to attach to the path pattern
 /// @returns A unique temporary path
 fs::path make_path(std::string_view prefix) {
   GUID guid;
@@ -61,9 +60,10 @@ fs::path make_path(std::string_view prefix) {
   return path;
 }
 #endif
+}    // namespace
 
 /// Creates a temporary directory in the current user's temporary directory
-/// @param[in] prefix A prefix to attach to the temporary directory name
+/// @param prefix A prefix to attach to the temporary directory name
 /// @returns A path to the created temporary directory
 /// @throws fs::filesystem_error if cannot create a temporary directory
 /// @throws std::invalid_argument if the prefix contains a directory separator
@@ -95,38 +95,20 @@ fs::path create_directory(std::string_view prefix) {
   return path;
 }
 
-/// Deletes a directory recursively, ignoring any errors
-/// @param[in] directory The directory to delete
-void remove_directory(const directory& directory) noexcept {
+/// Deletes a path recursively, ignoring any errors
+/// @param path The path to delete
+void remove_all(const fs::path& path) noexcept {
   try {
-    if (!directory.path().empty()) {
+    if (!path.empty()) {
       // Calling the `std::error_code` overload of `fs::remove_all` should be
       // more optimal here since it would not require creating
       // a `fs::filesystem_error` message before we suppress the exception
       std::error_code ec;
-      fs::remove_all(directory, ec);
+      fs::remove_all(path, ec);
     }
   } catch (...) {
     // Do nothing: if we failed to delete the temporary directory,
     // the system should do it later
   }
-}
-}    // namespace
-
-directory::directory(std::string_view prefix)
-    : pathobject(create_directory(prefix)) {}
-
-directory::~directory() noexcept {
-  remove_directory(*this);
-}
-
-directory::directory(directory&& other) noexcept
-    : pathobject(std::exchange(other.pathobject, fs::path())) {}
-
-directory& directory::operator=(directory&& other) noexcept {
-  remove_directory(*this);
-
-  pathobject = std::exchange(other.pathobject, fs::path());
-  return *this;
 }
 }    // namespace tmp
