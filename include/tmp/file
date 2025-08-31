@@ -22,15 +22,15 @@ namespace tmp {
 
 /// Implementation-defined handle type to the file
 #if defined(_WIN32)
-using native_handle_type = void*;    // HANDLE
+using file_native_handle = void*;    // HANDLE
 #elif __has_include(<unistd.h>)
-using native_handle_type = int;    // POSIX file descriptor
+using file_native_handle = int;    // POSIX file descriptor
 #else
 #error "Target platform not supported"
 #endif
 
 extern "C++" std::FILE* create_file();
-extern "C++" native_handle_type get_native_handle(std::FILE* file) noexcept;
+extern "C++" file_native_handle get_native_handle(std::FILE* file) noexcept;
 
 /// tmp::file is a smart handle that manages a binary temporary file, ensuring
 /// its deletion when the handle goes out of scope
@@ -67,7 +67,7 @@ extern "C++" native_handle_type get_native_handle(std::FILE* file) noexcept;
 class file : public std::iostream {
 public:
   /// Implementation-defined handle type to the file
-  using native_handle_type = native_handle_type;
+  using native_handle_type = file_native_handle;
 
   /// Creates and opens a binary temporary file as if by POSIX `tmpfile`
   /// @throws std::filesystem::filesystem_error if cannot create a file
