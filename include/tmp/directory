@@ -56,7 +56,7 @@ public:
   directory& operator=(const directory&) = delete;
 
   /// Moves the ownership of the directory managed by `other` to a new handle
-  /// @note After the assignment, `other` is not associated with a directory
+  /// @note After the move, `other` is not associated with a directory
   /// @param other Another directory that will be moved from
   directory(directory&& other) noexcept
       : pathobject(std::exchange(other.pathobject, std::filesystem::path())) {}
