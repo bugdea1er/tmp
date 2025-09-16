@@ -99,10 +99,10 @@ TYPED_TEST(file, create_multiple) {
 TYPED_TEST(file, openmode) {
   basic_file<TypeParam> tmpfile = basic_file<TypeParam>();
   tmpfile << "Hello, World!" << std::flush;
-  tmpfile.seekg(0);
+  tmpfile.seekg(0, std::ios_base::beg);
   tmpfile << "Goodbye!" << std::flush;
 
-  tmpfile.seekg(0);
+  tmpfile.seekg(0, std::ios_base::beg);
   std::string content = std::string(std::istreambuf_iterator(tmpfile), {});
   EXPECT_EQ(content, "Goodbye!orld!");
 }
@@ -128,7 +128,7 @@ TYPED_TEST(file, move_constructor) {
 
   EXPECT_TRUE(TestFixture::is_open(snd.rdbuf()));
 
-  snd.seekg(0);
+  snd.seekg(0, std::ios_base::beg);
   std::basic_string<TypeParam> content;
   snd >> content;
   EXPECT_EQ(content, TestFixture::convert_string("Hello!"));
@@ -154,7 +154,7 @@ TYPED_TEST(file, move_assignment) {
 
   EXPECT_TRUE(TestFixture::is_open(fst.rdbuf()));
 
-  fst.seekg(0);
+  fst.seekg(0, std::ios_base::beg);
   std::basic_string<TypeParam> content;
   fst >> content;
   EXPECT_EQ(content, TestFixture::convert_string("Hello!"));
