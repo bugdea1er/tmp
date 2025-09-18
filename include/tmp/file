@@ -120,7 +120,7 @@ private:
   /// @param file The file stream
   /// @returns The new file device
   /// @throws std::filesystem::filesystem_error if cannot open the file stream
-  decltype(sb) open_filebuf(std::FILE* file) {
+  static decltype(sb) open_filebuf(std::FILE* file) {
     constexpr auto mode = std::ios::binary | std::ios::in | std::ios::out;
     decltype(sb) sb;
 #if defined(_MSC_VER)
