@@ -18,8 +18,8 @@ jobs:
         os:
           - ubuntu-22.04
           - ubuntu-24.04
-          - macos-13
-          - macos-15
+          - macos-14
+          - macos-26
     steps:
       - name: Set up `tmpfs` (if supported)
         run: sudo mount tmpfs -t tmpfs -o size=100m /tmp
@@ -41,8 +41,8 @@ jobs:
         os:
           - ubuntu-22.04
           - ubuntu-24.04
-          - macos-13
-          # - macos-15
+          - macos-14
+          # - macos-26
     steps:
       - name: Set up `tmpfs` (if supported)
         run: sudo mount tmpfs -t tmpfs -o size=100m /tmp
