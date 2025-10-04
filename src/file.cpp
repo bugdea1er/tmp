@@ -43,7 +43,7 @@ std::FILE* create_file() {
 }
 
 /// Returns an implementation-defined handle to the file
-/// @param[in] file The file to the native handle for
+/// @param[in] file The file to get the native handle for
 /// @returns The underlying implementation-defined handle
 file::native_handle_type get_native_handle(std::FILE* file) noexcept {
 #ifdef _WIN32
