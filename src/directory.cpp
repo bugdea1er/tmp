@@ -1,8 +1,6 @@
 // SPDX-FileCopyrightText: (c) 2024 Ilya Andreev <bugdealer@icloud.com>
 // SPDX-License-Identifier: MIT
 
-#include "abi.hpp"
-
 #include <tmp/directory>
 
 #include <filesystem>

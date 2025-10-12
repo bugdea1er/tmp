@@ -3,8 +3,6 @@
 
 #define _CRT_SECURE_NO_WARNINGS    // NOLINT
 
-#include "abi.hpp"
-
 #include <tmp/file>
 
 #include <cstdio>
