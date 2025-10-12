@@ -16,6 +16,7 @@ tmp = library(
   'src/directory.cpp',
   install: true,
   include_directories: include_directory,
+  gnu_symbol_visibility: 'default',
   version: meson.project_version(),
   dependencies: [filesystem_dep],
 )
