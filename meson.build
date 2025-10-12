@@ -12,8 +12,10 @@ filesystem_dep = filesystem_proj.get_variable('filesystem_dep')
 
 tmp = library(
   'tmp',
-  'src/file.cpp',
-  'src/directory.cpp',
+  'src/create_directory.cpp',
+  'src/create_file.cpp',
+  'src/get_native_handle.cpp',
+  'src/remove_all.cpp',
   install: true,
   include_directories: include_directory,
   gnu_symbol_visibility: 'hidden',

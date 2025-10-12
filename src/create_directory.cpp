@@ -3,12 +3,9 @@
 
 #include "abi.hpp"
 
-#include <tmp/directory>
-
 #include <filesystem>
 #include <string_view>
 #include <system_error>
-#include <utility>
 
 #ifdef _WIN32
 #define UNICODE
@@ -66,7 +63,7 @@ fs::path make_path(std::string_view prefix) {
 /// Creates a temporary directory in the current user's temporary directory
 /// @param prefix A prefix to attach to the temporary directory name
 /// @returns A path to the created temporary directory
-/// @throws fs::filesystem_error if cannot create a temporary directory
+/// @throws fs::filesystem_error  if cannot create a temporary directory
 /// @throws std::invalid_argument if the prefix contains a directory separator
 fs::path create_directory(std::string_view prefix) {
   if (!is_prefix_valid(prefix)) {
@@ -94,22 +91,5 @@ fs::path create_directory(std::string_view prefix) {
   }
 
   return path;
-}
-
-/// Deletes a path recursively, ignoring any errors
-/// @param path The path to delete
-void remove_all(const fs::path& path) noexcept {
-  try {
-    if (!path.empty()) {
-      // Calling the `std::error_code` overload of `fs::remove_all` should be
-      // more optimal here since it would not require creating
-      // a `fs::filesystem_error` message before we suppress the exception
-      std::error_code ec;
-      fs::remove_all(path, ec);
-    }
-  } catch (...) {
-    // Do nothing: if we failed to delete the temporary directory,
-    // the system should do it later
-  }
 }
 }    // namespace tmp::detail
