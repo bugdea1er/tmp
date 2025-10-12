@@ -11,23 +11,16 @@ Checks: >
   portability-*,
   readability-*,
   -*-noexcept-move-*,
-  -*-use-default-member-init,
   -*-use-after-move,
-  -bugprone-easily-swappable-parameters,
   -bugprone-empty-catch,
-  -cppcoreguidelines-avoid-do-while,
-  -cppcoreguidelines-init-variables,
   -cppcoreguidelines-owning-memory,
-  -cppcoreguidelines-pro-type-member-init,
   -cppcoreguidelines-pro-type-vararg,
   -misc-const-correctness,
   -misc-include-cleaner,
   -modernize-deprecated-headers,
-  -modernize-return-braced-init-list,
   -modernize-use-auto,
   -modernize-use-nodiscard,
   -modernize-use-trailing-return-type,
-  -readability-named-parameter,
   -readability-redundant-declaration
 
 CheckOptions:

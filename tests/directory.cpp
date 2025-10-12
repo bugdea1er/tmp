@@ -115,7 +115,7 @@ TEST(directory, move_constructor) {
   directory fst = directory();
   directory snd = directory(std::move(fst));
 
-  fst.~directory();    // NOLINT(*-use-after-move)
+  fst.~directory();
 
   EXPECT_FALSE(snd.path().empty());
   EXPECT_TRUE(fs::exists(snd));

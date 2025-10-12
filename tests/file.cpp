@@ -58,7 +58,7 @@ public:
 
 /// Name generator for typed test suite
 struct name_generator {
-  template<typename T> static std::string GetName(int) {
+  template<typename T> static std::string GetName(int /*unused*/) {
     return typeid(T).name();
   }
 };
