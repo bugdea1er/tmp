@@ -5,14 +5,12 @@ AllowShortFunctionsOnASingleLine: Empty
 
 IncludeBlocks: Regroup
 IncludeCategories:
-  - Regex: '^(")'
-    Priority: 1
   - Regex: '^(<tmp)'
-    Priority: 2
+    Priority: 1
   - Regex: '^(<gtest)'
-    Priority: 3
+    Priority: 2
   - Regex: ".*"
-    Priority: 4
+    Priority: 3
 
 InsertBraces: true
 KeepEmptyLinesAtTheStartOfBlocks: false
