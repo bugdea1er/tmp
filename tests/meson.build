@@ -5,9 +5,6 @@ unit_test = executable(
   'directory.cpp',
   'file.cpp',
   dependencies: [gtest_main_dep, tmp_dep],
-  cpp_args: [
-    '-DBUILD_DIR="' + meson.current_build_dir() + '"',
-  ],
   build_by_default: false,
 )
 
