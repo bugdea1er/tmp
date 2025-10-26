@@ -42,7 +42,7 @@ jobs:
           - ubuntu-22.04
           - ubuntu-24.04
           - macos-14
-          # - macos-26
+          - macos-26
     steps:
       - name: Set up `tmpfs` (if supported)
         run: sudo mount tmpfs -t tmpfs -o size=100m /tmp
