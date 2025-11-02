@@ -12,3 +12,11 @@ set_target_properties(${PROJECT_NAME}
 
 include(GoogleTest)
 gtest_discover_tests(${PROJECT_NAME} EXTRA_ARGS --gtest_color=yes)
+
+find_package(benchmark REQUIRED)
+
+add_executable(tmp-benchmark-writing benchmarkWriting.cpp)
+target_link_libraries(tmp-benchmark-writing tmp::tmp benchmark::benchmark)
+
+add_executable(tmp-benchmark-reading benchmarkReading.cpp)
+target_link_libraries(tmp-benchmark-reading tmp::tmp benchmark::benchmark)
