@@ -113,17 +113,18 @@ TEST(directory, destructor) {
 /// Tests directory move constructor
 TEST(directory, move_constructor) {
   directory fst = directory();
+  fs::path path = fst;
+
   directory snd = directory(std::move(fst));
 
-  fst.~directory();
-
-  EXPECT_FALSE(snd.path().empty());
+  EXPECT_TRUE(fs::equivalent(path, snd));
   EXPECT_TRUE(fs::exists(snd));
 }
 
 /// Tests directory move assignment operator
 TEST(directory, move_assignment) {
   directory fst = directory();
+
   {
     directory snd = directory();
 
