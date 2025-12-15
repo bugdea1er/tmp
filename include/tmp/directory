@@ -54,7 +54,7 @@ public:
   explicit directory(std::string_view prefix = "")
       : pathobject(detail::create_directory(prefix)) {}
 
-  directory(const directory&) = delete;
+  directory(const directory&)            = delete;
   directory& operator=(const directory&) = delete;
 
   /// Moves the ownership of the directory managed by `other` to a new handle

@@ -24,7 +24,7 @@ constexpr std::string_view prefix = "com.github.bugdea1er.tmp";
 /// Tests directory creation with prefix
 TEST(directory, create_with_prefix) {
   directory tmpdir = directory(prefix);
-  fs::path parent = tmpdir.path().parent_path();
+  fs::path parent  = tmpdir.path().parent_path();
 
   EXPECT_TRUE(fs::exists(tmpdir));
   EXPECT_TRUE(fs::is_directory(tmpdir));
@@ -52,7 +52,7 @@ TEST(directory, create_with_prefix) {
 /// Tests directory creation without prefix
 TEST(directory, create_without_prefix) {
   directory tmpdir = directory();
-  fs::path parent = tmpdir.path().parent_path();
+  fs::path parent  = tmpdir.path().parent_path();
 
   EXPECT_TRUE(fs::exists(tmpdir));
   EXPECT_TRUE(fs::is_directory(tmpdir));
@@ -85,7 +85,7 @@ TEST(directory, create_invalid_prefix) {
 
 /// Tests `operator/` of directory
 TEST(directory, subpath) {
-  directory tmpdir = directory();
+  directory tmpdir  = directory();
   fs::path expected = tmpdir.path() / "child";
   std::ofstream(expected) << "Hello, world!";
 
@@ -104,7 +104,7 @@ TEST(directory, destructor) {
   fs::path path;
   {
     directory tmpdir = directory();
-    path = tmpdir;
+    path             = tmpdir;
   }
 
   EXPECT_FALSE(fs::exists(path));

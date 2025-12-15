@@ -14,6 +14,7 @@ IncludeCategories:
   - Regex: ".*"
     Priority: 4
 
+AlignConsecutiveAssignments: true
 InsertBraces: true
 KeepEmptyLinesAtTheStartOfBlocks: false
 PackConstructorInitializers: Never

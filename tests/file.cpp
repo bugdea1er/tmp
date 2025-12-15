@@ -113,7 +113,7 @@ TYPED_TEST(file, destructor) {
 
   {
     basic_file<TypeParam> tmpfile = basic_file<TypeParam>();
-    handle = tmpfile.native_handle();
+    handle                        = tmpfile.native_handle();
   }
 
   EXPECT_FALSE(TestFixture::is_open(handle));
