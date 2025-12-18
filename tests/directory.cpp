@@ -30,6 +30,8 @@ TEST(directory, create_with_prefix) {
   EXPECT_TRUE(fs::is_directory(tmpdir));
   EXPECT_TRUE(fs::equivalent(parent, fs::temp_directory_path()));
 
+  EXPECT_EQ(fs::canonical(tmpdir), tmpdir.path());
+
 #ifdef _WIN32
   constexpr std::wstring_view actual_prefix = L"com.github.bugdea1er.tmp.";
 #else
