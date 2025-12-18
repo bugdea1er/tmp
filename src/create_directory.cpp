@@ -90,6 +90,6 @@ fs::path create_directory(std::string_view prefix) {
     throw fs::filesystem_error("Cannot create a temporary directory", ec);
   }
 
-  return path;
+  return fs::canonical(path);
 }
 }    // namespace tmp::detail
