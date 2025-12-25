@@ -60,6 +60,7 @@ set(INSTALL_GMOCK OFF)
 set(INSTALL_GTEST OFF)
 
 FetchContent_Declare(googletest
-  URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.tar.gz)
+  URL      https://github.com/google/googletest/archive/refs/tags/v1.17.0.tar.gz
+  URL_HASH MD5=b6f100bc2a5853a48046aa168ececf84)
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
