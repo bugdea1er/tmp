@@ -76,13 +76,13 @@ public:
   }
 
   /// Returns the path of this directory
-  /// @returns The full path of this directory
+  /// @returns The canonical path of this directory
   operator const std::filesystem::path&() const noexcept {
     return pathobject;
   }
 
   /// Returns the path of this directory
-  /// @returns The full path of this directory
+  /// @returns The canonical path of this directory
   const std::filesystem::path& path() const noexcept {
     return pathobject;
   }
