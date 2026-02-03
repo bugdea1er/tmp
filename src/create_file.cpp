@@ -7,23 +7,19 @@
 
 #include <cerrno>
 #include <cstdio>
-#include <filesystem>
 #include <system_error>
 
 namespace tmp::detail {
 
-namespace fs = std::filesystem;
-
 /// Creates and opens a binary temporary file as if by POSIX `tmpfile`
-/// @returns A pointer to the file stream associated with the temporary file
-/// @throws fs::filesystem_error if cannot create a temporary file
-std::FILE* create_file() {
+/// @param ec Set on failure
+/// @returns A pointer to the file stream, or nullptr on failure
+std::FILE* create_file(std::error_code& ec) noexcept {
+  ec.clear();
   std::FILE* file = std::tmpfile();
   if (file == nullptr) {
-    std::error_code ec = std::error_code(errno, std::generic_category());
-    throw fs::filesystem_error("Cannot create a temporary file", ec);
+    ec = std::error_code(errno, std::generic_category());
   }
-
   return file;
 }
 }    // namespace tmp::detail

@@ -62,20 +62,22 @@ fs::path make_path(std::string_view prefix) {
 
 /// Creates a temporary directory in the current user's temporary directory
 /// @param prefix A prefix to attach to the temporary directory name
-/// @returns A path to the created temporary directory
-/// @throws fs::filesystem_error  if cannot create a temporary directory
+/// @param ec Set on failure
+/// @returns The path string in native format, or empty on failure
 /// @throws std::invalid_argument if the prefix contains a directory separator
-fs::path create_directory(std::string_view prefix) {
+std::filesystem::path::string_type create_directory(std::string_view prefix,
+                                                    std::error_code& ec) {
+  ec.clear();
   if (!is_prefix_valid(prefix)) {
     throw std::invalid_argument("Cannot create a temporary directory: "
                                 "prefix cannot contain a directory separator");
   }
 
-  std::error_code ec;
 #ifdef _WIN32
   fs::path path = make_path(prefix);
-  if (!CreateDirectory(path.c_str(), nullptr)) {
+  if (!CreateDirectoryW(path.c_str(), nullptr)) {
     ec = std::error_code(GetLastError(), std::system_category());
+    return {};
   }
 #else
   std::string path = fs::temp_directory_path() / prefix;
@@ -83,13 +85,10 @@ fs::path create_directory(std::string_view prefix) {
 
   if (mkdtemp(path.data()) == nullptr) {
     ec = std::error_code(errno, std::system_category());
+    return {};
   }
 #endif
 
-  if (ec) {
-    throw fs::filesystem_error("Cannot create a temporary directory", ec);
-  }
-
-  return fs::canonical(path);
+  return fs::canonical(path).native();
 }
 }    // namespace tmp::detail

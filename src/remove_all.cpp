@@ -10,11 +10,11 @@ namespace tmp::detail {
 
 /// Deletes a path recursively, ignoring any errors
 /// @param path The path to delete
-void remove_all(const std::filesystem::path& path) noexcept {
+void remove_all(const std::filesystem::path::string_type& path) noexcept {
   try {
     if (!path.empty()) {
       std::error_code ec;
-      std::filesystem::remove_all(path, ec);
+      std::filesystem::remove_all(std::filesystem::path(path), ec);
     }
   } catch (...) {
     // Do nothing: if we failed to delete the temporary directory,

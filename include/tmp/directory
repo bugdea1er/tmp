@@ -9,13 +9,16 @@
 #include <cstddef>
 #include <filesystem>
 #include <string_view>
+#include <system_error>
 #include <utility>
 
 namespace tmp {
 
 namespace detail {
-extern "C++" std::filesystem::path create_directory(std::string_view prefix);
-extern "C++" void remove_all(const std::filesystem::path& path) noexcept;
+extern "C++" std::filesystem::path::string_type
+create_directory(std::string_view prefix, std::error_code& ec);
+extern "C++" void
+remove_all(const std::filesystem::path::string_type& path) noexcept;
 }    // namespace detail
 
 /// tmp::directory is a smart handle that manages a temporary directory,
@@ -52,7 +55,15 @@ public:
   /// @throws std::filesystem::filesystem_error if cannot create a directory
   /// @throws std::invalid_argument if the prefix contains a directory separator
   explicit directory(std::string_view prefix = "")
-      : pathobject(detail::create_directory(prefix)) {}
+      : pathobject() {
+    std::error_code ec;
+    auto result = detail::create_directory(prefix, ec);
+    if (ec) {
+      throw std::filesystem::filesystem_error(
+          "Cannot create a temporary directory", ec);
+    }
+    pathobject = std::filesystem::path(std::move(result));
+  }
 
   directory(const directory&)            = delete;
   directory& operator=(const directory&) = delete;
@@ -69,7 +80,7 @@ public:
   /// @param other Another directory that will be moved from
   /// @returns `*this`
   directory& operator=(directory&& other) noexcept {
-    detail::remove_all(*this);
+    detail::remove_all(pathobject.native());
     pathobject = std::exchange(other.pathobject, std::filesystem::path());
 
     return *this;
@@ -96,7 +107,7 @@ public:
 
   /// Deletes this directory recursively
   ~directory() noexcept {
-    detail::remove_all(*this);
+    detail::remove_all(pathobject.native());
   }
 
 private:

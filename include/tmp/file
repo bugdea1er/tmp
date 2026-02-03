@@ -13,6 +13,7 @@
 #include <ios>
 #include <istream>
 #include <memory>
+#include <system_error>
 
 #ifdef __GLIBCXX__
 #include <ext/stdio_filebuf.h>
@@ -21,7 +22,7 @@
 namespace tmp {
 
 namespace detail {
-extern "C++" std::FILE* create_file();
+extern "C++" std::FILE* create_file(std::error_code& ec) noexcept;
 #if defined(_WIN32)
 extern "C++" void* get_native_handle(std::FILE* file) noexcept;
 #elif __has_include(<unistd.h>)
@@ -78,7 +79,7 @@ public:
   /// @throws std::filesystem::filesystem_error if cannot create a file
   explicit basic_file()
       : std::basic_iostream<charT, traits>(std::addressof(sb)),
-        underlying(detail::create_file(), &std::fclose),
+        underlying(create_file_or_throw(), &std::fclose),
         sb(open_filebuf(underlying.get())) {}
 
   basic_file(const basic_file&)            = delete;
@@ -111,6 +112,16 @@ public:
   ~basic_file() noexcept override = default;
 
 private:
+  static std::FILE* create_file_or_throw() {
+    std::error_code ec;
+    std::FILE* f = detail::create_file(ec);
+    if (ec) {
+      throw std::filesystem::filesystem_error("Cannot create a temporary file",
+                                              ec);
+    }
+    return f;
+  }
+
   /// The underlying C file stream
   std::unique_ptr<std::FILE, int (*)(std::FILE*)> underlying;
 

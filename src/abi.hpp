@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <filesystem>
 #include <string_view>
+#include <system_error>
 
 #ifdef _WIN32
 #define abi __declspec(dllexport)
@@ -16,10 +17,12 @@
 
 namespace tmp::detail {
 
-auto abi create_directory(std::string_view prefix) -> std::filesystem::path;
-auto abi remove_all(const std::filesystem::path& path) noexcept -> void;
+auto abi create_directory(std::string_view prefix, std::error_code& ec)
+    -> std::filesystem::path::string_type;
+auto abi remove_all(const std::filesystem::path::string_type& path) noexcept
+    -> void;
 
-auto abi create_file() -> std::FILE*;
+auto abi create_file(std::error_code& ec) noexcept -> std::FILE*;
 auto abi get_native_handle(std::FILE* file) noexcept ->
 #if defined(_WIN32)
     void*;
