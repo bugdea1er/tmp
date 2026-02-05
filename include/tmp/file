@@ -35,7 +35,7 @@ extern "C++" int get_native_handle(std::FILE* file) noexcept;
 /// Upon creation, a tmp::file object generates a unique temporary file,
 /// opening it for reading and writing in binary format
 ///
-/// The temporary file is deleted of when either of the following happens:
+/// The temporary file is deleted when either of the following happens:
 /// - the tmp::file object is destroyed
 /// - the tmp::file object is assigned another file using operator=
 ///
@@ -51,7 +51,7 @@ extern "C++" int get_native_handle(std::FILE* file) noexcept;
 ///
 ///   auto func(std::string_view content) {
 ///     auto tmpfile = tmp::file();
-///     tmpfile << contents << std::flush;
+///     tmpfile << content << std::flush;
 ///     if (validate(tmpfile)) {
 ///       // Unarchive the file to the persistent storage
 ///       archive::unzip(tmpfile, storage);

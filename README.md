@@ -64,7 +64,7 @@ The example below demonstrates a usage of a `tmp::file` object to validate a req
 
 auto func(std::string_view content) {
   auto tmpfile = tmp::file();
-  tmpfile << contents << std::flush;
+  tmpfile << content << std::flush;
   if (validate(tmpfile)) {
     // Unarchive the file to the persistent storage
     archive::unzip(tmpfile, storage);
