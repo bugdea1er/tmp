@@ -15,7 +15,8 @@ set_target_properties(${PROJECT_NAME}
              CXX_VISIBILITY_PRESET hidden
              VISIBILITY_INLINES_HIDDEN ON
              VERSION ${PROJECT_VERSION}
-             SOVERSION ${PROJECT_VERSION_MAJOR})
+             SOVERSION ${PROJECT_VERSION_MAJOR}
+             DEBUG_POSTFIX d)
 
 target_include_directories(${PROJECT_NAME}
   PUBLIC "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
