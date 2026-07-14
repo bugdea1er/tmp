@@ -107,10 +107,10 @@ TYPED_TEST(file, create) {
 
   EXPECT_EQ(file_info.dwVolumeSerialNumber, dir_info.dwVolumeSerialNumber);
 #else
-  struct stat file_stat{};
+  struct stat file_stat {};
   ASSERT_EQ(fstat(handle, &file_stat), 0);
 
-  struct stat dir_stat{};
+  struct stat dir_stat {};
   ASSERT_EQ(stat(temp_dir.c_str(), &dir_stat), 0);
 
   EXPECT_EQ(file_stat.st_dev, dir_stat.st_dev);
