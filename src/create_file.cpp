@@ -27,7 +27,7 @@ std::FILE* create_file() {
   std::string path = fs::temp_directory_path() / "XXXXXX";
   int descriptor   = mkstemp(path.data());
   if (descriptor == -1) {
-    std::error_code ec = std::error_code(errno, std::generic_category());
+    std::error_code ec = std::error_code(errno, std::system_category());
     throw fs::filesystem_error("Cannot create a temporary file", ec);
   }
 
@@ -35,7 +35,7 @@ std::FILE* create_file() {
 
   std::FILE* file = fdopen(descriptor, "wb+");
   if (file == nullptr) {
-    std::error_code ec = std::error_code(errno, std::generic_category());
+    std::error_code ec = std::error_code(errno, std::system_category());
     close(descriptor);
     throw fs::filesystem_error("Cannot create a temporary file", ec);
   }
