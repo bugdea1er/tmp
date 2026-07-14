@@ -11,7 +11,6 @@
 #include <istream>
 #include <iterator>
 #include <ostream>
-#include <system_error>
 #include <type_traits>
 #include <utility>
 
@@ -20,10 +19,13 @@
 #include <Windows.h>
 #else
 #include <fcntl.h>
+#include <sys/stat.h>
 #endif
 
 namespace tmp {
 namespace {
+
+namespace fs = std::filesystem;
 
 /// Test fixture for `basic_file` tests
 template<class charT> class file : public testing::Test {
@@ -85,6 +87,34 @@ TYPED_TEST(file, create) {
   basic_file<TypeParam> tmpfile = basic_file<TypeParam>();
   EXPECT_TRUE(TestFixture::is_open(tmpfile.rdbuf()));
   EXPECT_TRUE(TestFixture::is_open(tmpfile.native_handle()));
+
+  fs::path temp_dir = fs::temp_directory_path();
+  auto handle       = tmpfile.native_handle();
+
+#ifdef _WIN32
+  BY_HANDLE_FILE_INFORMATION file_info;
+  ASSERT_TRUE(GetFileInformationByHandle(handle, &file_info));
+
+  HANDLE dir_handle =
+      CreateFileW(temp_dir.c_str(), FILE_READ_ATTRIBUTES,
+                  FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                  nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+  ASSERT_NE(dir_handle, INVALID_HANDLE_VALUE);
+
+  BY_HANDLE_FILE_INFORMATION dir_info;
+  ASSERT_TRUE(GetFileInformationByHandle(dir_handle, &dir_info));
+  CloseHandle(dir_handle);
+
+  EXPECT_EQ(file_info.dwVolumeSerialNumber, dir_info.dwVolumeSerialNumber);
+#else
+  struct stat file_stat {};
+  ASSERT_EQ(fstat(handle, &file_stat), 0);
+
+  struct stat dir_stat {};
+  ASSERT_EQ(stat(temp_dir.c_str(), &dir_stat), 0);
+
+  EXPECT_EQ(file_stat.st_dev, dir_stat.st_dev);
+#endif
 }
 
 /// Tests multiple file creation
