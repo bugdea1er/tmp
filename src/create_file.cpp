@@ -8,6 +8,7 @@
 #include <cerrno>
 #include <cstdio>
 #include <filesystem>
+#include <string>
 #include <system_error>
 
 #if __has_include(<unistd.h>)
