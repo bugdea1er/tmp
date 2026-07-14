@@ -1,7 +1,7 @@
 project(
   'tmp',
   'cpp',
-  version: '4.1',
+  version: '4.1.1',
   default_options: ['cpp_std=c++17'],
 )
 
